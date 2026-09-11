@@ -12,6 +12,7 @@ class GoogleSheetsSync:
         "Title",
         "Institution",
         "Field/Division",
+        "Research Topics",
         "Tenure Track",
         "Location",
         "Deadline",
@@ -90,6 +91,7 @@ class GoogleSheetsSync:
                     p.title,
                     p.institution,
                     p.field,
+                    p.research_topics,
                     p.tenure_track,
                     p.location,
                     p.deadline,
@@ -107,7 +109,7 @@ class GoogleSheetsSync:
             worksheet.clear()
             worksheet.update("A1", rows)
             # Format header row with bold text
-            worksheet.format("A1:N1", {"textFormat": {"bold": True}})
+            worksheet.format("A1:O1", {"textFormat": {"bold": True}})
 
             self.logger.info(f"Successfully synced {len(postings)} jobs to Google Sheet '{spreadsheet.title}'")
 

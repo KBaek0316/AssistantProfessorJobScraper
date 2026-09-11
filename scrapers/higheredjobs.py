@@ -48,6 +48,9 @@ class HigherEdJobsScraper(BaseScraper):
                 if not title or len(title) < 4:
                     continue
 
+                if not JobPosting.is_valid_faculty_posting(title):
+                    continue
+
                 full_url = urljoin("https://www.higheredjobs.com/search/", href)
 
                 # Look for parent or sibling details (Institution, Location)

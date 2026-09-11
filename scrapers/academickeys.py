@@ -42,27 +42,37 @@ class AcademicKeysScraper(BaseScraper):
                     continue
                 seen_urls.add(clean_url)
 
-                title = a.get_text(strip=True)
+                title = a.get_text(" ", strip=True)
                 if not title:
                     continue
 
-                # Locate the parent container or row to extract institution & details
-                parent = a.find_parent("tr") or a.find_parent("div")
-                parent_text = parent.get_text(" ", strip=True) if parent else ""
+                # Locate the parent row to extract real institution & details
+                tr = a.find_parent("tr")
+                parent_text = tr.get_text(" ", strip=True) if tr else a.parent.get_text(" ", strip=True)
 
-                # Extract basic info
-                institution = "AcademicKeys Listed Institution"
+                # Filter out non-faculty postings (postdocs, technicians, staff, drivers)
+                if not JobPosting.is_valid_faculty_posting(title, parent_text):
+                    continue
+
+                # AcademicKeys structure: inside <td>, 1st <strong> is title, 2nd <strong> is Institution
+                institution = "Academic Institution"
                 location = "United States"
-                field_name = "Transportation Engineering"
+                deadline = "Open until filled"
+                field_name = "Transportation / Civil Engineering"
 
-                # Try parsing institution from parent row if present
-                if parent:
-                    # AcademicKeys rows often format as Title - Institution - Location
-                    parts = [p.strip() for p in parent_text.split("-") if p.strip()]
-                    if len(parts) >= 2:
-                        institution = parts[1]
-                    if len(parts) >= 3:
-                        location = parts[2]
+                if tr:
+                    strongs = tr.find_all("strong")
+                    if len(strongs) > 1:
+                        parsed_inst = strongs[1].get_text(strip=True)
+                        if parsed_inst and parsed_inst != title:
+                            institution = parsed_inst
+
+                    text_lines = list(tr.stripped_strings)
+                    for i, line in enumerate(text_lines):
+                        if line == institution and i + 2 < len(text_lines):
+                            location = text_lines[i + 2]
+                        if "Deadline" in line and i + 1 < len(text_lines):
+                            deadline = text_lines[i + 1]
 
                 job_id = JobPosting.generate_id("academickeys", clean_url)
                 postings.append(
@@ -72,7 +82,7 @@ class AcademicKeysScraper(BaseScraper):
                         institution=institution,
                         field=field_name,
                         location=location,
-                        deadline="Review begins immediately / Open",
+                        deadline=deadline,
                         salary="Not specified",
                         link=clean_url,
                         source="AcademicKeys",

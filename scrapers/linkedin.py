@@ -58,6 +58,10 @@ class LinkedInScraper(BaseScraper):
                     if not raw_link or not title:
                         continue
 
+                    card_text = card.get_text(" ", strip=True)
+                    if not JobPosting.is_valid_faculty_posting(title, card_text):
+                        continue
+
                     # Extract job ID from link or card
                     id_match = re.search(r"/jobs/view/(?:[a-zA-Z0-9\-]+-)?(\d+)", raw_link) or re.search(r"(\d{8,})", raw_link)
                     job_key = id_match.group(1) if id_match else raw_link

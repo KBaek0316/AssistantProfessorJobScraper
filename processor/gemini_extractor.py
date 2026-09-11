@@ -44,21 +44,35 @@ class GeminiExtractor:
             return postings
 
         self.logger.info(f"Enriching {len(postings)} new job postings with Gemini ({self.model_name})...")
+        import time
 
         for idx, posting in enumerate(postings):
             try:
                 self._enrich_single(posting)
                 self.logger.info(f"[{idx+1}/{len(postings)}] Enriched: {posting.title} @ {posting.institution}")
             except Exception as e:
-                self.logger.error(f"Failed to enrich job '{posting.title}': {e}")
+                if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                    self.logger.warning(f"Rate limit encountered on '{posting.title}'. Waiting 15s before retry...")
+                    time.sleep(15)
+                    try:
+                        self._enrich_single(posting)
+                        self.logger.info(f"[{idx+1}/{len(postings)}] Retry succeeded: {posting.title}")
+                    except Exception as retry_err:
+                        self.logger.error(f"Retry failed for '{posting.title}': {retry_err}")
+                else:
+                    self.logger.error(f"Failed to enrich job '{posting.title}': {e}")
                 if not posting.summary:
                     posting.summary = posting.raw_description[:200]
+
+            # Polite delay between API calls to respect free tier rate limits
+            if idx < len(postings) - 1:
+                time.sleep(3.0)
 
         return postings
 
     def _enrich_single(self, posting: JobPosting):
         prompt = f"""
-Analyze this academic job posting for an Assistant Professor in Transportation / Civil Engineering:
+Analyze this academic job posting for an Assistant Professor in Transportation / Civil / Systems Engineering:
 
 Title: {posting.title}
 Institution (scraped): {posting.institution}
@@ -69,14 +83,16 @@ Raw description / text snippet:
 
 Extract the following in strict JSON format:
 {{
-  "clean_title": "The exact official position title (e.g. Assistant Professor of Transportation Engineering)",
+  "is_faculty": true, // set to false if this is a driver, technician, staff, postdoc, student, or non-faculty role
+  "clean_title": "Official position title (e.g. Assistant Professor of Transportation Engineering)",
   "institution": "Official university or college name (e.g. University of California, Berkeley)",
   "department": "Department, school, or division name",
   "tenure_track": "Tenure-Track, Tenured, Non-Tenure Track, or Unspecified",
   "deadline": "Application deadline (YYYY-MM-DD, or 'Open until filled', or 'Review begins [Date]')",
   "salary": "Salary range if mentioned, otherwise 'Not specified'",
   "city_state": "City and State in USA (e.g. Austin, TX)",
-  "summary": "Strictly 1 to 2 sentences summarizing the core research/teaching focus and primary qualification required."
+  "research_topics": ["List 2 to 4 specific research areas/topics, e.g. Connected Vehicles, Traffic Flow, Transit"],
+  "concise_summary": "Strictly 1 concise sentence summarizing the primary focus of the role and minimum degree qualification."
 }}
 Return ONLY valid JSON without markdown formatting or conversational text.
 """
@@ -121,6 +137,11 @@ Return ONLY valid JSON without markdown formatting or conversational text.
 
         data = json.loads(cleaned_json)
 
+        # If Gemini detects it is not an academic faculty role, flag status
+        if data.get("is_faculty") is False:
+            posting.status = "Filtered (Non-Faculty)"
+            return
+
         # Update posting attributes
         if data.get("clean_title"):
             posting.title = data["clean_title"].strip()
@@ -136,5 +157,18 @@ Return ONLY valid JSON without markdown formatting or conversational text.
             posting.salary = data["salary"].strip()
         if data.get("city_state"):
             posting.location = data["city_state"].strip()
-        if data.get("summary"):
-            posting.summary = data["summary"].strip()
+
+        # Handle research topics
+        topics_data = data.get("research_topics", [])
+        if isinstance(topics_data, list):
+            posting.research_topics = ", ".join(str(t).strip() for t in topics_data if t)
+        elif isinstance(topics_data, str):
+            posting.research_topics = topics_data.strip()
+
+        # Format concise summary
+        concise = data.get("concise_summary", "").strip() or data.get("summary", "").strip()
+        if concise:
+            if posting.research_topics:
+                posting.summary = f"{concise} | Research Topics: {posting.research_topics}"
+            else:
+                posting.summary = concise

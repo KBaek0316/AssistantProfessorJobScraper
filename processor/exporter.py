@@ -11,6 +11,7 @@ class JobExporter:
         ("title", "Title"),
         ("institution", "Institution"),
         ("field", "Field/Division"),
+        ("research_topics", "Research Topics"),
         ("tenure_track", "Tenure Track"),
         ("location", "Location"),
         ("deadline", "Deadline"),

@@ -27,6 +27,7 @@ class JobPosting:
     source: str
     raw_description: str = ""
     summary: str = ""
+    research_topics: str = ""
     tenure_track: str = "Unspecified"
     date_first_seen: str = field(default_factory=lambda: datetime.now(timezone.utc).strftime("%Y-%m-%d"))
     date_last_verified: str = field(default_factory=lambda: datetime.now(timezone.utc).strftime("%Y-%m-%d"))
@@ -42,6 +43,30 @@ class JobPosting:
         """Create a deterministic unique ID for a posting."""
         raw = f"{source.lower().strip()}:{identifier.strip()}".encode("utf-8")
         return hashlib.sha256(raw).hexdigest()[:16]
+
+    @staticmethod
+    def is_valid_faculty_posting(title: str, text_snippet: str = "") -> bool:
+        """Filter out non-faculty roles (drivers, postdocs, technicians, staff, fellows)."""
+        combined = f"{title} {text_snippet}".lower()
+
+        # Instant rejection patterns for non-professorial staff and trainees
+        excluded_patterns = [
+            r"\bdriver\b", r"\bbus driver\b", r"\bpostdoc\b", r"\bpost-doc\b",
+            r"\bpostdoctoral\b", r"\bresearch fellow\b", r"\bproject officer\b",
+            r"\bintern\b", r"\btechnician\b", r"\bcustodian\b", r"\belementary\b",
+            r"\bk-12\b", r"\blab manager\b", r"\bundergraduate\b", r"\bgraduate student\b"
+        ]
+        import re
+        for pat in excluded_patterns:
+            if re.search(pat, combined):
+                return False
+
+        # Must indicate an academic faculty / professorship appointment
+        faculty_indicators = ["professor", "faculty", "lecturer", "instructor", "chair", "open rank"]
+        if not any(ind in title.lower() for ind in faculty_indicators):
+            return False
+
+        return True
 
 
 class BaseScraper(ABC):

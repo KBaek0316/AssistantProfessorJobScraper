@@ -39,6 +39,9 @@ class ChronicleScraper(BaseScraper):
                     if not title or not link:
                         continue
 
+                    if not JobPosting.is_valid_faculty_posting(title, desc):
+                        continue
+
                     # Extract job id from link (e.g. /job/123456/...)
                     id_match = re.search(r"/job/(\d+)", link)
                     job_id_key = id_match.group(1) if id_match else link
@@ -92,12 +95,15 @@ class ChronicleScraper(BaseScraper):
                     if not title or len(title) < 4:
                         continue
 
+                    parent = a.find_parent("li") or a.find_parent("div")
+                    raw_text = parent.get_text(" ", strip=True) if parent else title
+
+                    if not JobPosting.is_valid_faculty_posting(title, raw_text):
+                        continue
+
                     id_match = re.search(r"/job/(\d+)", full_url)
                     job_id_key = id_match.group(1) if id_match else full_url
                     job_id = JobPosting.generate_id("chronicle", job_id_key)
-
-                    parent = a.find_parent("li") or a.find_parent("div")
-                    raw_text = parent.get_text(" ", strip=True) if parent else title
 
                     postings.append(
                         JobPosting(

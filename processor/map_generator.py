@@ -38,6 +38,7 @@ class MapGenerator:
                 safe_deadline = html.escape(p.deadline)
                 safe_salary = html.escape(p.salary)
                 safe_summary = html.escape(p.summary or "No summary available.")
+                safe_topics = html.escape(p.research_topics or "Not specified")
                 safe_source = html.escape(p.source)
                 safe_link = html.escape(p.link)
                 safe_tenure = html.escape(p.tenure_track)
@@ -55,6 +56,7 @@ class MapGenerator:
                     
                     <div style="font-size: 12px; color: #475569; margin-bottom: 8px;">
                         <div>📍 <b>Location:</b> {safe_loc}</div>
+                        <div>🔬 <b>Research Topics:</b> {safe_topics}</div>
                         <div>📅 <b>Deadline:</b> {safe_deadline}</div>
                         <div>💰 <b>Salary:</b> {safe_salary}</div>
                     </div>

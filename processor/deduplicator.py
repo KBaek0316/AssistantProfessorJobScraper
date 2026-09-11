@@ -35,9 +35,14 @@ class JobDeduplicator:
                     lat = float(lat_str) if lat_str and lat_str != "None" else None
                     lon = float(lon_str) if lon_str and lon_str != "None" else None
 
+                    title = norm_row.get("title", "")
+                    # Filter out non-faculty postings (drivers, postdocs, etc.)
+                    if not JobPosting.is_valid_faculty_posting(title):
+                        continue
+
                     posting = JobPosting(
                         id=job_id,
-                        title=norm_row.get("title", ""),
+                        title=title,
                         institution=norm_row.get("institution", ""),
                         field=norm_row.get("field/division") or norm_row.get("field", ""),
                         location=norm_row.get("location", ""),
@@ -47,6 +52,7 @@ class JobDeduplicator:
                         source=job_source,
                         raw_description=norm_row.get("raw_description", ""),
                         summary=norm_row.get("summary (gemini)") or norm_row.get("summary", ""),
+                        research_topics=norm_row.get("research topics") or norm_row.get("research_topics", ""),
                         tenure_track=norm_row.get("tenure track") or norm_row.get("tenure_track", "Unspecified"),
                         date_first_seen=norm_row.get("date added") or norm_row.get("date_first_seen", ""),
                         date_last_verified=norm_row.get("last verified") or norm_row.get("date_last_verified", ""),
@@ -55,7 +61,7 @@ class JobDeduplicator:
                         longitude=lon,
                     )
                     jobs[job_id] = posting
-            self.logger.info(f"Loaded {len(jobs)} existing jobs from {self.csv_filepath}")
+            self.logger.info(f"Loaded {len(jobs)} valid faculty jobs from {self.csv_filepath}")
         except Exception as e:
             self.logger.error(f"Error reading existing {self.csv_filepath}: {e}", exc_info=True)
 
@@ -77,6 +83,9 @@ class JobDeduplicator:
         link_to_id = {j.link.strip().rstrip("/"): j.id for j in existing_jobs.values() if j.link}
 
         for job in scraped_jobs:
+            if not JobPosting.is_valid_faculty_posting(job.title, job.raw_description):
+                continue
+
             normalized_link = job.link.strip().rstrip("/")
             matched_id = job.id if job.id in existing_jobs else link_to_id.get(normalized_link)
 
