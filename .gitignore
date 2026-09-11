@@ -216,3 +216,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Project Secrets & Cache
+.env
+*.env
+credentials.json
+service_account.json
+.cache/
+scraping/
+

@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_094eadb9c97e04f62b78c3564303c64e {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.Default.css"/>
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_094eadb9c97e04f62b78c3564303c64e" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_094eadb9c97e04f62b78c3564303c64e = L.map(
+                "map_094eadb9c97e04f62b78c3564303c64e",
+                {
+                    center: [39.8283, -98.5795],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 4.5,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_2cb2ba1d8636fcde0ab403fec3c88edd = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_2cb2ba1d8636fcde0ab403fec3c88edd.addTo(map_094eadb9c97e04f62b78c3564303c64e);
+        
+    
+            var marker_cluster_1868c6db110904dcca799ce0a77e8b9d = L.markerClusterGroup(
+                {
+}
+            );
+        
+    
+            var marker_cf11f26d7512f3d1aebb0571d83cfbb3 = L.marker(
+                [39.0691039, -108.5607374],
+                {
+}
+            ).addTo(marker_cluster_1868c6db110904dcca799ce0a77e8b9d);
+        
+    
+            var icon_8b5132fa7c7cd732cf61af7eda998ab4 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "graduation-cap",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_25aaeb884bc086224a146f579852ffb0 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var i_frame_c668531494abfd757b9ea2f585791cee = $(`<iframe src="data:text/html;charset=utf-8;base64,CiAgICAKICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImZvbnQtZmFtaWx5OiAnU2Vnb2UgVUknLCBUYWhvbWEsIEdlbmV2YSwgVmVyZGFuYSwgc2Fucy1zZXJpZjsgd2lkdGg6IDMwMHB4OyBwYWRkaW5nOiA0cHg7Ij4KICAgICAgICAgICAgICAgICAgICA8c3BhbiBzdHlsZT0iZm9udC1zaXplOiAxMXB4OyBiYWNrZ3JvdW5kOiAjZTBmMmZlOyBjb2xvcjogIzAzNjlhMTsgcGFkZGluZzogMnB4IDhweDsgYm9yZGVyLXJhZGl1czogMTJweDsgZm9udC13ZWlnaHQ6IDYwMDsgdGV4dC10cmFuc2Zvcm06IHVwcGVyY2FzZTsiPgogICAgICAgICAgICAgICAgICAgICAgICBBY2FkZW1pY0tleXMKICAgICAgICAgICAgICAgICAgICA8L3NwYW4+CiAgICAgICAgICAgICAgICAgICAgPHNwYW4gc3R5bGU9ImZvbnQtc2l6ZTogMTFweDsgYmFja2dyb3VuZDogI2ZlZjNjNzsgY29sb3I6ICM5MjQwMGU7IHBhZGRpbmc6IDJweCA4cHg7IGJvcmRlci1yYWRpdXM6IDEycHg7IGZvbnQtd2VpZ2h0OiA2MDA7IG1hcmdpbi1sZWZ0OiA0cHg7Ij4KICAgICAgICAgICAgICAgICAgICAgICAgVW5zcGVjaWZpZWQKICAgICAgICAgICAgICAgICAgICA8L3NwYW4+CiAgICAgICAgICAgICAgICAgICAgPGgzIHN0eWxlPSJtYXJnaW46IDhweCAwIDRweCAwOyBmb250LXNpemU6IDE1cHg7IGNvbG9yOiAjMGYxNzJhOyBsaW5lLWhlaWdodDogMS4zOyI+Q2l2aWwsIENvbnN0cnVjdGlvbiBhbmQgRW52aXJvbm1lbnRhbCBFbmdpbmVlcmluZyAtVHJhbnNwb3J0YXRpb25FbmdpbmVlcmluZyAtQXNzaXN0YW50UHJvZmVzc29yPC9oMz4KICAgICAgICAgICAgICAgICAgICA8cCBzdHlsZT0ibWFyZ2luOiAwIDAgOHB4IDA7IGZvbnQtc2l6ZTogMTNweDsgZm9udC13ZWlnaHQ6IGJvbGQ7IGNvbG9yOiAjMjU2M2ViOyI+8J+Pm++4jyBUcmFuc3BvcnRhdGlvbiBFbmdpbmVlcmluZzwvcD4KICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICA8ZGl2IHN0eWxlPSJmb250LXNpemU6IDEycHg7IGNvbG9yOiAjNDc1NTY5OyBtYXJnaW4tYm90dG9tOiA4cHg7Ij4KICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj7wn5ONIDxiPkxvY2F0aW9uOjwvYj4gQXNzaXN0YW50IFByb2Zlc3NvciBVbml2ZXJzaXR5IG9mIEFsYWJhbWEgQ2l2aWwsIENvbnN0cnVjdGlvbiBhbmQgRW52aXJvbm1lbnRhbCBFbmdpbmVlcmluZyBUdXNjYWxvb3NhLCBBbGFiYW1hIFVuaXRlZCBTdGF0ZXMgRGF0ZSBQb3N0ZWQgTm92LiAzLCAyMDI1IERlYWRsaW5lIE9wZW4gdW50aWwgZmlsbGVkIFBvc2l0aW9uIFN0YXJ0cyBBdWcuIDE2LCAyMDI2PC9kaXY+CiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+8J+ThSA8Yj5EZWFkbGluZTo8L2I+IFJldmlldyBiZWdpbnMgaW1tZWRpYXRlbHkgLyBPcGVuPC9kaXY+CiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+8J+SsCA8Yj5TYWxhcnk6PC9iPiBOb3Qgc3BlY2lmaWVkPC9kaXY+CiAgICAgICAgICAgICAgICAgICAgPC9kaXY+CgogICAgICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImJhY2tncm91bmQ6ICNmOGZhZmM7IGJvcmRlci1sZWZ0OiAzcHggc29saWQgIzNiODJmNjsgcGFkZGluZzogNnB4IDEwcHg7IG1hcmdpbi1ib3R0b206IDEycHg7IGZvbnQtc2l6ZTogMTJweDsgY29sb3I6ICMzMzQxNTU7IGxpbmUtaGVpZ2h0OiAxLjQ7Ij4KICAgICAgICAgICAgICAgICAgICAgICAgPGI+U3VtbWFyeTo8L2I+PGJyPkNpdmlsLCBDb25zdHJ1Y3Rpb24gYW5kIEVudmlyb25tZW50YWwgRW5naW5lZXJpbmcgLSBUcmFuc3BvcnRhdGlvbiBFbmdpbmVlcmluZyAtIEFzc2lzdGFudCBQcm9mZXNzb3IgVW5pdmVyc2l0eSBvZiBBbGFiYW1hIENpdmlsLCBDb25zdHJ1Y3Rpb24gYW5kIEVudmlyb25tZW50YWwgRW5naW5lZXJpbmcgVHVzY2Fsb29zYSwgQWxhYmFtYSBVbml0ZWQgLi4uCiAgICAgICAgICAgICAgICAgICAgPC9kaXY+CgogICAgICAgICAgICAgICAgICAgIDxhIGhyZWY9Imh0dHBzOi8vZW5naW5lZXJpbmcuYWNhZGVtaWNrZXlzLmNvbS9qb2Ivczl6NmVwYjMvQ2l2aWwtQ29uc3RydWN0aW9uLWFuZC1FbnZpcm9ubWVudGFsLUVuZ2luZWVyaW5nLS1UcmFuc3BvcnRhdGlvbi1FbmdpbmVlcmluZy0tQXNzaXN0YW50LVByb2Zlc3NvciIgdGFyZ2V0PSJfYmxhbmsiIHN0eWxlPSJkaXNwbGF5OiBibG9jazsgdGV4dC1hbGlnbjogY2VudGVyOyBiYWNrZ3JvdW5kOiAjMjU2M2ViOyBjb2xvcjogd2hpdGU7IHRleHQtZGVjb3JhdGlvbjogbm9uZTsgcGFkZGluZzogOHB4IDEycHg7IGJvcmRlci1yYWRpdXM6IDZweDsgZm9udC1zaXplOiAxM3B4OyBmb250LXdlaWdodDogYm9sZDsiPgogICAgICAgICAgICAgICAgICAgICAgICBWaWV3IEZ1bGwgSm9iIFBvc3Rpbmcg4oaSCiAgICAgICAgICAgICAgICAgICAgPC9hPgogICAgICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgICAgICA=" width="320" style="border:none !important;" height="310"></iframe>`)[0];
+                popup_25aaeb884bc086224a146f579852ffb0.setContent(i_frame_c668531494abfd757b9ea2f585791cee);
+            
+        
+
+        marker_cf11f26d7512f3d1aebb0571d83cfbb3.bindPopup(popup_25aaeb884bc086224a146f579852ffb0)
+        ;
+
+        
+    
+    
+            marker_cf11f26d7512f3d1aebb0571d83cfbb3.bindTooltip(
+                `<div>
+                     Transportation Engineering: Civil, Construction and Environmental Engineering -TransportationEngineering -AssistantProfessor
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_cf11f26d7512f3d1aebb0571d83cfbb3.setIcon(icon_8b5132fa7c7cd732cf61af7eda998ab4);
+            
+    
+            var marker_0d6dcc6cd644a665bfb32b979bb7a9a0 = L.marker(
+                [39.7540491, -83.8170518],
+                {
+}
+            ).addTo(marker_cluster_1868c6db110904dcca799ce0a77e8b9d);
+        
+    
+            var icon_2e9fdb6b2a4f045e07e62fc85208d450 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "graduation-cap",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_db51db4bc0ac0aa217e1972f29b98a37 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var i_frame_67f338ce84e47542ced1f2dea325dfac = $(`<iframe src="data:text/html;charset=utf-8;base64,CiAgICAKICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImZvbnQtZmFtaWx5OiAnU2Vnb2UgVUknLCBUYWhvbWEsIEdlbmV2YSwgVmVyZGFuYSwgc2Fucy1zZXJpZjsgd2lkdGg6IDMwMHB4OyBwYWRkaW5nOiA0cHg7Ij4KICAgICAgICAgICAgICAgICAgICA8c3BhbiBzdHlsZT0iZm9udC1zaXplOiAxMXB4OyBiYWNrZ3JvdW5kOiAjZTBmMmZlOyBjb2xvcjogIzAzNjlhMTsgcGFkZGluZzogMnB4IDhweDsgYm9yZGVyLXJhZGl1czogMTJweDsgZm9udC13ZWlnaHQ6IDYwMDsgdGV4dC10cmFuc2Zvcm06IHVwcGVyY2FzZTsiPgogICAgICAgICAgICAgICAgICAgICAgICBIaWdoZXJFZEpvYnMKICAgICAgICAgICAgICAgICAgICA8L3NwYW4+CiAgICAgICAgICAgICAgICAgICAgPHNwYW4gc3R5bGU9ImZvbnQtc2l6ZTogMTFweDsgYmFja2dyb3VuZDogI2ZlZjNjNzsgY29sb3I6ICM5MjQwMGU7IHBhZGRpbmc6IDJweCA4cHg7IGJvcmRlci1yYWRpdXM6IDEycHg7IGZvbnQtd2VpZ2h0OiA2MDA7IG1hcmdpbi1sZWZ0OiA0cHg7Ij4KICAgICAgICAgICAgICAgICAgICAgICAgVW5zcGVjaWZpZWQKICAgICAgICAgICAgICAgICAgICA8L3NwYW4+CiAgICAgICAgICAgICAgICAgICAgPGgzIHN0eWxlPSJtYXJnaW46IDhweCAwIDRweCAwOyBmb250LXNpemU6IDE1cHg7IGNvbG9yOiAjMGYxNzJhOyBsaW5lLWhlaWdodDogMS4zOyI+QXNzaXN0YW50L0Fzc29jaWF0ZSBQcm9mZXNzb3Igb2YgQ2l2aWwgRW5naW5lZXJpbmc8L2gzPgogICAgICAgICAgICAgICAgICAgIDxwIHN0eWxlPSJtYXJnaW46IDAgMCA4cHggMDsgZm9udC1zaXplOiAxM3B4OyBmb250LXdlaWdodDogYm9sZDsgY29sb3I6ICMyNTYzZWI7Ij7wn4+b77iPIENlZGFydmlsbGUgVW5pdmVyc2l0eTwvcD4KICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICA8ZGl2IHN0eWxlPSJmb250LXNpemU6IDEycHg7IGNvbG9yOiAjNDc1NTY5OyBtYXJnaW4tYm90dG9tOiA4cHg7Ij4KICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj7wn5ONIDxiPkxvY2F0aW9uOjwvYj4gQ2VkYXJ2aWxsZSwgT0g8L2Rpdj4KICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj7wn5OFIDxiPkRlYWRsaW5lOjwvYj4gT3BlbiB1bnRpbCBmaWxsZWQ8L2Rpdj4KICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj7wn5KwIDxiPlNhbGFyeTo8L2I+IE5vdCBzcGVjaWZpZWQ8L2Rpdj4KICAgICAgICAgICAgICAgICAgICA8L2Rpdj4KCiAgICAgICAgICAgICAgICAgICAgPGRpdiBzdHlsZT0iYmFja2dyb3VuZDogI2Y4ZmFmYzsgYm9yZGVyLWxlZnQ6IDNweCBzb2xpZCAjM2I4MmY2OyBwYWRkaW5nOiA2cHggMTBweDsgbWFyZ2luLWJvdHRvbTogMTJweDsgZm9udC1zaXplOiAxMnB4OyBjb2xvcjogIzMzNDE1NTsgbGluZS1oZWlnaHQ6IDEuNDsiPgogICAgICAgICAgICAgICAgICAgICAgICA8Yj5TdW1tYXJ5OjwvYj48YnI+QXNzaXN0YW50L0Fzc29jaWF0ZSBQcm9mZXNzb3Igb2YgQ2l2aWwgRW5naW5lZXJpbmcgQ2VkYXJ2aWxsZSBVbml2ZXJzaXR5IENlZGFydmlsbGUsIE9IIENpdmlsIGFuZCBFbnZpcm9ubWVudGFsIEVuZ2luZWVyaW5nIFBvc3RlZCAxMCBkYXlzIGFnbyBQcmlvcml0eQogICAgICAgICAgICAgICAgICAgIDwvZGl2PgoKICAgICAgICAgICAgICAgICAgICA8YSBocmVmPSJodHRwczovL3d3dy5oaWdoZXJlZGpvYnMuY29tL3NlYXJjaC9kZXRhaWxzLmNmbT9Kb2JDb2RlPTE3OTU0NDI5MCZhbXA7VGl0bGU9QXNzaXN0YW50JTJGQXNzb2NpYXRlJTIwUHJvZmVzc29yJTIwb2YlMjBDaXZpbCUyMEVuZ2luZWVyaW5nIiB0YXJnZXQ9Il9ibGFuayIgc3R5bGU9ImRpc3BsYXk6IGJsb2NrOyB0ZXh0LWFsaWduOiBjZW50ZXI7IGJhY2tncm91bmQ6ICMyNTYzZWI7IGNvbG9yOiB3aGl0ZTsgdGV4dC1kZWNvcmF0aW9uOiBub25lOyBwYWRkaW5nOiA4cHggMTJweDsgYm9yZGVyLXJhZGl1czogNnB4OyBmb250LXNpemU6IDEzcHg7IGZvbnQtd2VpZ2h0OiBib2xkOyI+CiAgICAgICAgICAgICAgICAgICAgICAgIFZpZXcgRnVsbCBKb2IgUG9zdGluZyDihpIKICAgICAgICAgICAgICAgICAgICA8L2E+CiAgICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICAgIA==" width="320" style="border:none !important;" height="310"></iframe>`)[0];
+                popup_db51db4bc0ac0aa217e1972f29b98a37.setContent(i_frame_67f338ce84e47542ced1f2dea325dfac);
+            
+        
+
+        marker_0d6dcc6cd644a665bfb32b979bb7a9a0.bindPopup(popup_db51db4bc0ac0aa217e1972f29b98a37)
+        ;
+
+        
+    
+    
+            marker_0d6dcc6cd644a665bfb32b979bb7a9a0.bindTooltip(
+                `<div>
+                     Cedarville University: Assistant/Associate Professor of Civil Engineering
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_0d6dcc6cd644a665bfb32b979bb7a9a0.setIcon(icon_2e9fdb6b2a4f045e07e62fc85208d450);
+            
+    
+            var marker_ac6c77559659898755a07b9d2d98d019 = L.marker(
+                [32.7315155, -97.1171533],
+                {
+}
+            ).addTo(marker_cluster_1868c6db110904dcca799ce0a77e8b9d);
+        
+    
+            var icon_705863e04db03aa2127ae2b262aaf1e6 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "graduation-cap",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_28cd3eccb90afd47e10f731880bfefbe = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var i_frame_850e26bd26643dd3663a6a8e8208b065 = $(`<iframe src="data:text/html;charset=utf-8;base64,CiAgICAKICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImZvbnQtZmFtaWx5OiAnU2Vnb2UgVUknLCBUYWhvbWEsIEdlbmV2YSwgVmVyZGFuYSwgc2Fucy1zZXJpZjsgd2lkdGg6IDMwMHB4OyBwYWRkaW5nOiA0cHg7Ij4KICAgICAgICAgICAgICAgICAgICA8c3BhbiBzdHlsZT0iZm9udC1zaXplOiAxMXB4OyBiYWNrZ3JvdW5kOiAjZTBmMmZlOyBjb2xvcjogIzAzNjlhMTsgcGFkZGluZzogMnB4IDhweDsgYm9yZGVyLXJhZGl1czogMTJweDsgZm9udC13ZWlnaHQ6IDYwMDsgdGV4dC10cmFuc2Zvcm06IHVwcGVyY2FzZTsiPgogICAgICAgICAgICAgICAgICAgICAgICBIaWdoZXJFZEpvYnMKICAgICAgICAgICAgICAgICAgICA8L3NwYW4+CiAgICAgICAgICAgICAgICAgICAgPHNwYW4gc3R5bGU9ImZvbnQtc2l6ZTogMTFweDsgYmFja2dyb3VuZDogI2ZlZjNjNzsgY29sb3I6ICM5MjQwMGU7IHBhZGRpbmc6IDJweCA4cHg7IGJvcmRlci1yYWRpdXM6IDEycHg7IGZvbnQtd2VpZ2h0OiA2MDA7IG1hcmdpbi1sZWZ0OiA0cHg7Ij4KICAgICAgICAgICAgICAgICAgICAgICAgVW5zcGVjaWZpZWQKICAgICAgICAgICAgICAgICAgICA8L3NwYW4+CiAgICAgICAgICAgICAgICAgICAgPGgzIHN0eWxlPSJtYXJnaW46IDhweCAwIDRweCAwOyBmb250LXNpemU6IDE1cHg7IGNvbG9yOiAjMGYxNzJhOyBsaW5lLWhlaWdodDogMS4zOyI+QXNzaXN0YW50IFByb2Zlc3NvcjwvaDM+CiAgICAgICAgICAgICAgICAgICAgPHAgc3R5bGU9Im1hcmdpbjogMCAwIDhweCAwOyBmb250LXNpemU6IDEzcHg7IGZvbnQtd2VpZ2h0OiBib2xkOyBjb2xvcjogIzI1NjNlYjsiPvCfj5vvuI8gVW5pdmVyc2l0eSBvZiBUZXhhcyBhdCBBcmxpbmd0b248L3A+CiAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgPGRpdiBzdHlsZT0iZm9udC1zaXplOiAxMnB4OyBjb2xvcjogIzQ3NTU2OTsgbWFyZ2luLWJvdHRvbTogOHB4OyI+CiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+8J+TjSA8Yj5Mb2NhdGlvbjo8L2I+IEFybGluZ3RvbiwgVFg8L2Rpdj4KICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj7wn5OFIDxiPkRlYWRsaW5lOjwvYj4gT3BlbiB1bnRpbCBmaWxsZWQ8L2Rpdj4KICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj7wn5KwIDxiPlNhbGFyeTo8L2I+IE5vdCBzcGVjaWZpZWQ8L2Rpdj4KICAgICAgICAgICAgICAgICAgICA8L2Rpdj4KCiAgICAgICAgICAgICAgICAgICAgPGRpdiBzdHlsZT0iYmFja2dyb3VuZDogI2Y4ZmFmYzsgYm9yZGVyLWxlZnQ6IDNweCBzb2xpZCAjM2I4MmY2OyBwYWRkaW5nOiA2cHggMTBweDsgbWFyZ2luLWJvdHRvbTogMTJweDsgZm9udC1zaXplOiAxMnB4OyBjb2xvcjogIzMzNDE1NTsgbGluZS1oZWlnaHQ6IDEuNDsiPgogICAgICAgICAgICAgICAgICAgICAgICA8Yj5TdW1tYXJ5OjwvYj48YnI+QXNzaXN0YW50IFByb2Zlc3NvciBVbml2ZXJzaXR5IG9mIFRleGFzIGF0IEFybGluZ3RvbiBBcmxpbmd0b24sIFRYIFB1YmxpYyBBZG1pbmlzdHJhdGlvbiBhbmQgUG9saWN5IFBvc3RlZCBUb2RheQogICAgICAgICAgICAgICAgICAgIDwvZGl2PgoKICAgICAgICAgICAgICAgICAgICA8YSBocmVmPSJodHRwczovL3d3dy5oaWdoZXJlZGpvYnMuY29tL3NlYXJjaC9kZXRhaWxzLmNmbT9Kb2JDb2RlPTE3OTU1MzQ3MiZhbXA7VGl0bGU9QXNzaXN0YW50JTIwUHJvZmVzc29yIiB0YXJnZXQ9Il9ibGFuayIgc3R5bGU9ImRpc3BsYXk6IGJsb2NrOyB0ZXh0LWFsaWduOiBjZW50ZXI7IGJhY2tncm91bmQ6ICMyNTYzZWI7IGNvbG9yOiB3aGl0ZTsgdGV4dC1kZWNvcmF0aW9uOiBub25lOyBwYWRkaW5nOiA4cHggMTJweDsgYm9yZGVyLXJhZGl1czogNnB4OyBmb250LXNpemU6IDEzcHg7IGZvbnQtd2VpZ2h0OiBib2xkOyI+CiAgICAgICAgICAgICAgICAgICAgICAgIFZpZXcgRnVsbCBKb2IgUG9zdGluZyDihpIKICAgICAgICAgICAgICAgICAgICA8L2E+CiAgICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICAgIA==" width="320" style="border:none !important;" height="310"></iframe>`)[0];
+                popup_28cd3eccb90afd47e10f731880bfefbe.setContent(i_frame_850e26bd26643dd3663a6a8e8208b065);
+            
+        
+
+        marker_ac6c77559659898755a07b9d2d98d019.bindPopup(popup_28cd3eccb90afd47e10f731880bfefbe)
+        ;
+
+        
+    
+    
+            marker_ac6c77559659898755a07b9d2d98d019.bindTooltip(
+                `<div>
+                     University of Texas at Arlington: Assistant Professor
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_ac6c77559659898755a07b9d2d98d019.setIcon(icon_705863e04db03aa2127ae2b262aaf1e6);
+            
+    
+            var marker_091c942c6890c1fc9f62a874d12906fa = L.marker(
+                [39.5442688, -119.8163105],
+                {
+}
+            ).addTo(marker_cluster_1868c6db110904dcca799ce0a77e8b9d);
+        
+    
+            var icon_c3a8fcc40b3393cf70540f0e7062986e = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "graduation-cap",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_5e1a532dd44dc3951d3775e5ffe70092 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var i_frame_25fafeb1f8a330013f7c97c2e9a193ec = $(`<iframe src="data:text/html;charset=utf-8;base64,CiAgICAKICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImZvbnQtZmFtaWx5OiAnU2Vnb2UgVUknLCBUYWhvbWEsIEdlbmV2YSwgVmVyZGFuYSwgc2Fucy1zZXJpZjsgd2lkdGg6IDMwMHB4OyBwYWRkaW5nOiA0cHg7Ij4KICAgICAgICAgICAgICAgICAgICA8c3BhbiBzdHlsZT0iZm9udC1zaXplOiAxMXB4OyBiYWNrZ3JvdW5kOiAjZTBmMmZlOyBjb2xvcjogIzAzNjlhMTsgcGFkZGluZzogMnB4IDhweDsgYm9yZGVyLXJhZGl1czogMTJweDsgZm9udC13ZWlnaHQ6IDYwMDsgdGV4dC10cmFuc2Zvcm06IHVwcGVyY2FzZTsiPgogICAgICAgICAgICAgICAgICAgICAgICBIaWdoZXJFZEpvYnMKICAgICAgICAgICAgICAgICAgICA8L3NwYW4+CiAgICAgICAgICAgICAgICAgICAgPHNwYW4gc3R5bGU9ImZvbnQtc2l6ZTogMTFweDsgYmFja2dyb3VuZDogI2ZlZjNjNzsgY29sb3I6ICM5MjQwMGU7IHBhZGRpbmc6IDJweCA4cHg7IGJvcmRlci1yYWRpdXM6IDEycHg7IGZvbnQtd2VpZ2h0OiA2MDA7IG1hcmdpbi1sZWZ0OiA0cHg7Ij4KICAgICAgICAgICAgICAgICAgICAgICAgVW5zcGVjaWZpZWQKICAgICAgICAgICAgICAgICAgICA8L3NwYW4+CiAgICAgICAgICAgICAgICAgICAgPGgzIHN0eWxlPSJtYXJnaW46IDhweCAwIDRweCAwOyBmb250LXNpemU6IDE1cHg7IGNvbG9yOiAjMGYxNzJhOyBsaW5lLWhlaWdodDogMS4zOyI+QXNzaXN0YW50IFByb2Zlc3NvciwgRW5nbGlzaCAoRmlsbSBTdHVkaWVzIGFuZCBDb250ZW1wb3JhcnkgVS5TLiBMaXRlcmF0dXJlKTwvaDM+CiAgICAgICAgICAgICAgICAgICAgPHAgc3R5bGU9Im1hcmdpbjogMCAwIDhweCAwOyBmb250LXNpemU6IDEzcHg7IGZvbnQtd2VpZ2h0OiBib2xkOyBjb2xvcjogIzI1NjNlYjsiPvCfj5vvuI8gVW5pdmVyc2l0eSBvZiBOZXZhZGEgUmVubzwvcD4KICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICA8ZGl2IHN0eWxlPSJmb250LXNpemU6IDEycHg7IGNvbG9yOiAjNDc1NTY5OyBtYXJnaW4tYm90dG9tOiA4cHg7Ij4KICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj7wn5ONIDxiPkxvY2F0aW9uOjwvYj4gUmVubywgTlY8L2Rpdj4KICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj7wn5OFIDxiPkRlYWRsaW5lOjwvYj4gT3BlbiB1bnRpbCBmaWxsZWQ8L2Rpdj4KICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj7wn5KwIDxiPlNhbGFyeTo8L2I+IE5vdCBzcGVjaWZpZWQ8L2Rpdj4KICAgICAgICAgICAgICAgICAgICA8L2Rpdj4KCiAgICAgICAgICAgICAgICAgICAgPGRpdiBzdHlsZT0iYmFja2dyb3VuZDogI2Y4ZmFmYzsgYm9yZGVyLWxlZnQ6IDNweCBzb2xpZCAjM2I4MmY2OyBwYWRkaW5nOiA2cHggMTBweDsgbWFyZ2luLWJvdHRvbTogMTJweDsgZm9udC1zaXplOiAxMnB4OyBjb2xvcjogIzMzNDE1NTsgbGluZS1oZWlnaHQ6IDEuNDsiPgogICAgICAgICAgICAgICAgICAgICAgICA8Yj5TdW1tYXJ5OjwvYj48YnI+QXNzaXN0YW50IFByb2Zlc3NvciwgRW5nbGlzaCAoRmlsbSBTdHVkaWVzIGFuZCBDb250ZW1wb3JhcnkgVS5TLiBMaXRlcmF0dXJlKSBVbml2ZXJzaXR5IG9mIE5ldmFkYSBSZW5vIFJlbm8sIE5WICQ2OCwwMDAgLSAkNzMsMDAwIHBlciB5ZWFyIEVuZ2xpc2ggYW5kIExpdGVyYXR1cmUgUG9zdGVkIFRvZGF5CiAgICAgICAgICAgICAgICAgICAgPC9kaXY+CgogICAgICAgICAgICAgICAgICAgIDxhIGhyZWY9Imh0dHBzOi8vd3d3LmhpZ2hlcmVkam9icy5jb20vc2VhcmNoL2RldGFpbHMuY2ZtP0pvYkNvZGU9MTc5NTUzMjI5JmFtcDtUaXRsZT1Bc3Npc3RhbnQlMjBQcm9mZXNzb3IlMkMlMjBFbmdsaXNoJTIwJTI4RmlsbSUyMFN0dWRpZXMlMjBhbmQlMjBDb250ZW1wb3JhcnklMjBVJTJFUyUyRSUyMExpdGVyYXR1cmUlMjkiIHRhcmdldD0iX2JsYW5rIiBzdHlsZT0iZGlzcGxheTogYmxvY2s7IHRleHQtYWxpZ246IGNlbnRlcjsgYmFja2dyb3VuZDogIzI1NjNlYjsgY29sb3I6IHdoaXRlOyB0ZXh0LWRlY29yYXRpb246IG5vbmU7IHBhZGRpbmc6IDhweCAxMnB4OyBib3JkZXItcmFkaXVzOiA2cHg7IGZvbnQtc2l6ZTogMTNweDsgZm9udC13ZWlnaHQ6IGJvbGQ7Ij4KICAgICAgICAgICAgICAgICAgICAgICAgVmlldyBGdWxsIEpvYiBQb3N0aW5nIOKGkgogICAgICAgICAgICAgICAgICAgIDwvYT4KICAgICAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICAgICAg" width="320" style="border:none !important;" height="310"></iframe>`)[0];
+                popup_5e1a532dd44dc3951d3775e5ffe70092.setContent(i_frame_25fafeb1f8a330013f7c97c2e9a193ec);
+            
+        
+
+        marker_091c942c6890c1fc9f62a874d12906fa.bindPopup(popup_5e1a532dd44dc3951d3775e5ffe70092)
+        ;
+
+        
+    
+    
+            marker_091c942c6890c1fc9f62a874d12906fa.bindTooltip(
+                `<div>
+                     University of Nevada Reno: Assistant Professor, English (Film Studies and Contemporary U.S. Literature)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_091c942c6890c1fc9f62a874d12906fa.setIcon(icon_c3a8fcc40b3393cf70540f0e7062986e);
+            
+    
+            var marker_9a2e8f277c48e793b8d56ddfd907f949 = L.marker(
+                [43.0802745, -89.4309587],
+                {
+}
+            ).addTo(marker_cluster_1868c6db110904dcca799ce0a77e8b9d);
+        
+    
+            var icon_b54120963fe9468faab5074d5f04cfd5 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "graduation-cap",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_d1cb5a7813c2efabbb686060fe040a09 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var i_frame_f73600e4643fbfb73402bb748a0b0dfc = $(`<iframe src="data:text/html;charset=utf-8;base64,CiAgICAKICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImZvbnQtZmFtaWx5OiAnU2Vnb2UgVUknLCBUYWhvbWEsIEdlbmV2YSwgVmVyZGFuYSwgc2Fucy1zZXJpZjsgd2lkdGg6IDMwMHB4OyBwYWRkaW5nOiA0cHg7Ij4KICAgICAgICAgICAgICAgICAgICA8c3BhbiBzdHlsZT0iZm9udC1zaXplOiAxMXB4OyBiYWNrZ3JvdW5kOiAjZTBmMmZlOyBjb2xvcjogIzAzNjlhMTsgcGFkZGluZzogMnB4IDhweDsgYm9yZGVyLXJhZGl1czogMTJweDsgZm9udC13ZWlnaHQ6IDYwMDsgdGV4dC10cmFuc2Zvcm06IHVwcGVyY2FzZTsiPgogICAgICAgICAgICAgICAgICAgICAgICBIaWdoZXJFZEpvYnMKICAgICAgICAgICAgICAgICAgICA8L3NwYW4+CiAgICAgICAgICAgICAgICAgICAgPHNwYW4gc3R5bGU9ImZvbnQtc2l6ZTogMTFweDsgYmFja2dyb3VuZDogI2ZlZjNjNzsgY29sb3I6ICM5MjQwMGU7IHBhZGRpbmc6IDJweCA4cHg7IGJvcmRlci1yYWRpdXM6IDEycHg7IGZvbnQtd2VpZ2h0OiA2MDA7IG1hcmdpbi1sZWZ0OiA0cHg7Ij4KICAgICAgICAgICAgICAgICAgICAgICAgVW5zcGVjaWZpZWQKICAgICAgICAgICAgICAgICAgICA8L3NwYW4+CiAgICAgICAgICAgICAgICAgICAgPGgzIHN0eWxlPSJtYXJnaW46IDhweCAwIDRweCAwOyBmb250LXNpemU6IDE1cHg7IGNvbG9yOiAjMGYxNzJhOyBsaW5lLWhlaWdodDogMS4zOyI+QXNzaXN0YW50IFByb2Zlc3NvciBvZiBQaGFybWFjZXV0aWNhbCBTY2llbmNlcyAtIERydWcgRGVsaXZlcnk8L2gzPgogICAgICAgICAgICAgICAgICAgIDxwIHN0eWxlPSJtYXJnaW46IDAgMCA4cHggMDsgZm9udC1zaXplOiAxM3B4OyBmb250LXdlaWdodDogYm9sZDsgY29sb3I6ICMyNTYzZWI7Ij7wn4+b77iPIFVuaXZlcnNpdHkgb2YgV2lzY29uc2luIC0gTWFkaXNvbjwvcD4KICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICA8ZGl2IHN0eWxlPSJmb250LXNpemU6IDEycHg7IGNvbG9yOiAjNDc1NTY5OyBtYXJnaW4tYm90dG9tOiA4cHg7Ij4KICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj7wn5ONIDxiPkxvY2F0aW9uOjwvYj4gTWFkaXNvbiwgV0k8L2Rpdj4KICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj7wn5OFIDxiPkRlYWRsaW5lOjwvYj4gT3BlbiB1bnRpbCBmaWxsZWQ8L2Rpdj4KICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj7wn5KwIDxiPlNhbGFyeTo8L2I+IE5vdCBzcGVjaWZpZWQ8L2Rpdj4KICAgICAgICAgICAgICAgICAgICA8L2Rpdj4KCiAgICAgICAgICAgICAgICAgICAgPGRpdiBzdHlsZT0iYmFja2dyb3VuZDogI2Y4ZmFmYzsgYm9yZGVyLWxlZnQ6IDNweCBzb2xpZCAjM2I4MmY2OyBwYWRkaW5nOiA2cHggMTBweDsgbWFyZ2luLWJvdHRvbTogMTJweDsgZm9udC1zaXplOiAxMnB4OyBjb2xvcjogIzMzNDE1NTsgbGluZS1oZWlnaHQ6IDEuNDsiPgogICAgICAgICAgICAgICAgICAgICAgICA8Yj5TdW1tYXJ5OjwvYj48YnI+QXNzaXN0YW50IFByb2Zlc3NvciBvZiBQaGFybWFjZXV0aWNhbCBTY2llbmNlcyAtIERydWcgRGVsaXZlcnkgVW5pdmVyc2l0eSBvZiBXaXNjb25zaW4gLSBNYWRpc29uIE1hZGlzb24sIFdJIFBoYXJtYWN5IGFuZCBQaGFybWFjb2xvZ3kgUG9zdGVkIFRvZGF5IE1pbGl0YXJ5CiAgICAgICAgICAgICAgICAgICAgPC9kaXY+CgogICAgICAgICAgICAgICAgICAgIDxhIGhyZWY9Imh0dHBzOi8vd3d3LmhpZ2hlcmVkam9icy5jb20vc2VhcmNoL2RldGFpbHMuY2ZtP0pvYkNvZGU9MTc5NTUzMTExJmFtcDtUaXRsZT1Bc3Npc3RhbnQlMjBQcm9mZXNzb3IlMjBvZiUyMFBoYXJtYWNldXRpY2FsJTIwU2NpZW5jZXMlMjAlMkQlMjBEcnVnJTIwRGVsaXZlcnkiIHRhcmdldD0iX2JsYW5rIiBzdHlsZT0iZGlzcGxheTogYmxvY2s7IHRleHQtYWxpZ246IGNlbnRlcjsgYmFja2dyb3VuZDogIzI1NjNlYjsgY29sb3I6IHdoaXRlOyB0ZXh0LWRlY29yYXRpb246IG5vbmU7IHBhZGRpbmc6IDhweCAxMnB4OyBib3JkZXItcmFkaXVzOiA2cHg7IGZvbnQtc2l6ZTogMTNweDsgZm9udC13ZWlnaHQ6IGJvbGQ7Ij4KICAgICAgICAgICAgICAgICAgICAgICAgVmlldyBGdWxsIEpvYiBQb3N0aW5nIOKGkgogICAgICAgICAgICAgICAgICAgIDwvYT4KICAgICAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICAgICAg" width="320" style="border:none !important;" height="310"></iframe>`)[0];
+                popup_d1cb5a7813c2efabbb686060fe040a09.setContent(i_frame_f73600e4643fbfb73402bb748a0b0dfc);
+            
+        
+
+        marker_9a2e8f277c48e793b8d56ddfd907f949.bindPopup(popup_d1cb5a7813c2efabbb686060fe040a09)
+        ;
+
+        
+    
+    
+            marker_9a2e8f277c48e793b8d56ddfd907f949.bindTooltip(
+                `<div>
+                     University of Wisconsin - Madison: Assistant Professor of Pharmaceutical Sciences - Drug Delivery
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_9a2e8f277c48e793b8d56ddfd907f949.setIcon(icon_b54120963fe9468faab5074d5f04cfd5);
+            
+    
+            var marker_167b86c068149ff7346a64271e1b0c7e = L.marker(
+                [31.7601001, -106.4870476],
+                {
+}
+            ).addTo(marker_cluster_1868c6db110904dcca799ce0a77e8b9d);
+        
+    
+            var icon_5f1e9c2cb8beff560752aefaa0b2933c = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "graduation-cap",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_1cc66906256cce25e2ac7d08d3152b2d = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var i_frame_ffa4276040f8f12cb04b573ba34edcbd = $(`<iframe src="data:text/html;charset=utf-8;base64,CiAgICAKICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImZvbnQtZmFtaWx5OiAnU2Vnb2UgVUknLCBUYWhvbWEsIEdlbmV2YSwgVmVyZGFuYSwgc2Fucy1zZXJpZjsgd2lkdGg6IDMwMHB4OyBwYWRkaW5nOiA0cHg7Ij4KICAgICAgICAgICAgICAgICAgICA8c3BhbiBzdHlsZT0iZm9udC1zaXplOiAxMXB4OyBiYWNrZ3JvdW5kOiAjZTBmMmZlOyBjb2xvcjogIzAzNjlhMTsgcGFkZGluZzogMnB4IDhweDsgYm9yZGVyLXJhZGl1czogMTJweDsgZm9udC13ZWlnaHQ6IDYwMDsgdGV4dC10cmFuc2Zvcm06IHVwcGVyY2FzZTsiPgogICAgICAgICAgICAgICAgICAgICAgICBIaWdoZXJFZEpvYnMKICAgICAgICAgICAgICAgICAgICA8L3NwYW4+CiAgICAgICAgICAgICAgICAgICAgPHNwYW4gc3R5bGU9ImZvbnQtc2l6ZTogMTFweDsgYmFja2dyb3VuZDogI2ZlZjNjNzsgY29sb3I6ICM5MjQwMGU7IHBhZGRpbmc6IDJweCA4cHg7IGJvcmRlci1yYWRpdXM6IDEycHg7IGZvbnQtd2VpZ2h0OiA2MDA7IG1hcmdpbi1sZWZ0OiA0cHg7Ij4KICAgICAgICAgICAgICAgICAgICAgICAgVW5zcGVjaWZpZWQKICAgICAgICAgICAgICAgICAgICA8L3NwYW4+CiAgICAgICAgICAgICAgICAgICAgPGgzIHN0eWxlPSJtYXJnaW46IDhweCAwIDRweCAwOyBmb250LXNpemU6IDE1cHg7IGNvbG9yOiAjMGYxNzJhOyBsaW5lLWhlaWdodDogMS4zOyI+QXNzaXN0YW50L0Fzc29jaWF0ZSBQcm9mZXNzb3Igb2YgTWV0YWxsdXJnaWNhbCwgTWF0ZXJpYWxzIGFuZCBCaW9tZWRpY2FsIEVuZ2luZWVyaW5nPC9oMz4KICAgICAgICAgICAgICAgICAgICA8cCBzdHlsZT0ibWFyZ2luOiAwIDAgOHB4IDA7IGZvbnQtc2l6ZTogMTNweDsgZm9udC13ZWlnaHQ6IGJvbGQ7IGNvbG9yOiAjMjU2M2ViOyI+8J+Pm++4jyBVbml2ZXJzaXR5IG9mIFRleGFzIGF0IEVsIFBhc288L3A+CiAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgPGRpdiBzdHlsZT0iZm9udC1zaXplOiAxMnB4OyBjb2xvcjogIzQ3NTU2OTsgbWFyZ2luLWJvdHRvbTogOHB4OyI+CiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+8J+TjSA8Yj5Mb2NhdGlvbjo8L2I+IEVsIFBhc28sIFRYPC9kaXY+CiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+8J+ThSA8Yj5EZWFkbGluZTo8L2I+IE9wZW4gdW50aWwgZmlsbGVkPC9kaXY+CiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+8J+SsCA8Yj5TYWxhcnk6PC9iPiBOb3Qgc3BlY2lmaWVkPC9kaXY+CiAgICAgICAgICAgICAgICAgICAgPC9kaXY+CgogICAgICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImJhY2tncm91bmQ6ICNmOGZhZmM7IGJvcmRlci1sZWZ0OiAzcHggc29saWQgIzNiODJmNjsgcGFkZGluZzogNnB4IDEwcHg7IG1hcmdpbi1ib3R0b206IDEycHg7IGZvbnQtc2l6ZTogMTJweDsgY29sb3I6ICMzMzQxNTU7IGxpbmUtaGVpZ2h0OiAxLjQ7Ij4KICAgICAgICAgICAgICAgICAgICAgICAgPGI+U3VtbWFyeTo8L2I+PGJyPkFzc2lzdGFudC9Bc3NvY2lhdGUgUHJvZmVzc29yIG9mIE1ldGFsbHVyZ2ljYWwsIE1hdGVyaWFscyBhbmQgQmlvbWVkaWNhbCBFbmdpbmVlcmluZyBVbml2ZXJzaXR5IG9mIFRleGFzIGF0IEVsIFBhc28gRWwgUGFzbywgVFggQmlvbG9naWNhbCBhbmQgQmlvbWVkaWNhbCBFbmdpbmVlcmluZyBQb3N0ZWQgVG9kYXkKICAgICAgICAgICAgICAgICAgICA8L2Rpdj4KCiAgICAgICAgICAgICAgICAgICAgPGEgaHJlZj0iaHR0cHM6Ly93d3cuaGlnaGVyZWRqb2JzLmNvbS9zZWFyY2gvZGV0YWlscy5jZm0/Sm9iQ29kZT0xNzk1NTI2MDImYW1wO1RpdGxlPUFzc2lzdGFudCUyRkFzc29jaWF0ZSUyMFByb2Zlc3NvciUyMG9mJTIwTWV0YWxsdXJnaWNhbCUyQyUyME1hdGVyaWFscyUyMGFuZCUyMEJpb21lZGljYWwlMjBFbmdpbmVlcmluZyIgdGFyZ2V0PSJfYmxhbmsiIHN0eWxlPSJkaXNwbGF5OiBibG9jazsgdGV4dC1hbGlnbjogY2VudGVyOyBiYWNrZ3JvdW5kOiAjMjU2M2ViOyBjb2xvcjogd2hpdGU7IHRleHQtZGVjb3JhdGlvbjogbm9uZTsgcGFkZGluZzogOHB4IDEycHg7IGJvcmRlci1yYWRpdXM6IDZweDsgZm9udC1zaXplOiAxM3B4OyBmb250LXdlaWdodDogYm9sZDsiPgogICAgICAgICAgICAgICAgICAgICAgICBWaWV3IEZ1bGwgSm9iIFBvc3Rpbmcg4oaSCiAgICAgICAgICAgICAgICAgICAgPC9hPgogICAgICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgICAgICA=" width="320" style="border:none !important;" height="310"></iframe>`)[0];
+                popup_1cc66906256cce25e2ac7d08d3152b2d.setContent(i_frame_ffa4276040f8f12cb04b573ba34edcbd);
+            
+        
+
+        marker_167b86c068149ff7346a64271e1b0c7e.bindPopup(popup_1cc66906256cce25e2ac7d08d3152b2d)
+        ;
+
+        
+    
+    
+            marker_167b86c068149ff7346a64271e1b0c7e.bindTooltip(
+                `<div>
+                     University of Texas at El Paso: Assistant/Associate Professor of Metallurgical, Materials and Biomedical Engineering
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_167b86c068149ff7346a64271e1b0c7e.setIcon(icon_5f1e9c2cb8beff560752aefaa0b2933c);
+            
+    
+            var marker_2a2d6947306b58c0da28c77082ffa6dc = L.marker(
+                [39.1318888, -84.5157831],
+                {
+}
+            ).addTo(marker_cluster_1868c6db110904dcca799ce0a77e8b9d);
+        
+    
+            var icon_f40a8d1e8ce3a96b8ab95778bbd38fda = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "graduation-cap",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_18de79ac1309178a06bc3181a3b4e9ec = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var i_frame_1f9f2ad328ea46b367bb419b43c7fe9e = $(`<iframe src="data:text/html;charset=utf-8;base64,CiAgICAKICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImZvbnQtZmFtaWx5OiAnU2Vnb2UgVUknLCBUYWhvbWEsIEdlbmV2YSwgVmVyZGFuYSwgc2Fucy1zZXJpZjsgd2lkdGg6IDMwMHB4OyBwYWRkaW5nOiA0cHg7Ij4KICAgICAgICAgICAgICAgICAgICA8c3BhbiBzdHlsZT0iZm9udC1zaXplOiAxMXB4OyBiYWNrZ3JvdW5kOiAjZTBmMmZlOyBjb2xvcjogIzAzNjlhMTsgcGFkZGluZzogMnB4IDhweDsgYm9yZGVyLXJhZGl1czogMTJweDsgZm9udC13ZWlnaHQ6IDYwMDsgdGV4dC10cmFuc2Zvcm06IHVwcGVyY2FzZTsiPgogICAgICAgICAgICAgICAgICAgICAgICBMaW5rZWRJbgogICAgICAgICAgICAgICAgICAgIDwvc3Bhbj4KICAgICAgICAgICAgICAgICAgICA8c3BhbiBzdHlsZT0iZm9udC1zaXplOiAxMXB4OyBiYWNrZ3JvdW5kOiAjZmVmM2M3OyBjb2xvcjogIzkyNDAwZTsgcGFkZGluZzogMnB4IDhweDsgYm9yZGVyLXJhZGl1czogMTJweDsgZm9udC13ZWlnaHQ6IDYwMDsgbWFyZ2luLWxlZnQ6IDRweDsiPgogICAgICAgICAgICAgICAgICAgICAgICBVbnNwZWNpZmllZAogICAgICAgICAgICAgICAgICAgIDwvc3Bhbj4KICAgICAgICAgICAgICAgICAgICA8aDMgc3R5bGU9Im1hcmdpbjogOHB4IDAgNHB4IDA7IGZvbnQtc2l6ZTogMTVweDsgY29sb3I6ICMwZjE3MmE7IGxpbmUtaGVpZ2h0OiAxLjM7Ij5Bc3Npc3RhbnQvQXNzb2NpYXRlL0Z1bGwgUHJvZmVzc29yLCBUcmFuc3BvcnRhdGlvbiBFbmdpbmVlcmluZyBhbmQgU3lzdGVtczwvaDM+CiAgICAgICAgICAgICAgICAgICAgPHAgc3R5bGU9Im1hcmdpbjogMCAwIDhweCAwOyBmb250LXNpemU6IDEzcHg7IGZvbnQtd2VpZ2h0OiBib2xkOyBjb2xvcjogIzI1NjNlYjsiPvCfj5vvuI8gVW5pdmVyc2l0eSBvZiBDaW5jaW5uYXRpPC9wPgogICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImZvbnQtc2l6ZTogMTJweDsgY29sb3I6ICM0NzU1Njk7IG1hcmdpbi1ib3R0b206IDhweDsiPgogICAgICAgICAgICAgICAgICAgICAgICA8ZGl2PvCfk40gPGI+TG9jYXRpb246PC9iPiBDaW5jaW5uYXRpLCBPSDwvZGl2PgogICAgICAgICAgICAgICAgICAgICAgICA8ZGl2PvCfk4UgPGI+RGVhZGxpbmU6PC9iPiBQb3N0ZWQgMyBtb250aHMgYWdvPC9kaXY+CiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+8J+SsCA8Yj5TYWxhcnk6PC9iPiBOb3Qgc3BlY2lmaWVkPC9kaXY+CiAgICAgICAgICAgICAgICAgICAgPC9kaXY+CgogICAgICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImJhY2tncm91bmQ6ICNmOGZhZmM7IGJvcmRlci1sZWZ0OiAzcHggc29saWQgIzNiODJmNjsgcGFkZGluZzogNnB4IDEwcHg7IG1hcmdpbi1ib3R0b206IDEycHg7IGZvbnQtc2l6ZTogMTJweDsgY29sb3I6ICMzMzQxNTU7IGxpbmUtaGVpZ2h0OiAxLjQ7Ij4KICAgICAgICAgICAgICAgICAgICAgICAgPGI+U3VtbWFyeTo8L2I+PGJyPkFzc2lzdGFudC9Bc3NvY2lhdGUvRnVsbCBQcm9mZXNzb3IsIFRyYW5zcG9ydGF0aW9uIEVuZ2luZWVyaW5nIGFuZCBTeXN0ZW1zIEFzc2lzdGFudC9Bc3NvY2lhdGUvRnVsbCBQcm9mZXNzb3IsIFRyYW5zcG9ydGF0aW9uIEVuZ2luZWVyaW5nIGFuZCBTeXN0ZW1zIFVuaXZlcnNpdHkgb2YgQ2luY2lubmF0aSBDaW5jaW5uYXRpLCBPSCAzIG1vbnRocyBhLi4uCiAgICAgICAgICAgICAgICAgICAgPC9kaXY+CgogICAgICAgICAgICAgICAgICAgIDxhIGhyZWY9Imh0dHBzOi8vd3d3LmxpbmtlZGluLmNvbS9qb2JzL3ZpZXcvYXNzaXN0YW50LWFzc29jaWF0ZS1mdWxsLXByb2Zlc3Nvci10cmFuc3BvcnRhdGlvbi1lbmdpbmVlcmluZy1hbmQtc3lzdGVtcy1hdC11bml2ZXJzaXR5LW9mLWNpbmNpbm5hdGktNDQxNjc0NDAyNSIgdGFyZ2V0PSJfYmxhbmsiIHN0eWxlPSJkaXNwbGF5OiBibG9jazsgdGV4dC1hbGlnbjogY2VudGVyOyBiYWNrZ3JvdW5kOiAjMjU2M2ViOyBjb2xvcjogd2hpdGU7IHRleHQtZGVjb3JhdGlvbjogbm9uZTsgcGFkZGluZzogOHB4IDEycHg7IGJvcmRlci1yYWRpdXM6IDZweDsgZm9udC1zaXplOiAxM3B4OyBmb250LXdlaWdodDogYm9sZDsiPgogICAgICAgICAgICAgICAgICAgICAgICBWaWV3IEZ1bGwgSm9iIFBvc3Rpbmcg4oaSCiAgICAgICAgICAgICAgICAgICAgPC9hPgogICAgICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgICAgICA=" width="320" style="border:none !important;" height="310"></iframe>`)[0];
+                popup_18de79ac1309178a06bc3181a3b4e9ec.setContent(i_frame_1f9f2ad328ea46b367bb419b43c7fe9e);
+            
+        
+
+        marker_2a2d6947306b58c0da28c77082ffa6dc.bindPopup(popup_18de79ac1309178a06bc3181a3b4e9ec)
+        ;
+
+        
+    
+    
+            marker_2a2d6947306b58c0da28c77082ffa6dc.bindTooltip(
+                `<div>
+                     University of Cincinnati: Assistant/Associate/Full Professor, Transportation Engineering and Systems
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_2a2d6947306b58c0da28c77082ffa6dc.setIcon(icon_f40a8d1e8ce3a96b8ab95778bbd38fda);
+            
+    
+            var marker_4716fe8f1023165907406707b530f2b7 = L.marker(
+                [37.9532435, -91.7742667],
+                {
+}
+            ).addTo(marker_cluster_1868c6db110904dcca799ce0a77e8b9d);
+        
+    
+            var icon_ae745c5833eb0864cb69bb91d1701307 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "graduation-cap",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_1f1d921ccf8bb110ac305b284bb50492 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var i_frame_47bdefa963f28dd0d3d9830d663c020b = $(`<iframe src="data:text/html;charset=utf-8;base64,CiAgICAKICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImZvbnQtZmFtaWx5OiAnU2Vnb2UgVUknLCBUYWhvbWEsIEdlbmV2YSwgVmVyZGFuYSwgc2Fucy1zZXJpZjsgd2lkdGg6IDMwMHB4OyBwYWRkaW5nOiA0cHg7Ij4KICAgICAgICAgICAgICAgICAgICA8c3BhbiBzdHlsZT0iZm9udC1zaXplOiAxMXB4OyBiYWNrZ3JvdW5kOiAjZTBmMmZlOyBjb2xvcjogIzAzNjlhMTsgcGFkZGluZzogMnB4IDhweDsgYm9yZGVyLXJhZGl1czogMTJweDsgZm9udC13ZWlnaHQ6IDYwMDsgdGV4dC10cmFuc2Zvcm06IHVwcGVyY2FzZTsiPgogICAgICAgICAgICAgICAgICAgICAgICBMaW5rZWRJbgogICAgICAgICAgICAgICAgICAgIDwvc3Bhbj4KICAgICAgICAgICAgICAgICAgICA8c3BhbiBzdHlsZT0iZm9udC1zaXplOiAxMXB4OyBiYWNrZ3JvdW5kOiAjZmVmM2M3OyBjb2xvcjogIzkyNDAwZTsgcGFkZGluZzogMnB4IDhweDsgYm9yZGVyLXJhZGl1czogMTJweDsgZm9udC13ZWlnaHQ6IDYwMDsgbWFyZ2luLWxlZnQ6IDRweDsiPgogICAgICAgICAgICAgICAgICAgICAgICBVbnNwZWNpZmllZAogICAgICAgICAgICAgICAgICAgIDwvc3Bhbj4KICAgICAgICAgICAgICAgICAgICA8aDMgc3R5bGU9Im1hcmdpbjogOHB4IDAgNHB4IDA7IGZvbnQtc2l6ZTogMTVweDsgY29sb3I6ICMwZjE3MmE7IGxpbmUtaGVpZ2h0OiAxLjM7Ij5BU1NJU1RBTlQvQVNTT0NJQVRFIFBST0ZFU1NPUiAtIENpdmlsLCBBcmNoaXRlY3R1cmFsIGFuZCBFbnZpcm9ubWVudGFsIEVuZ2luZWVyaW5nICMwMDA5NjUxMjwvaDM+CiAgICAgICAgICAgICAgICAgICAgPHAgc3R5bGU9Im1hcmdpbjogMCAwIDhweCAwOyBmb250LXNpemU6IDEzcHg7IGZvbnQtd2VpZ2h0OiBib2xkOyBjb2xvcjogIzI1NjNlYjsiPvCfj5vvuI8gTWlzc291cmkgVW5pdmVyc2l0eSBvZiBTY2llbmNlIGFuZCBUZWNobm9sb2d5PC9wPgogICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImZvbnQtc2l6ZTogMTJweDsgY29sb3I6ICM0NzU1Njk7IG1hcmdpbi1ib3R0b206IDhweDsiPgogICAgICAgICAgICAgICAgICAgICAgICA8ZGl2PvCfk40gPGI+TG9jYXRpb246PC9iPiBSb2xsYSwgTU88L2Rpdj4KICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj7wn5OFIDxiPkRlYWRsaW5lOjwvYj4gUG9zdGVkIDEgd2VlayBhZ288L2Rpdj4KICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj7wn5KwIDxiPlNhbGFyeTo8L2I+IE5vdCBzcGVjaWZpZWQ8L2Rpdj4KICAgICAgICAgICAgICAgICAgICA8L2Rpdj4KCiAgICAgICAgICAgICAgICAgICAgPGRpdiBzdHlsZT0iYmFja2dyb3VuZDogI2Y4ZmFmYzsgYm9yZGVyLWxlZnQ6IDNweCBzb2xpZCAjM2I4MmY2OyBwYWRkaW5nOiA2cHggMTBweDsgbWFyZ2luLWJvdHRvbTogMTJweDsgZm9udC1zaXplOiAxMnB4OyBjb2xvcjogIzMzNDE1NTsgbGluZS1oZWlnaHQ6IDEuNDsiPgogICAgICAgICAgICAgICAgICAgICAgICA8Yj5TdW1tYXJ5OjwvYj48YnI+QVNTSVNUQU5UL0FTU09DSUFURSBQUk9GRVNTT1IgLSBDaXZpbCwgQXJjaGl0ZWN0dXJhbCBhbmQgRW52aXJvbm1lbnRhbCBFbmdpbmVlcmluZyAjMDAwOTY1MTIgQVNTSVNUQU5UL0FTU09DSUFURSBQUk9GRVNTT1IgLSBDaXZpbCwgQXJjaGl0ZWN0dXJhbCBhbmQgRW52aXJvbm1lbnRhbCBFbmdpbmVlcmluZyAjMDAwOTY1MTIgTWlzc291cmkgVW5pdmUuLi4KICAgICAgICAgICAgICAgICAgICA8L2Rpdj4KCiAgICAgICAgICAgICAgICAgICAgPGEgaHJlZj0iaHR0cHM6Ly93d3cubGlua2VkaW4uY29tL2pvYnMvdmlldy9hc3Npc3RhbnQtYXNzb2NpYXRlLXByb2Zlc3Nvci1jaXZpbC1hcmNoaXRlY3R1cmFsLWFuZC1lbnZpcm9ubWVudGFsLWVuZ2luZWVyaW5nLSUyMzAwMDk2NTEyLWF0LW1pc3NvdXJpLXVuaXZlcnNpdHktb2Ytc2NpZW5jZS1hbmQtdGVjaG5vbG9neS00NDQyMjcxMjQ4IiB0YXJnZXQ9Il9ibGFuayIgc3R5bGU9ImRpc3BsYXk6IGJsb2NrOyB0ZXh0LWFsaWduOiBjZW50ZXI7IGJhY2tncm91bmQ6ICMyNTYzZWI7IGNvbG9yOiB3aGl0ZTsgdGV4dC1kZWNvcmF0aW9uOiBub25lOyBwYWRkaW5nOiA4cHggMTJweDsgYm9yZGVyLXJhZGl1czogNnB4OyBmb250LXNpemU6IDEzcHg7IGZvbnQtd2VpZ2h0OiBib2xkOyI+CiAgICAgICAgICAgICAgICAgICAgICAgIFZpZXcgRnVsbCBKb2IgUG9zdGluZyDihpIKICAgICAgICAgICAgICAgICAgICA8L2E+CiAgICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICAgIA==" width="320" style="border:none !important;" height="310"></iframe>`)[0];
+                popup_1f1d921ccf8bb110ac305b284bb50492.setContent(i_frame_47bdefa963f28dd0d3d9830d663c020b);
+            
+        
+
+        marker_4716fe8f1023165907406707b530f2b7.bindPopup(popup_1f1d921ccf8bb110ac305b284bb50492)
+        ;
+
+        
+    
+    
+            marker_4716fe8f1023165907406707b530f2b7.bindTooltip(
+                `<div>
+                     Missouri University of Science and Technology: ASSISTANT/ASSOCIATE PROFESSOR - Civil, Architectural and Environmental Engineering #00096512
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_4716fe8f1023165907406707b530f2b7.setIcon(icon_ae745c5833eb0864cb69bb91d1701307);
+            
+    
+            var marker_df7e5421e295a02a0a840af4f81ecd92 = L.marker(
+                [40.7683107, -73.964406],
+                {
+}
+            ).addTo(marker_cluster_1868c6db110904dcca799ce0a77e8b9d);
+        
+    
+            var icon_f07e31ce056308a0bd05a111e166d378 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "graduation-cap",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_adf28fe11056fb9449aa796607d3d0f1 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var i_frame_66867588320836dcde192d21bf59dd73 = $(`<iframe src="data:text/html;charset=utf-8;base64,CiAgICAKICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImZvbnQtZmFtaWx5OiAnU2Vnb2UgVUknLCBUYWhvbWEsIEdlbmV2YSwgVmVyZGFuYSwgc2Fucy1zZXJpZjsgd2lkdGg6IDMwMHB4OyBwYWRkaW5nOiA0cHg7Ij4KICAgICAgICAgICAgICAgICAgICA8c3BhbiBzdHlsZT0iZm9udC1zaXplOiAxMXB4OyBiYWNrZ3JvdW5kOiAjZTBmMmZlOyBjb2xvcjogIzAzNjlhMTsgcGFkZGluZzogMnB4IDhweDsgYm9yZGVyLXJhZGl1czogMTJweDsgZm9udC13ZWlnaHQ6IDYwMDsgdGV4dC10cmFuc2Zvcm06IHVwcGVyY2FzZTsiPgogICAgICAgICAgICAgICAgICAgICAgICBMaW5rZWRJbgogICAgICAgICAgICAgICAgICAgIDwvc3Bhbj4KICAgICAgICAgICAgICAgICAgICA8c3BhbiBzdHlsZT0iZm9udC1zaXplOiAxMXB4OyBiYWNrZ3JvdW5kOiAjZmVmM2M3OyBjb2xvcjogIzkyNDAwZTsgcGFkZGluZzogMnB4IDhweDsgYm9yZGVyLXJhZGl1czogMTJweDsgZm9udC13ZWlnaHQ6IDYwMDsgbWFyZ2luLWxlZnQ6IDRweDsiPgogICAgICAgICAgICAgICAgICAgICAgICBVbnNwZWNpZmllZAogICAgICAgICAgICAgICAgICAgIDwvc3Bhbj4KICAgICAgICAgICAgICAgICAgICA8aDMgc3R5bGU9Im1hcmdpbjogOHB4IDAgNHB4IDA7IGZvbnQtc2l6ZTogMTVweDsgY29sb3I6ICMwZjE3MmE7IGxpbmUtaGVpZ2h0OiAxLjM7Ij5Bc3Npc3RhbnQgUHJvZmVzc29yIOKAkyBVcmJhbiBQb2xpY3kgYW5kIFBsYW5uaW5nIERlcHQuLCBTY2hvb2wgb2YgQXJ0cyBhbmQgU2NpZW5jZXMgKEh1bnRlciBDb2xsZWdlKTwvaDM+CiAgICAgICAgICAgICAgICAgICAgPHAgc3R5bGU9Im1hcmdpbjogMCAwIDhweCAwOyBmb250LXNpemU6IDEzcHg7IGZvbnQtd2VpZ2h0OiBib2xkOyBjb2xvcjogIzI1NjNlYjsiPvCfj5vvuI8gSHVudGVyIENvbGxlZ2U8L3A+CiAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgPGRpdiBzdHlsZT0iZm9udC1zaXplOiAxMnB4OyBjb2xvcjogIzQ3NTU2OTsgbWFyZ2luLWJvdHRvbTogOHB4OyI+CiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+8J+TjSA8Yj5Mb2NhdGlvbjo8L2I+IE5ldyBZb3JrLCBOWTwvZGl2PgogICAgICAgICAgICAgICAgICAgICAgICA8ZGl2PvCfk4UgPGI+RGVhZGxpbmU6PC9iPiBQb3N0ZWQgMiBtb250aHMgYWdvPC9kaXY+CiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+8J+SsCA8Yj5TYWxhcnk6PC9iPiBOb3Qgc3BlY2lmaWVkPC9kaXY+CiAgICAgICAgICAgICAgICAgICAgPC9kaXY+CgogICAgICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImJhY2tncm91bmQ6ICNmOGZhZmM7IGJvcmRlci1sZWZ0OiAzcHggc29saWQgIzNiODJmNjsgcGFkZGluZzogNnB4IDEwcHg7IG1hcmdpbi1ib3R0b206IDEycHg7IGZvbnQtc2l6ZTogMTJweDsgY29sb3I6ICMzMzQxNTU7IGxpbmUtaGVpZ2h0OiAxLjQ7Ij4KICAgICAgICAgICAgICAgICAgICAgICAgPGI+U3VtbWFyeTo8L2I+PGJyPkFzc2lzdGFudCBQcm9mZXNzb3Ig4oCTIFVyYmFuIFBvbGljeSBhbmQgUGxhbm5pbmcgRGVwdC4sIFNjaG9vbCBvZiBBcnRzIGFuZCBTY2llbmNlcyAoSHVudGVyIENvbGxlZ2UpIEFzc2lzdGFudCBQcm9mZXNzb3Ig4oCTIFVyYmFuIFBvbGljeSBhbmQgUGxhbm5pbmcgRGVwdC4sIFNjaG9vbCBvZiBBcnRzIGFuZCBTY2llbmNlcyAoSHVudGVyIENvbGxlZ2UpIC4uLgogICAgICAgICAgICAgICAgICAgIDwvZGl2PgoKICAgICAgICAgICAgICAgICAgICA8YSBocmVmPSJodHRwczovL3d3dy5saW5rZWRpbi5jb20vam9icy92aWV3L2Fzc2lzdGFudC1wcm9mZXNzb3ItJUUyJTgwJTkzLXVyYmFuLXBvbGljeS1hbmQtcGxhbm5pbmctZGVwdC1zY2hvb2wtb2YtYXJ0cy1hbmQtc2NpZW5jZXMtaHVudGVyLWNvbGxlZ2UtYXQtaHVudGVyLWNvbGxlZ2UtNDQzODYyNDEyNyIgdGFyZ2V0PSJfYmxhbmsiIHN0eWxlPSJkaXNwbGF5OiBibG9jazsgdGV4dC1hbGlnbjogY2VudGVyOyBiYWNrZ3JvdW5kOiAjMjU2M2ViOyBjb2xvcjogd2hpdGU7IHRleHQtZGVjb3JhdGlvbjogbm9uZTsgcGFkZGluZzogOHB4IDEycHg7IGJvcmRlci1yYWRpdXM6IDZweDsgZm9udC1zaXplOiAxM3B4OyBmb250LXdlaWdodDogYm9sZDsiPgogICAgICAgICAgICAgICAgICAgICAgICBWaWV3IEZ1bGwgSm9iIFBvc3Rpbmcg4oaSCiAgICAgICAgICAgICAgICAgICAgPC9hPgogICAgICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgICAgICA=" width="320" style="border:none !important;" height="310"></iframe>`)[0];
+                popup_adf28fe11056fb9449aa796607d3d0f1.setContent(i_frame_66867588320836dcde192d21bf59dd73);
+            
+        
+
+        marker_df7e5421e295a02a0a840af4f81ecd92.bindPopup(popup_adf28fe11056fb9449aa796607d3d0f1)
+        ;
+
+        
+    
+    
+            marker_df7e5421e295a02a0a840af4f81ecd92.bindTooltip(
+                `<div>
+                     Hunter College: Assistant Professor – Urban Policy and Planning Dept., School of Arts and Sciences (Hunter College)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_df7e5421e295a02a0a840af4f81ecd92.setIcon(icon_f07e31ce056308a0bd05a111e166d378);
+            
+    
+            var marker_96a24f5a6da4dab41d8c468bb8431741 = L.marker(
+                [29.7207902, -95.3440627],
+                {
+}
+            ).addTo(marker_cluster_1868c6db110904dcca799ce0a77e8b9d);
+        
+    
+            var icon_a894043e297e5dd83989f9cb65e9c519 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "graduation-cap",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_0d0a3cca8392c7bd480ea72baf4d5616 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var i_frame_011de9f96068fdf1ba55f2cd09eb7304 = $(`<iframe src="data:text/html;charset=utf-8;base64,CiAgICAKICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImZvbnQtZmFtaWx5OiAnU2Vnb2UgVUknLCBUYWhvbWEsIEdlbmV2YSwgVmVyZGFuYSwgc2Fucy1zZXJpZjsgd2lkdGg6IDMwMHB4OyBwYWRkaW5nOiA0cHg7Ij4KICAgICAgICAgICAgICAgICAgICA8c3BhbiBzdHlsZT0iZm9udC1zaXplOiAxMXB4OyBiYWNrZ3JvdW5kOiAjZTBmMmZlOyBjb2xvcjogIzAzNjlhMTsgcGFkZGluZzogMnB4IDhweDsgYm9yZGVyLXJhZGl1czogMTJweDsgZm9udC13ZWlnaHQ6IDYwMDsgdGV4dC10cmFuc2Zvcm06IHVwcGVyY2FzZTsiPgogICAgICAgICAgICAgICAgICAgICAgICBMaW5rZWRJbgogICAgICAgICAgICAgICAgICAgIDwvc3Bhbj4KICAgICAgICAgICAgICAgICAgICA8c3BhbiBzdHlsZT0iZm9udC1zaXplOiAxMXB4OyBiYWNrZ3JvdW5kOiAjZmVmM2M3OyBjb2xvcjogIzkyNDAwZTsgcGFkZGluZzogMnB4IDhweDsgYm9yZGVyLXJhZGl1czogMTJweDsgZm9udC13ZWlnaHQ6IDYwMDsgbWFyZ2luLWxlZnQ6IDRweDsiPgogICAgICAgICAgICAgICAgICAgICAgICBVbnNwZWNpZmllZAogICAgICAgICAgICAgICAgICAgIDwvc3Bhbj4KICAgICAgICAgICAgICAgICAgICA8aDMgc3R5bGU9Im1hcmdpbjogOHB4IDAgNHB4IDA7IGZvbnQtc2l6ZTogMTVweDsgY29sb3I6ICMwZjE3MmE7IGxpbmUtaGVpZ2h0OiAxLjM7Ij5SZXNlYXJjaCBBc3Npc3RhbnQgUHJvZmVzc29yIC0gQ1lCRVItQ0FSRSBDb25zb3J0aXVtPC9oMz4KICAgICAgICAgICAgICAgICAgICA8cCBzdHlsZT0ibWFyZ2luOiAwIDAgOHB4IDA7IGZvbnQtc2l6ZTogMTNweDsgZm9udC13ZWlnaHQ6IGJvbGQ7IGNvbG9yOiAjMjU2M2ViOyI+8J+Pm++4jyBVbml2ZXJzaXR5IG9mIEhvdXN0b248L3A+CiAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgPGRpdiBzdHlsZT0iZm9udC1zaXplOiAxMnB4OyBjb2xvcjogIzQ3NTU2OTsgbWFyZ2luLWJvdHRvbTogOHB4OyI+CiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+8J+TjSA8Yj5Mb2NhdGlvbjo8L2I+IEhvdXN0b24sIFRYPC9kaXY+CiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+8J+ThSA8Yj5EZWFkbGluZTo8L2I+IFBvc3RlZCA0IG1vbnRocyBhZ288L2Rpdj4KICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj7wn5KwIDxiPlNhbGFyeTo8L2I+IE5vdCBzcGVjaWZpZWQ8L2Rpdj4KICAgICAgICAgICAgICAgICAgICA8L2Rpdj4KCiAgICAgICAgICAgICAgICAgICAgPGRpdiBzdHlsZT0iYmFja2dyb3VuZDogI2Y4ZmFmYzsgYm9yZGVyLWxlZnQ6IDNweCBzb2xpZCAjM2I4MmY2OyBwYWRkaW5nOiA2cHggMTBweDsgbWFyZ2luLWJvdHRvbTogMTJweDsgZm9udC1zaXplOiAxMnB4OyBjb2xvcjogIzMzNDE1NTsgbGluZS1oZWlnaHQ6IDEuNDsiPgogICAgICAgICAgICAgICAgICAgICAgICA8Yj5TdW1tYXJ5OjwvYj48YnI+UmVzZWFyY2ggQXNzaXN0YW50IFByb2Zlc3NvciAtIENZQkVSLUNBUkUgQ29uc29ydGl1bSBSZXNlYXJjaCBBc3Npc3RhbnQgUHJvZmVzc29yIC0gQ1lCRVItQ0FSRSBDb25zb3J0aXVtIFVuaXZlcnNpdHkgb2YgSG91c3RvbiBIb3VzdG9uLCBUWCBCZSBhbiBlYXJseSBhcHBsaWNhbnQgNCBtb250aHMgYWdvCiAgICAgICAgICAgICAgICAgICAgPC9kaXY+CgogICAgICAgICAgICAgICAgICAgIDxhIGhyZWY9Imh0dHBzOi8vd3d3LmxpbmtlZGluLmNvbS9qb2JzL3ZpZXcvcmVzZWFyY2gtYXNzaXN0YW50LXByb2Zlc3Nvci1jeWJlci1jYXJlLWNvbnNvcnRpdW0tYXQtdW5pdmVyc2l0eS1vZi1ob3VzdG9uLTQ0MDQzMTkyNzYiIHRhcmdldD0iX2JsYW5rIiBzdHlsZT0iZGlzcGxheTogYmxvY2s7IHRleHQtYWxpZ246IGNlbnRlcjsgYmFja2dyb3VuZDogIzI1NjNlYjsgY29sb3I6IHdoaXRlOyB0ZXh0LWRlY29yYXRpb246IG5vbmU7IHBhZGRpbmc6IDhweCAxMnB4OyBib3JkZXItcmFkaXVzOiA2cHg7IGZvbnQtc2l6ZTogMTNweDsgZm9udC13ZWlnaHQ6IGJvbGQ7Ij4KICAgICAgICAgICAgICAgICAgICAgICAgVmlldyBGdWxsIEpvYiBQb3N0aW5nIOKGkgogICAgICAgICAgICAgICAgICAgIDwvYT4KICAgICAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICAgICAg" width="320" style="border:none !important;" height="310"></iframe>`)[0];
+                popup_0d0a3cca8392c7bd480ea72baf4d5616.setContent(i_frame_011de9f96068fdf1ba55f2cd09eb7304);
+            
+        
+
+        marker_96a24f5a6da4dab41d8c468bb8431741.bindPopup(popup_0d0a3cca8392c7bd480ea72baf4d5616)
+        ;
+
+        
+    
+    
+            marker_96a24f5a6da4dab41d8c468bb8431741.bindTooltip(
+                `<div>
+                     University of Houston: Research Assistant Professor - CYBER-CARE Consortium
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_96a24f5a6da4dab41d8c468bb8431741.setIcon(icon_a894043e297e5dd83989f9cb65e9c519);
+            
+    
+            var marker_a8913edcf0476c93d5aa0a9c973be137 = L.marker(
+                [33.8082375, -118.1344224],
+                {
+}
+            ).addTo(marker_cluster_1868c6db110904dcca799ce0a77e8b9d);
+        
+    
+            var icon_9a943e3bc94879a6aeb4eee46e72b414 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "graduation-cap",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_d80aa0ef696f199328b233b9f44c1931 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var i_frame_44ef0a069a903150dc4376af848b0833 = $(`<iframe src="data:text/html;charset=utf-8;base64,CiAgICAKICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImZvbnQtZmFtaWx5OiAnU2Vnb2UgVUknLCBUYWhvbWEsIEdlbmV2YSwgVmVyZGFuYSwgc2Fucy1zZXJpZjsgd2lkdGg6IDMwMHB4OyBwYWRkaW5nOiA0cHg7Ij4KICAgICAgICAgICAgICAgICAgICA8c3BhbiBzdHlsZT0iZm9udC1zaXplOiAxMXB4OyBiYWNrZ3JvdW5kOiAjZTBmMmZlOyBjb2xvcjogIzAzNjlhMTsgcGFkZGluZzogMnB4IDhweDsgYm9yZGVyLXJhZGl1czogMTJweDsgZm9udC13ZWlnaHQ6IDYwMDsgdGV4dC10cmFuc2Zvcm06IHVwcGVyY2FzZTsiPgogICAgICAgICAgICAgICAgICAgICAgICBMaW5rZWRJbgogICAgICAgICAgICAgICAgICAgIDwvc3Bhbj4KICAgICAgICAgICAgICAgICAgICA8c3BhbiBzdHlsZT0iZm9udC1zaXplOiAxMXB4OyBiYWNrZ3JvdW5kOiAjZmVmM2M3OyBjb2xvcjogIzkyNDAwZTsgcGFkZGluZzogMnB4IDhweDsgYm9yZGVyLXJhZGl1czogMTJweDsgZm9udC13ZWlnaHQ6IDYwMDsgbWFyZ2luLWxlZnQ6IDRweDsiPgogICAgICAgICAgICAgICAgICAgICAgICBVbnNwZWNpZmllZAogICAgICAgICAgICAgICAgICAgIDwvc3Bhbj4KICAgICAgICAgICAgICAgICAgICA8aDMgc3R5bGU9Im1hcmdpbjogOHB4IDAgNHB4IDA7IGZvbnQtc2l6ZTogMTVweDsgY29sb3I6ICMwZjE3MmE7IGxpbmUtaGVpZ2h0OiAxLjM7Ij5UZW51cmUtVHJhY2sgRmFjdWx0eSBQb3NpdGlvbiB3aXRoIGEgZm9jdXMgb24gQWlyIFRyYW5zcG9ydGF0aW9uIFN5c3RlbXMsIERheXRvbmEgQmVhY2ggQ2FtcHVzPC9oMz4KICAgICAgICAgICAgICAgICAgICA8cCBzdHlsZT0ibWFyZ2luOiAwIDAgOHB4IDA7IGZvbnQtc2l6ZTogMTNweDsgZm9udC13ZWlnaHQ6IGJvbGQ7IGNvbG9yOiAjMjU2M2ViOyI+8J+Pm++4jyBFbWJyeS1SaWRkbGUgQWVyb25hdXRpY2FsIFVuaXZlcnNpdHk8L3A+CiAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgPGRpdiBzdHlsZT0iZm9udC1zaXplOiAxMnB4OyBjb2xvcjogIzQ3NTU2OTsgbWFyZ2luLWJvdHRvbTogOHB4OyI+CiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+8J+TjSA8Yj5Mb2NhdGlvbjo8L2I+IERheXRvbmEgQmVhY2gsIEZMPC9kaXY+CiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+8J+ThSA8Yj5EZWFkbGluZTo8L2I+IFBvc3RlZCAxIG1vbnRoIGFnbzwvZGl2PgogICAgICAgICAgICAgICAgICAgICAgICA8ZGl2PvCfkrAgPGI+U2FsYXJ5OjwvYj4gTm90IHNwZWNpZmllZDwvZGl2PgogICAgICAgICAgICAgICAgICAgIDwvZGl2PgoKICAgICAgICAgICAgICAgICAgICA8ZGl2IHN0eWxlPSJiYWNrZ3JvdW5kOiAjZjhmYWZjOyBib3JkZXItbGVmdDogM3B4IHNvbGlkICMzYjgyZjY7IHBhZGRpbmc6IDZweCAxMHB4OyBtYXJnaW4tYm90dG9tOiAxMnB4OyBmb250LXNpemU6IDEycHg7IGNvbG9yOiAjMzM0MTU1OyBsaW5lLWhlaWdodDogMS40OyI+CiAgICAgICAgICAgICAgICAgICAgICAgIDxiPlN1bW1hcnk6PC9iPjxicj5UZW51cmUtVHJhY2sgRmFjdWx0eSBQb3NpdGlvbiB3aXRoIGEgZm9jdXMgb24gQWlyIFRyYW5zcG9ydGF0aW9uIFN5c3RlbXMsIERheXRvbmEgQmVhY2ggQ2FtcHVzIFRlbnVyZS1UcmFjayBGYWN1bHR5IFBvc2l0aW9uIHdpdGggYSBmb2N1cyBvbiBBaXIgVHJhbnNwb3J0YXRpb24gU3lzdGVtcywgRGF5dG9uYSBCZWFjaCBDYW1wdXMgRW1icnktUmlkZC4uLgogICAgICAgICAgICAgICAgICAgIDwvZGl2PgoKICAgICAgICAgICAgICAgICAgICA8YSBocmVmPSJodHRwczovL3d3dy5saW5rZWRpbi5jb20vam9icy92aWV3L3RlbnVyZS10cmFjay1mYWN1bHR5LXBvc2l0aW9uLXdpdGgtYS1mb2N1cy1vbi1haXItdHJhbnNwb3J0YXRpb24tc3lzdGVtcy1kYXl0b25hLWJlYWNoLWNhbXB1cy1hdC1lbWJyeS1yaWRkbGUtYWVyb25hdXRpY2FsLXVuaXZlcnNpdHktNDQzNDg5NzY2MiIgdGFyZ2V0PSJfYmxhbmsiIHN0eWxlPSJkaXNwbGF5OiBibG9jazsgdGV4dC1hbGlnbjogY2VudGVyOyBiYWNrZ3JvdW5kOiAjMjU2M2ViOyBjb2xvcjogd2hpdGU7IHRleHQtZGVjb3JhdGlvbjogbm9uZTsgcGFkZGluZzogOHB4IDEycHg7IGJvcmRlci1yYWRpdXM6IDZweDsgZm9udC1zaXplOiAxM3B4OyBmb250LXdlaWdodDogYm9sZDsiPgogICAgICAgICAgICAgICAgICAgICAgICBWaWV3IEZ1bGwgSm9iIFBvc3Rpbmcg4oaSCiAgICAgICAgICAgICAgICAgICAgPC9hPgogICAgICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgICAgICA=" width="320" style="border:none !important;" height="310"></iframe>`)[0];
+                popup_d80aa0ef696f199328b233b9f44c1931.setContent(i_frame_44ef0a069a903150dc4376af848b0833);
+            
+        
+
+        marker_a8913edcf0476c93d5aa0a9c973be137.bindPopup(popup_d80aa0ef696f199328b233b9f44c1931)
+        ;
+
+        
+    
+    
+            marker_a8913edcf0476c93d5aa0a9c973be137.bindTooltip(
+                `<div>
+                     Embry-Riddle Aeronautical University: Tenure-Track Faculty Position with a focus on Air Transportation Systems, Daytona Beach Campus
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_a8913edcf0476c93d5aa0a9c973be137.setIcon(icon_9a943e3bc94879a6aeb4eee46e72b414);
+            
+    
+            marker_cluster_1868c6db110904dcca799ce0a77e8b9d.addTo(map_094eadb9c97e04f62b78c3564303c64e);
+        
+    
+            var layer_control_68816c14d557a36ad80dcdefb8127da5_layers = {
+                base_layers : {
+                    "openstreetmap" : tile_layer_2cb2ba1d8636fcde0ab403fec3c88edd,
+                },
+                overlays :  {
+                    "Universities" : marker_cluster_1868c6db110904dcca799ce0a77e8b9d,
+                },
+            };
+            let layer_control_68816c14d557a36ad80dcdefb8127da5 = L.control.layers(
+                layer_control_68816c14d557a36ad80dcdefb8127da5_layers.base_layers,
+                layer_control_68816c14d557a36ad80dcdefb8127da5_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": true,
+  "autoZIndex": true,
+}
+            ).addTo(map_094eadb9c97e04f62b78c3564303c64e);
+
+        
+</script>
+</html>
