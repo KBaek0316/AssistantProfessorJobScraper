@@ -77,6 +77,12 @@ def parse_args():
         help="Skip Google Sheets synchronization",
     )
     parser.add_argument(
+        "--model",
+        type=str,
+        default=os.environ.get("GEMINI_MODEL", "gemini-3.6-flash"),
+        help="Gemini model to use (default: gemini-3.6-flash)",
+    )
+    parser.add_argument(
         "--csv-out",
         type=str,
         default="jobs.csv",
@@ -103,6 +109,7 @@ def main():
     print("=" * 70)
     print("  Assistant Professor Job Aggregator & Summarizer")
     print(f"  Search Query: '{args.query}'")
+    print(f"  Gemini Model: '{args.model}'")
     print("=" * 70)
 
     # 1. Initialize Scrapers
@@ -139,8 +146,8 @@ def main():
 
     # 4. Gemini Structured Extraction & 2-Sentence Summary
     if not args.skip_gemini and new_jobs:
-        print(f"\n[GEMINI] Running Google Gemini Flash on {len(new_jobs)} new postings...")
-        extractor = GeminiExtractor()
+        print(f"\n[GEMINI] Running Google Gemini ({args.model}) on {len(new_jobs)} new postings...")
+        extractor = GeminiExtractor(model_name=args.model)
         extractor.enrich_postings(new_jobs)
     elif not new_jobs:
         print("\n[GEMINI] No new postings to process with Gemini.")

@@ -6,18 +6,19 @@ from scrapers.base import JobPosting
 
 
 class GeminiExtractor:
-    """Uses Google Gemini Flash to parse unstructured job descriptions into structured fields and concise summaries."""
+    """Uses Google Gemini (e.g. Gemini 2.5 Pro or Flash) to parse unstructured job descriptions into structured fields and concise summaries."""
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, model_name: Optional[str] = None):
         self.logger = logging.getLogger("processor.gemini")
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "").strip()
+        self.model_name = model_name or os.environ.get("GEMINI_MODEL", "gemini-3.6-flash").strip()
         self.client = None
 
         if self.api_key:
             try:
                 from google import genai
                 self.client = genai.Client(api_key=self.api_key)
-                self.logger.info("Initialized Gemini client successfully.")
+                self.logger.info(f"Initialized Gemini client successfully with model: {self.model_name}")
             except ImportError:
                 # Fallback to google.generativeai if google-genai is not yet installed
                 try:
@@ -42,7 +43,7 @@ class GeminiExtractor:
                     p.summary = p.raw_description[:200] + "..." if len(p.raw_description) > 200 else p.raw_description
             return postings
 
-        self.logger.info(f"Enriching {len(postings)} new job postings with Gemini...")
+        self.logger.info(f"Enriching {len(postings)} new job postings with Gemini ({self.model_name})...")
 
         for idx, posting in enumerate(postings):
             try:
@@ -79,31 +80,37 @@ Extract the following in strict JSON format:
 }}
 Return ONLY valid JSON without markdown formatting or conversational text.
 """
-        # Call Google GenAI SDK or fallback
+        # Call Google GenAI SDK with multi-model fallback cascade
         response_text = ""
-        try:
-            # Check if modern google-genai client
-            if hasattr(self.client, "models"):
-                response = self.client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=prompt,
-                )
-                response_text = response.text
-            else:
-                # Legacy SDK
-                model = self.client.GenerativeModel("gemini-1.5-flash")
-                response = model.generate_content(prompt)
-                response_text = response.text
-        except Exception as api_err:
-            # Fallback model attempt if 2.5-flash is not accessible
-            if hasattr(self.client, "models"):
-                response = self.client.models.generate_content(
-                    model="gemini-1.5-flash",
-                    contents=prompt,
-                )
-                response_text = response.text
-            else:
-                raise api_err
+        candidate_models = [self.model_name, "gemini-3.6-flash", "gemini-3.1-pro-preview", "gemini-1.5-flash"]
+        # Deduplicate while preserving order
+        candidate_models = list(dict.fromkeys(candidate_models))
+
+        last_error = None
+        for m in candidate_models:
+            try:
+                if hasattr(self.client, "models"):
+                    response = self.client.models.generate_content(
+                        model=m,
+                        contents=prompt,
+                    )
+                    response_text = response.text
+                else:
+                    # Legacy SDK
+                    model_obj = self.client.GenerativeModel(m)
+                    response = model_obj.generate_content(prompt)
+                    response_text = response.text
+                if response_text:
+                    break
+            except Exception as err:
+                last_error = err
+                self.logger.warning(f"Model '{m}' failed with {err}. Trying next candidate model...")
+                continue
+
+        if not response_text:
+            if last_error:
+                raise last_error
+            return
 
         # Clean markdown codeblocks if model wrapped in ```json ... ```
         cleaned_json = response_text.strip()
