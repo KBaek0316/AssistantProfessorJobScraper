@@ -180,7 +180,12 @@ def main():
             sheets_sync.sync(all_jobs)
             print("  -> Google Sheets updated successfully!")
         else:
-            print("  -> Google Sheets sync skipped (not configured or missing credentials).")
+            if not sheets_sync.sheet_id:
+                print("  -> Google Sheets sync SKIPPED: GOOGLE_SHEET_ID is missing from environment/secrets.")
+            elif not sheets_sync.client:
+                print("  -> Google Sheets sync SKIPPED: Google Service Account credentials missing (GOOGLE_CREDENTIALS secret or credentials.json file).")
+            else:
+                print("  -> Google Sheets sync skipped.")
 
     print("\n" + "=" * 70)
     print("[SUCCESS] Pipeline completed successfully!")
