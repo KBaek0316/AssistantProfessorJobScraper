@@ -1,10 +1,11 @@
 import os
 import unittest
+from datetime import date
 from scrapers.base import JobPosting
 from processor.deduplicator import JobDeduplicator
 from processor.geocoder import UniversityGeocoder
 from processor.exporter import JobExporter
-from processor.map_generator import MapGenerator
+from processor.map_generator import MapGenerator, get_fit_marker_color, parse_deadline_info
 from processor.cv_matcher import CVProfileManager
 
 
@@ -51,6 +52,44 @@ class TestComponents(unittest.TestCase):
         self.assertAlmostEqual(coords[0], 40.4237, places=2)
         self.assertAlmostEqual(coords[1], -86.9212, places=2)
 
+    def test_map_marker_colors_and_deadline_parser(self):
+        # Color mapping tests
+        self.assertEqual(get_fit_marker_color(10), "darkgreen")
+        self.assertEqual(get_fit_marker_color(9), "darkgreen")
+        self.assertEqual(get_fit_marker_color(8), "green")
+        self.assertEqual(get_fit_marker_color(7), "green")
+        self.assertEqual(get_fit_marker_color(6), "orange")
+        self.assertEqual(get_fit_marker_color(5), "orange")
+        self.assertEqual(get_fit_marker_color(4), "lightred")
+        self.assertEqual(get_fit_marker_color(3), "lightred")
+        self.assertEqual(get_fit_marker_color(2), "gray")
+        self.assertEqual(get_fit_marker_color(1), "gray")
+        self.assertEqual(get_fit_marker_color(None), "blue")
+
+        # Deadline categorization tests against a reference date
+        ref = date(2026, 9, 13)
+        cat, _, diff = parse_deadline_info("2026-11-01", ref_date=ref)
+        self.assertEqual(cat, "future")
+        self.assertEqual(diff, 49)
+
+        cat, _, diff = parse_deadline_info("2026-08-31", ref_date=ref)
+        self.assertEqual(cat, "passed")
+        self.assertEqual(diff, -13)
+
+        cat, _, diff = parse_deadline_info("2026-09-18", ref_date=ref)
+        self.assertEqual(cat, "urgent")
+        self.assertEqual(diff, 5)
+
+        cat, _, diff = parse_deadline_info("2026-10-01", ref_date=ref)
+        self.assertEqual(cat, "closing_soon")
+        self.assertEqual(diff, 18)
+
+        cat, _, _ = parse_deadline_info("Open until filled", ref_date=ref)
+        self.assertEqual(cat, "open")
+
+        cat, _, _ = parse_deadline_info("Not specified", ref_date=ref)
+        self.assertEqual(cat, "open")
+
     def test_exporter_and_deduplicator(self):
         test_csv = "test_jobs.csv"
         test_xlsx = "test_jobs.xlsx"
@@ -88,6 +127,12 @@ class TestComponents(unittest.TestCase):
             map_gen = MapGenerator(output_filepath=test_map)
             map_gen.generate_map(all_jobs)
             self.assertTrue(os.path.exists(test_map))
+
+            # Verify map HTML contains legend and deadline subgroup controls
+            with open(test_map, "r", encoding="utf-8") as f:
+                map_content = f.read()
+                self.assertIn("Fit Score Marker Legend", map_content)
+                self.assertIn("feature_group_sub_group", map_content)
 
             # Run deduplicator a second time with the same posting -> should have 0 new jobs
             dedup2 = JobDeduplicator(csv_filepath=test_csv)

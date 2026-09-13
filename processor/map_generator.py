@@ -1,7 +1,79 @@
 import html
 import logging
-from typing import List
+import re
+from datetime import datetime, date
+from typing import List, Tuple, Optional
 from scrapers.base import JobPosting
+
+
+def get_fit_marker_color(score: Optional[int]) -> str:
+    """Returns Leaflet.awesome-markers color corresponding to 1-10 candidate fit score."""
+    if score is None:
+        return "blue"
+    try:
+        s = int(score)
+    except (ValueError, TypeError):
+        return "blue"
+
+    if s >= 9:
+        return "darkgreen"   # Outstanding match (9-10)
+    elif s >= 7:
+        return "green"       # Strong match (7-8)
+    elif s >= 5:
+        return "orange"      # Moderate match (5-6)
+    elif s >= 3:
+        return "lightred"    # Low match (3-4)
+    else:
+        return "gray"        # Minimal / Screened match (1-2)
+
+
+def parse_deadline_info(deadline_str: Optional[str], ref_date: Optional[date] = None) -> Tuple[str, str, Optional[int]]:
+    """
+    Parses deadline text and computes relative urgency against ref_date (default: today).
+    Returns (category_key, badge_label, days_difference).
+    """
+    if not deadline_str:
+        return ("open", "🟢 Open / Rolling", None)
+
+    if ref_date is None:
+        ref_date = date.today()
+
+    s = str(deadline_str).strip()
+
+    # 1. Search for ISO format (YYYY-MM-DD)
+    parsed_date = None
+    iso_match = re.search(r'\b(\d{4})-(\d{1,2})-(\d{1,2})\b', s)
+    if iso_match:
+        try:
+            parsed_date = date(int(iso_match.group(1)), int(iso_match.group(2)), int(iso_match.group(3)))
+        except ValueError:
+            pass
+
+    # 2. Search for Month DD, YYYY formats (e.g., Oct. 1, 2025 or October 1, 2025)
+    if not parsed_date:
+        for m in re.finditer(r'[A-Za-z]+[\.]?\s+\d{1,2},?\s+\d{4}', s):
+            clean_str = m.group(0).replace('.', '').replace(',', '')
+            for fmt in ('%B %d %Y', '%b %d %Y'):
+                try:
+                    parsed_date = datetime.strptime(clean_str, fmt).date()
+                    break
+                except ValueError:
+                    pass
+            if parsed_date:
+                break
+
+    if parsed_date:
+        diff = (parsed_date - ref_date).days
+        if diff < 0:
+            return ("passed", f"⏳ Passed ({abs(diff)}d ago)", diff)
+        elif diff <= 7:
+            return ("urgent", f"🔥 Urgent: {diff}d left", diff)
+        elif diff <= 30:
+            return ("closing_soon", f"⚡ Closing: {diff}d left", diff)
+        else:
+            return ("future", f"📅 Due in {diff}d ({parsed_date.strftime('%Y-%m-%d')})", diff)
+
+    return ("open", "🟢 Open Until Filled / Rolling", None)
 
 
 class MapGenerator:
@@ -12,10 +84,13 @@ class MapGenerator:
         self.logger = logging.getLogger("processor.map")
 
     def generate_map(self, postings: List[JobPosting], include_filtered: bool = False):
-        """Create and save the interactive map."""
+        """Create and save the interactive map with color-coded fit scores and deadline filters."""
         try:
             import folium
-            from folium.plugins import MarkerCluster
+            from folium.plugins import MarkerCluster, FeatureGroupSubGroup
+
+            if isinstance(postings, dict):
+                postings = list(postings.values())
 
             if not include_filtered:
                 postings = [p for p in postings if not p.status.startswith("Filtered")]
@@ -27,7 +102,7 @@ class MapGenerator:
                 tiles=None,
             )
 
-            # Add Esri World Street Map as primary basemap (reliable, high-uptime CDN, never blocked)
+            # 1. Base Layer Options
             folium.TileLayer(
                 tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
                 attr="Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, METI",
@@ -36,7 +111,6 @@ class MapGenerator:
                 overlay=False,
             ).add_to(job_map)
 
-            # Add Esri Light Gray Canvas (clean, modern, minimalist)
             folium.TileLayer(
                 tiles="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
                 attr="Esri, HERE, Garmin, &copy; OpenStreetMap contributors",
@@ -45,7 +119,6 @@ class MapGenerator:
                 overlay=False,
             ).add_to(job_map)
 
-            # Add Esri Topographic layer
             folium.TileLayer(
                 tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
                 attr="Esri, FAO, NOAA, USGS, EPA",
@@ -54,7 +127,18 @@ class MapGenerator:
                 overlay=False,
             ).add_to(job_map)
 
-            marker_cluster = MarkerCluster(name="Universities").add_to(job_map)
+            # 2. MarkerCluster (control=False so it does not add a redundant single toggle)
+            marker_cluster = MarkerCluster(control=False).add_to(job_map)
+
+            # 3. Deadline Categories Definitions
+            categories = {
+                "urgent": {"label": "🔥 Deadline ≤ 7 Days", "markers": []},
+                "closing_soon": {"label": "⚡ Deadline in 8–30 Days", "markers": []},
+                "future": {"label": "📅 Deadline > 30 Days", "markers": []},
+                "open": {"label": "🟢 Open Until Filled / Rolling", "markers": []},
+                "passed": {"label": "⏳ Deadline / Priority Passed", "markers": []},
+            }
+
             plotted_count = 0
 
             for p in postings:
@@ -73,16 +157,47 @@ class MapGenerator:
                 safe_tenure = html.escape(p.tenure_track)
                 safe_reason = html.escape(p.fit_reason) if p.fit_reason else ""
 
-                # Fit Score Badge
+                # Deadline parsing & timing badge
+                cat_key, timing_badge_text, _ = parse_deadline_info(p.deadline)
+
+                # Fit Score Badge & Marker Color
+                marker_color = get_fit_marker_color(p.fit_score)
                 fit_badge_html = ""
                 if p.fit_score is not None:
-                    badge_bg = "#dcfce7" if p.fit_score >= 8 else ("#e0e7ff" if p.fit_score >= 5 else "#f3f4f6")
-                    badge_color = "#15803d" if p.fit_score >= 8 else ("#3730a3" if p.fit_score >= 5 else "#4b5563")
+                    badge_bg = (
+                        "#dcfce7" if p.fit_score >= 8
+                        else ("#e0e7ff" if p.fit_score >= 5
+                              else ("#fee2e2" if p.fit_score <= 2 else "#fef3c7"))
+                    )
+                    badge_color = (
+                        "#15803d" if p.fit_score >= 8
+                        else ("#3730a3" if p.fit_score >= 5
+                              else ("#991b1b" if p.fit_score <= 2 else "#92400e"))
+                    )
                     fit_badge_html = f"""
                     <span style="font-size: 11px; background: {badge_bg}; color: {badge_color}; padding: 2px 8px; border-radius: 12px; font-weight: 700; margin-left: 4px;">
                         ⭐ {p.fit_score}/10 Fit
                     </span>
                     """
+
+                # Timing pill badge in header
+                timing_pill_bg = (
+                    "#fee2e2" if cat_key == "passed"
+                    else ("#ffedd5" if cat_key == "urgent"
+                          else ("#fef9c3" if cat_key == "closing_soon"
+                                else ("#e0f2fe" if cat_key == "future" else "#f0fdf4")))
+                )
+                timing_pill_color = (
+                    "#991b1b" if cat_key == "passed"
+                    else ("#9a3412" if cat_key == "urgent"
+                          else ("#854d0e" if cat_key == "closing_soon"
+                                else ("#075985" if cat_key == "future" else "#166534")))
+                )
+                timing_pill_html = f"""
+                <span style="font-size: 11px; background: {timing_pill_bg}; color: {timing_pill_color}; padding: 2px 8px; border-radius: 12px; font-weight: 600;">
+                    {html.escape(timing_badge_text)}
+                </span>
+                """
 
                 fit_reason_html = ""
                 if safe_reason:
@@ -98,15 +213,16 @@ class MapGenerator:
                             {safe_tenure}
                         </span>
                         {fit_badge_html}
+                        {timing_pill_html}
                     </div>
                     <h3 style="margin: 6px 0 4px 0; font-size: 14px; color: #0f172a; line-height: 1.3;">{safe_title}</h3>
                     <p style="margin: 0 0 6px 0; font-size: 13px; font-weight: bold; color: #2563eb;">🏛️ {safe_inst}</p>
-                    
+
                     <div style="font-size: 12px; color: #475569; margin-bottom: 8px; line-height: 1.5;">
                         <div>📍 <b>Location:</b> {safe_loc}</div>
                         <div>🔬 <b>Topics:</b> {safe_topics}</div>
                         {fit_reason_html}
-                        <div>📅 <b>Deadline:</b> {safe_deadline}</div>
+                        <div>📅 <b>Deadline:</b> {safe_deadline} ({html.escape(timing_badge_text)})</div>
                         <div>💰 <b>Salary:</b> {safe_salary}</div>
                     </div>
 
@@ -123,18 +239,75 @@ class MapGenerator:
                 iframe = folium.IFrame(popup_html, width=330, height=330)
                 popup = folium.Popup(iframe, max_width=360)
 
-                folium.Marker(
+                score_label = f"⭐ {p.fit_score}/10" if p.fit_score is not None else "Unscored"
+                marker = folium.Marker(
                     location=[p.latitude, p.longitude],
                     popup=popup,
-                    tooltip=f"{p.institution}: {p.title}",
-                    icon=folium.Icon(color="blue", icon="graduation-cap", prefix="fa"),
-                ).add_to(marker_cluster)
+                    tooltip=f"{p.institution}: {p.title} ({score_label})",
+                    icon=folium.Icon(color=marker_color, icon="graduation-cap", prefix="fa"),
+                )
 
+                categories[cat_key]["markers"].append(marker)
                 plotted_count += 1
 
-            folium.LayerControl().add_to(job_map)
+            # 4. Create FeatureGroupSubGroups for each deadline category
+            for cat_key, cat_data in categories.items():
+                count = len(cat_data["markers"])
+                subgroup_name = f"{cat_data['label']} ({count})"
+                subgroup = FeatureGroupSubGroup(marker_cluster, name=subgroup_name).add_to(job_map)
+                for marker in cat_data["markers"]:
+                    marker.add_to(subgroup)
+
+            # 5. Add floating Fit Score Color Legend
+            legend_html = """
+            <div style="
+                position: fixed;
+                bottom: 25px;
+                left: 25px;
+                z-index: 9999;
+                background: rgba(255, 255, 255, 0.95);
+                padding: 12px 16px;
+                border-radius: 10px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+                font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+                font-size: 12px;
+                line-height: 1.5;
+                border: 1px solid #e2e8f0;
+                backdrop-filter: blur(8px);
+                pointer-events: auto;
+                max-width: 250px;
+            ">
+                <div style="font-weight: 700; font-size: 13px; color: #0f172a; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <span>🎯 Fit Score Marker Legend</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #2d6a4f; border: 1px solid rgba(0,0,0,0.2);"></span>
+                    <span><b>9–10:</b> Outstanding Match</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #52b788; border: 1px solid rgba(0,0,0,0.2);"></span>
+                    <span><b>7–8:</b> Strong Match</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #f77f00; border: 1px solid rgba(0,0,0,0.2);"></span>
+                    <span><b>5–6:</b> Moderate Match</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #fb6f92; border: 1px solid rgba(0,0,0,0.2);"></span>
+                    <span><b>3–4:</b> Low Match</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #94a3b8; border: 1px solid rgba(0,0,0,0.2);"></span>
+                    <span><b>1–2 / Unscored:</b> Minimal / Other</span>
+                </div>
+            </div>
+            """
+            job_map.get_root().html.add_child(folium.Element(legend_html))
+
+            # 6. Add LayerControl with expanded view so deadline filters are immediately visible
+            folium.LayerControl(collapsed=False).add_to(job_map)
             job_map.save(self.output_filepath)
-            self.logger.info(f"Generated interactive map with {plotted_count} locations at {self.output_filepath}")
+            self.logger.info(f"Generated interactive map with {plotted_count} locations across deadline filters at {self.output_filepath}")
 
         except ImportError:
             self.logger.warning("folium not installed. Map generation skipped.")
