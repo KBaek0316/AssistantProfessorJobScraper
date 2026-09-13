@@ -240,6 +240,64 @@ class TestComponents(unittest.TestCase):
         self.assertNotIn("job_old", active_ids)
         self.assertEqual(dupes[0].id, "job_old")
 
+        # Test Wisconsin-Madison cross-board duplicate resolution
+        wisc_1 = JobPosting(
+            id="wisc_chronicle",
+            title="Assistant Professor of Public Policy (Market-Based Solutions to Societal Challenges)",
+            institution="University of Wisconsin-Madison",
+            field="Department of Public Policy / La Follette School of Public Affairs",
+            location="Madison, WI",
+            deadline="Open until filled",
+            salary="Competitive",
+            link="https://jobs.chronicle.com/wisc",
+            source="Chronicle",
+            date_first_seen="2026-09-12",
+        )
+        wisc_2 = JobPosting(
+            id="wisc_linkedin",
+            title="Assistant Professor of Public Policy (Market-Based Solutions to Societal Challenges)",
+            institution="University of Wisconsin-Madison",
+            field="La Follette School of Public Affairs, College of Letters & Science",
+            location="Madison, WI",
+            deadline="Open until filled",
+            salary="Competitive",
+            link="https://www.linkedin.com/wisc",
+            source="LinkedIn",
+            date_first_seen="2026-09-13",
+        )
+        wisc_active, wisc_dupes = dedup.deduplicate_by_institution_department([wisc_1, wisc_2])
+        self.assertEqual(len(wisc_active), 1)
+        self.assertEqual(wisc_active[0].id, "wisc_linkedin")
+
+        # Test UIC cross-board variations
+        uic_1 = JobPosting(
+            id="uic_chronicle",
+            title="Assistant Professor of Operations Management",
+            institution="University of Illinois - Chicago",
+            field="Information and Decision Sciences (IDS) Department",
+            location="Chicago, IL",
+            deadline="Open until filled",
+            salary="Competitive",
+            link="https://jobs.chronicle.com/uic",
+            source="Chronicle",
+            date_first_seen="2026-09-13",
+        )
+        uic_2 = JobPosting(
+            id="uic_highered",
+            title="Assistant Professor of Information and Decision Sciences (Supply Chain & Operations Management)",
+            institution="University of Illinois Chicago",
+            field="Information and Decision Sciences (IDS)",
+            location="Chicago, IL",
+            deadline="Open until filled",
+            salary="Competitive",
+            link="https://www.higheredjobs.com/uic",
+            source="HigherEdJobs",
+            date_first_seen="2026-09-12",
+        )
+        uic_active, uic_dupes = dedup.deduplicate_by_institution_department([uic_1, uic_2])
+        self.assertEqual(len(uic_active), 1)
+        self.assertEqual(uic_active[0].id, "uic_chronicle")
+
 
 if __name__ == "__main__":
     unittest.main()

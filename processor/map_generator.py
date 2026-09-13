@@ -87,7 +87,7 @@ class MapGenerator:
         """Create and save the interactive map with color-coded fit scores and deadline filters."""
         try:
             import folium
-            import math
+            from folium.plugins import MarkerCluster, FeatureGroupSubGroup
             import os
             import shutil
 
@@ -129,44 +129,13 @@ class MapGenerator:
                 overlay=False,
             ).add_to(job_map)
 
-            # 2. Pre-compute dodged coordinates for overlapping / nearby universities
-            # so all individual pins remain clearly visible, distinctly clickable, and never clustered into number circles
-            valid_postings = [p for p in postings if p.latitude is not None and p.longitude is not None]
-            dodge_clusters = []
-            CLUSTERING_DIST = 0.025  # ~2.5 km grouping distance
-
-            for p in valid_postings:
-                assigned = False
-                for cluster in dodge_clusters:
-                    ref_p = cluster[0]
-                    dist = math.hypot(
-                        p.latitude - ref_p.latitude,
-                        (p.longitude - ref_p.longitude) * math.cos(math.radians(ref_p.latitude)),
-                    )
-                    if dist < CLUSTERING_DIST:
-                        cluster.append(p)
-                        assigned = True
-                        break
-                if not assigned:
-                    dodge_clusters.append([p])
-
-            dodged_coords = {}
-            for cluster in dodge_clusters:
-                if len(cluster) == 1:
-                    p = cluster[0]
-                    dodged_coords[p.id] = (p.latitude, p.longitude)
-                else:
-                    num = len(cluster)
-                    center_lat = sum(p.latitude for p in cluster) / num
-                    center_lon = sum(p.longitude for p in cluster) / num
-                    cos_lat = math.cos(math.radians(center_lat))
-                    cos_val = cos_lat if abs(cos_lat) > 0.1 else 1.0
-                    R = 0.015  # ~1.5 km offset in radial layout so each pin is clear and clickable
-                    for idx, p in enumerate(cluster):
-                        angle = (2 * math.pi * idx) / num
-                        offset_lat = R * math.cos(angle)
-                        offset_lon = (R * math.sin(angle)) / cos_val
-                        dodged_coords[p.id] = (center_lat + offset_lat, center_lon + offset_lon)
+            # 2. MarkerCluster: aggregates nearby markers with job count badges when zoomed out
+            marker_cluster = MarkerCluster(
+                control=False,
+                showCoverageOnHover=False,
+                spiderfyOnMaxZoom=True,
+                maxClusterRadius=40,
+            ).add_to(job_map)
 
             # 3. Deadline Categories Definitions
             categories = {
@@ -278,9 +247,8 @@ class MapGenerator:
                 popup = folium.Popup(iframe, max_width=360)
 
                 score_label = f"⭐ {p.fit_score}/10" if p.fit_score is not None else "Unscored"
-                m_lat, m_lon = dodged_coords.get(p.id, (p.latitude, p.longitude))
                 marker = folium.Marker(
-                    location=[m_lat, m_lon],
+                    location=[p.latitude, p.longitude],
                     popup=popup,
                     tooltip=f"{p.institution}: {p.title} ({score_label})",
                     icon=folium.Icon(color=marker_color, icon="graduation-cap", prefix="fa"),
@@ -289,11 +257,11 @@ class MapGenerator:
                 categories[cat_key]["markers"].append(marker)
                 plotted_count += 1
 
-            # 4. Create standard FeatureGroups for each deadline category (NO MarkerCluster, keeping all pins individually visible)
+            # 4. Attach each deadline category to marker_cluster via FeatureGroupSubGroup so they can be toggled
             for cat_key, cat_data in categories.items():
                 count = len(cat_data["markers"])
                 group_name = f"{cat_data['label']} ({count})"
-                group = folium.FeatureGroup(name=group_name, show=True).add_to(job_map)
+                group = FeatureGroupSubGroup(marker_cluster, name=group_name, show=True).add_to(job_map)
                 for marker in cat_data["markers"]:
                     marker.add_to(group)
 

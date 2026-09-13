@@ -149,70 +149,108 @@ class JobDeduplicator:
 
         return jobs
 
-    @staticmethod
-    def normalize_institution_department(institution: str, department: str) -> Optional[Tuple[str, str]]:
-        """Normalize institution and department to form a canonical grouping key."""
-        if not institution or not department:
-            return None
+    DEPARTMENT_STOPWORDS = {
+        "department", "dept", "school", "college", "division", "faculty", "program",
+        "of", "and", "the", "in", "for", "at", "to", "&", "/", ",", "-", "ids",
+        "engineering", "sciences", "science", "studies", "center", "institute",
+    }
 
+    TITLE_STOPWORDS = {
+        "assistant", "associate", "full", "tenure", "track", "tenured", "tenure-track",
+        "professor", "professorship", "faculty", "open", "rank", "in", "of", "for", "at",
+        "and", "the", "to", "&", "/", "-", "position", "positions",
+    }
+
+    @classmethod
+    def clean_institution(cls, inst: str) -> str:
         import re
-        inst = institution.strip().lower()
-        dept = department.strip().lower()
+        return re.sub(r"[\s,\-/]+", " ", (inst or "").lower()).strip()
 
-        # Discard generic department placeholders that shouldn't group unrelated jobs
-        generic_placeholders = {
-            "", "unspecified", "unknown", "n/a", "none", "various", "general",
-            "academic institution", "chronicle listed university", "higheredjobs listed university"
-        }
-        if dept in generic_placeholders or inst in generic_placeholders:
-            return None
+    @classmethod
+    def get_dept_tokens(cls, dept: str) -> Set[str]:
+        import re
+        if not dept:
+            return set()
+        return set(re.findall(r"[a-z0-9\.\']+", dept.lower())) - cls.DEPARTMENT_STOPWORDS
 
-        # Strip common organizational prefixes from department
-        dept_clean = re.sub(r"^(department|dept\.?|school|division|college|faculty)\s+of\s+", "", dept)
-        dept_clean = re.sub(r"[\s,\-/]+", " ", dept_clean).strip()
-        inst_clean = re.sub(r"[\s,\-/]+", " ", inst).strip()
+    @classmethod
+    def get_title_tokens(cls, title: str) -> Set[str]:
+        import re
+        if not title:
+            return set()
+        return set(re.findall(r"[a-z0-9]+", title.lower())) - cls.TITLE_STOPWORDS
 
-        if not inst_clean or not dept_clean:
-            return None
+    @classmethod
+    def is_same_position(cls, j1: JobPosting, j2: JobPosting) -> bool:
+        """Determines if two postings represent the same position at the same institution."""
+        if cls.clean_institution(j1.institution) != cls.clean_institution(j2.institution):
+            return False
 
-        return (inst_clean, dept_clean)
+        # If both links are identical
+        if j1.link and j2.link and j1.link.strip().rstrip("/") == j2.link.strip().rstrip("/"):
+            return True
+
+        d1 = cls.get_dept_tokens(j1.field)
+        d2 = cls.get_dept_tokens(j2.field)
+        t1 = cls.get_title_tokens(j1.title)
+        t2 = cls.get_title_tokens(j2.title)
+
+        dept_ov = len(d1 & d2) / min(len(d1), len(d2)) if (d1 and d2) else 0.0
+        title_ov = len(t1 & t2) / min(len(t1), len(t2)) if (t1 and t2) else 0.0
+
+        # 1. Exact or near-identical title at same institution (e.g. Wisconsin Madison)
+        if title_ov >= 0.85:
+            return True
+
+        # 2. Strong title and department overlap (e.g. UIC Operations Management / IDS)
+        if title_ov >= 0.6 and dept_ov >= 0.5:
+            return True
+
+        # 3. Same department at same institution (User rule: "If multiple jobs' institution and department are same, keep only the latest update")
+        if dept_ov >= 0.75:
+            return True
+
+        return False
 
     def deduplicate_by_institution_department(
         self, jobs: List[JobPosting]
     ) -> Tuple[List[JobPosting], List[JobPosting]]:
         """
-        Groups jobs with the same institution and department.
-        Keeps only the single latest update per (institution, department) group.
+        Groups jobs representing the same position/department at an institution.
+        Keeps only the single latest update per position group.
         The superseded duplicates are marked as 'Filtered (Duplicate)' and returned.
 
         Returns:
             Tuple[List[JobPosting] unique_active_jobs, List[JobPosting] duplicate_jobs]
         """
-        from collections import defaultdict
-        groups: Dict[Tuple[str, str], List[JobPosting]] = defaultdict(list)
-        ungrouped: List[JobPosting] = []
-
-        for j in jobs:
-            key = self.normalize_institution_department(j.institution, j.field)
-            if key:
-                groups[key].append(j)
-            else:
-                ungrouped.append(j)
-
-        kept_jobs: List[JobPosting] = list(ungrouped)
+        kept_jobs: List[JobPosting] = []
         duplicates: List[JobPosting] = []
+        visited_ids: Set[str] = set()
 
-        for key, group in groups.items():
-            if len(group) == 1:
-                kept_jobs.append(group[0])
+        for i, j1 in enumerate(jobs):
+            if j1.id in visited_ids:
+                continue
+
+            cluster = [j1]
+            visited_ids.add(j1.id)
+
+            for j2 in jobs[i + 1:]:
+                if j2.id in visited_ids:
+                    continue
+                if self.is_same_position(j1, j2):
+                    cluster.append(j2)
+                    visited_ids.add(j2.id)
+
+            if len(cluster) == 1:
+                kept_jobs.append(cluster[0])
             else:
-                # Sort group: latest update first
+                # Rank: latest update first
                 # 1. date_first_seen (descending)
                 # 2. date_last_verified (descending)
                 # 3. fit_score (descending)
                 # 4. id (deterministic)
-                sorted_group = sorted(
-                    group,
+                sorted_cluster = sorted(
+                    cluster,
                     key=lambda x: (
                         x.date_first_seen or "",
                         x.date_last_verified or "",
@@ -221,15 +259,15 @@ class JobDeduplicator:
                     ),
                     reverse=True,
                 )
-                winner = sorted_group[0]
+                winner = sorted_cluster[0]
                 kept_jobs.append(winner)
 
-                for loser in sorted_group[1:]:
+                for loser in sorted_cluster[1:]:
                     loser.status = f"Filtered (Duplicate of {winner.id[:8]} - {winner.title[:30]})"
                     duplicates.append(loser)
                     self.logger.info(
-                        f"Deduplicated by (Inst, Dept): Kept '{winner.title}' ({winner.date_first_seen}), "
-                        f"filtered duplicate '{loser.title}' ({loser.date_first_seen}) at {key[0]} - {key[1]}"
+                        f"Deduplicated: Kept '{winner.title}' ({winner.date_first_seen}), "
+                        f"filtered duplicate '{loser.title}' ({loser.date_first_seen}) at {winner.institution}"
                     )
 
         if duplicates:
