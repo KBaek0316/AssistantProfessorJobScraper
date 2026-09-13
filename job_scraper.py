@@ -52,8 +52,8 @@ def parse_args():
     parser.add_argument(
         "--query",
         type=str,
-        default="Assistant Professor Transportation",
-        help="Search query for job boards (default: 'Assistant Professor Transportation')",
+        default="Assistant Professor Transportation, Assistant Professor Mobility, Assistant Professor Public Transportation",
+        help="Comma-separated search queries for job boards (default: Transportation, Mobility, Public Transportation)",
     )
     parser.add_argument(
         "--max-per-source",
@@ -157,17 +157,27 @@ def main():
         scrapers.append(LinkedInScraper())
 
     # 2. Scrape Job Postings
+    queries = [q.strip() for q in args.query.split(",") if q.strip()]
     scraped_postings = []
-    for scraper in scrapers:
-        print(f"\n[SCRAPING] Fetching listings from {scraper.name}...")
-        try:
-            results = scraper.scrape(query=args.query, max_results=args.max_per_source)
-            scraped_postings.extend(results)
-            print(f"  -> Retrieved {len(results)} postings from {scraper.name}")
-        except Exception as e:
-            logger.error(f"Failed scraping {scraper.name}: {e}", exc_info=True)
+    seen_urls_overall = set()
 
-    print(f"\n[SUMMARY] Total raw listings fetched across all sources: {len(scraped_postings)}")
+    for scraper in scrapers:
+        print(f"\n[SCRAPING] Fetching listings from {scraper.name} across {len(queries)} search terms...")
+        for q in queries:
+            try:
+                results = scraper.scrape(query=q, max_results=args.max_per_source)
+                new_results = []
+                for r in results:
+                    clean_link = r.link.strip().rstrip("/")
+                    if clean_link not in seen_urls_overall:
+                        seen_urls_overall.add(clean_link)
+                        new_results.append(r)
+                scraped_postings.extend(new_results)
+                print(f"  -> [{scraper.name}] '{q}': {len(results)} found ({len(new_results)} new unique)")
+            except Exception as e:
+                logger.error(f"Failed scraping {scraper.name} for query '{q}': {e}", exc_info=True)
+
+    print(f"\n[SUMMARY] Total unique raw listings fetched across all sources: {len(scraped_postings)}")
 
     # 3. Deduplicate and Track Historical Records
     deduplicator = JobDeduplicator(csv_filepath=args.csv_out)
