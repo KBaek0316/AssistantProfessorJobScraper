@@ -123,6 +123,17 @@ class JobPosting:
             if re.search(pat, combined):
                 return True
 
+        # Canada (Provinces, territories, and major university cities)
+        canada_patterns = [
+            r"\b(canada|canadian)\b",
+            r"\b(ontario|quebec|québec|british columbia|alberta|manitoba|saskatchewan|nova scotia|new brunswick|newfoundland)\b",
+            r"\b(toronto|montreal|montréal|vancouver|ottawa|calgary|edmonton|waterloo|quebec city|winnipeg|halifax|hamilton|victoria)\b",
+            r",\s*(on|qc|bc|ab|mb|sk|ns|nb|nl|pe)\b",
+        ]
+        for pat in canada_patterns:
+            if re.search(pat, combined):
+                return True
+
         # European countries
         european_patterns = [
             r"\b(united kingdom|uk|great britain|england|scotland|wales|northern ireland|london)\b",

@@ -37,6 +37,20 @@ class UniversityGeocoder:
         "ohio state university": (40.0067, -83.0305),
         "penn state university": (40.7982, -77.8599),
         "arizona state university": (33.4242, -111.9281),
+        # Canadian universities
+        "university of toronto": (43.6629, -79.3957),
+        "uoft": (43.6629, -79.3957),
+        "university of british columbia": (49.2606, -123.2460),
+        "ubc": (49.2606, -123.2460),
+        "mcgill university": (45.5048, -73.5772),
+        "mcgill": (45.5048, -73.5772),
+        "university of waterloo": (43.4723, -80.5449),
+        "waterloo": (43.4723, -80.5449),
+        "mcmaster university": (43.2609, -79.9192),
+        "university of alberta": (53.5232, -113.5263),
+        "university of calgary": (51.0778, -114.1332),
+        "polytechnique montréal": (45.5048, -73.6133),
+        "polytechnique montreal": (45.5048, -73.6133),
     }
 
     def __init__(self):

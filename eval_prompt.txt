@@ -30,7 +30,7 @@ Job Description / Text Snippet:
 === EVALUATION INSTRUCTIONS ===
 1. Determine if this is an academic faculty role (Assistant Professor, Associate Professor, Full Professor, Open Rank Faculty, or Lecturer/Instructor). Set "is_faculty" to false if this is a postdoc, research scientist/fellow without faculty status, driver, technician, staff, or K-12 role.
 2. Evaluate Geographic Scope:
-   - Target Regions: United States (US), European countries (e.g. United Kingdom, Germany, France, Netherlands, Switzerland, Sweden, Norway, Denmark, Finland, Italy, Spain, Belgium, Austria, Ireland, Poland, Portugal, etc.), Hong Kong, Singapore, Japan, South Korea, and Taiwan.
+   - Target Regions: United States (US), Canada, European countries (e.g. United Kingdom, Germany, France, Netherlands, Switzerland, Sweden, Norway, Denmark, Finland, Italy, Spain, Belgium, Austria, Ireland, Poland, Portugal, etc.), Hong Kong, Singapore, Japan, South Korea, and Taiwan.
    - EXCLUDE: Mainland China (PRC, Beijing, Shanghai, Shenzhen, etc. - explicitly DO NOT exclude Hong Kong or Taiwan) and non-target countries (e.g. Middle East, Latin America, South Asia, Africa).
    - If a position is located in Mainland China or another non-target region, set "is_faculty" to false or assign fit_score: 1 with fit_reason: "Screened out: Location outside target geographic scope ([Location])".
 3. Evaluate how closely the job matches the candidate's research profile on a 1 to 10 scale:

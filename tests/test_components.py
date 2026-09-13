@@ -128,11 +128,11 @@ class TestComponents(unittest.TestCase):
             map_gen.generate_map(all_jobs)
             self.assertTrue(os.path.exists(test_map))
 
-            # Verify map HTML contains legend and deadline subgroup controls
+            # Verify map HTML contains legend and deadline feature group controls (without marker clustering)
             with open(test_map, "r", encoding="utf-8") as f:
                 map_content = f.read()
                 self.assertIn("Fit Score Marker Legend", map_content)
-                self.assertIn("feature_group_sub_group", map_content)
+                self.assertIn("feature_group", map_content)
 
             # Run deduplicator a second time with the same posting -> should have 0 new jobs
             dedup2 = JobDeduplicator(csv_filepath=test_csv)
@@ -141,17 +141,32 @@ class TestComponents(unittest.TestCase):
             self.assertEqual(len(all_jobs2), 1)
 
         finally:
+            import gc, time
+            gc.collect()
             for f in (test_csv, test_xlsx, test_map):
                 if os.path.exists(f):
-                    os.remove(f)
+                    for _ in range(5):
+                        try:
+                            os.remove(f)
+                            break
+                        except PermissionError:
+                            time.sleep(0.1)
 
     def test_location_filtering(self):
-        # Allowed target locations
+        # Allowed target locations: US & Canada
         self.assertTrue(JobPosting.is_allowed_location("Austin, TX", "United States"))
+        self.assertTrue(JobPosting.is_allowed_location("Toronto, ON", "Canada"))
+        self.assertTrue(JobPosting.is_allowed_location("Vancouver", "Canada"))
+        self.assertTrue(JobPosting.is_allowed_location("Montreal, QC"))
+        self.assertTrue(JobPosting.is_allowed_location("Waterloo, Ontario"))
+
+        # Allowed: Europe
         self.assertTrue(JobPosting.is_allowed_location("London", "United Kingdom"))
         self.assertTrue(JobPosting.is_allowed_location("Munich", "Germany"))
         self.assertTrue(JobPosting.is_allowed_location("Delft", "Netherlands"))
         self.assertTrue(JobPosting.is_allowed_location("Zurich", "Switzerland"))
+
+        # Allowed: Asia
         self.assertTrue(JobPosting.is_allowed_location("Singapore", "Singapore"))
         self.assertTrue(JobPosting.is_allowed_location("Taipei", "Taiwan"))
         self.assertTrue(JobPosting.is_allowed_location("Hong Kong", "Hong Kong"))
