@@ -225,9 +225,5 @@ service_account.json
 .cache/
 scraping/
 
-# User Resume / CV
-CV.pdf
-cv.pdf
-*.pdf
 
 

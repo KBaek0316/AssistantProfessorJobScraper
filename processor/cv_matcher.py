@@ -84,6 +84,15 @@ class CVProfileManager:
         if not api_key:
             return None
 
+        candidate_models = [
+            os.environ.get("GEMINI_MODEL", "gemini-3.7-flash").strip(),
+            "gemini-3.5-flash-lite",
+            "gemini-3.7-flash",
+            "gemini-3.6-flash",
+            "gemini-3.8-flash",
+        ]
+        candidate_models = list(dict.fromkeys(candidate_models))
+
         try:
             from google import genai
             client = genai.Client(api_key=api_key)
@@ -100,8 +109,20 @@ Return strictly valid JSON with this structure:
   "irrelevant_subfields": ["Subfields in civil/urban/engineering that this candidate does NOT do (e.g. Water Resources, Structures, Geotech)"]
 }}
 """
-            resp = client.models.generate_content(model="gemini-3.6-flash", contents=prompt)
-            clean_json = resp.text.strip()
+            resp_text = None
+            for model_name in candidate_models:
+                try:
+                    resp = client.models.generate_content(model=model_name, contents=prompt)
+                    if resp and resp.text:
+                        resp_text = resp.text
+                        break
+                except Exception as m_err:
+                    self.logger.warning(f"Profile extraction with model '{model_name}' failed: {m_err}")
+
+            if not resp_text:
+                return None
+
+            clean_json = resp_text.strip()
             if clean_json.startswith("```"):
                 clean_json = clean_json.strip("`")
                 if clean_json.startswith("json"):
