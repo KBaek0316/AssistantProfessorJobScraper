@@ -21,8 +21,35 @@ class MapGenerator:
             job_map = folium.Map(
                 location=[39.8283, -98.5795],
                 zoom_start=4.5,
-                tiles="OpenStreetMap",
+                tiles=None,
             )
+
+            # Add Esri World Street Map as primary basemap (reliable, high-uptime CDN, never blocked)
+            folium.TileLayer(
+                tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+                attr="Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, METI",
+                name="Street Map (Esri)",
+                control=True,
+                overlay=False,
+            ).add_to(job_map)
+
+            # Add Esri Light Gray Canvas (clean, modern, minimalist)
+            folium.TileLayer(
+                tiles="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+                attr="Esri, HERE, Garmin, &copy; OpenStreetMap contributors",
+                name="Light Gray Canvas",
+                control=True,
+                overlay=False,
+            ).add_to(job_map)
+
+            # Add Esri Topographic layer
+            folium.TileLayer(
+                tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
+                attr="Esri, FAO, NOAA, USGS, EPA",
+                name="Topographic (Esri)",
+                control=True,
+                overlay=False,
+            ).add_to(job_map)
 
             marker_cluster = MarkerCluster(name="Universities").add_to(job_map)
             plotted_count = 0
