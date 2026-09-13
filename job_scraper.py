@@ -202,6 +202,11 @@ def main():
                 deduplicator.save_filtered_jobs(filtered_jobs)
                 if not args.include_filtered:
                     all_jobs = [j for j in all_jobs if not j.status.startswith("Filtered")]
+
+            # Post-enrichment deduplication by (institution, department)
+            all_jobs, post_dupes = deduplicator.deduplicate_by_institution_department(all_jobs)
+            if post_dupes:
+                print(f"[DEDUPLICATION] Pruned {len(post_dupes)} duplicate positions sharing same institution and department.")
         else:
             print("\n[GEMINI] No new postings to evaluate with Gemini.")
     else:

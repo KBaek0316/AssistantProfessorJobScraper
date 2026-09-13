@@ -208,6 +208,13 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
         if data.get("city_state"):
             posting.location = data["city_state"].strip()
 
+        # 4. Geographic scope validation
+        country = str(data.get("country", "")).strip()
+        if not JobPosting.is_allowed_location(posting.location, country):
+            posting.status = "Filtered (Location Outside Scope)"
+            posting.fit_score = 1
+            posting.fit_reason = f"Screened out: Location '{posting.location}' is outside target geographic scope (US, Europe, HK, Singapore, Japan, Korea, Taiwan; excluding Mainland China)."
+
         # Handle research topics
         topics_data = data.get("research_topics", [])
         if isinstance(topics_data, list):

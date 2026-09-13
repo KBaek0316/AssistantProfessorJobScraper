@@ -29,12 +29,16 @@ Job Description / Text Snippet:
 
 === EVALUATION INSTRUCTIONS ===
 1. Determine if this is an academic faculty role (Assistant Professor, Associate Professor, Full Professor, Open Rank Faculty, or Lecturer/Instructor). Set "is_faculty" to false if this is a postdoc, research scientist/fellow without faculty status, driver, technician, staff, or K-12 role.
-2. Evaluate how closely the job matches the candidate's research profile on a 1 to 10 scale:
+2. Evaluate Geographic Scope:
+   - Target Regions: United States (US), European countries (e.g. United Kingdom, Germany, France, Netherlands, Switzerland, Sweden, Norway, Denmark, Finland, Italy, Spain, Belgium, Austria, Ireland, Poland, Portugal, etc.), Hong Kong, Singapore, Japan, South Korea, and Taiwan.
+   - EXCLUDE: Mainland China (PRC, Beijing, Shanghai, Shenzhen, etc. - explicitly DO NOT exclude Hong Kong or Taiwan) and non-target countries (e.g. Middle East, Latin America, South Asia, Africa).
+   - If a position is located in Mainland China or another non-target region, set "is_faculty" to false or assign fit_score: 1 with fit_reason: "Screened out: Location outside target geographic scope ([Location])".
+3. Evaluate how closely the job matches the candidate's research profile on a 1 to 10 scale:
    - 9-10 (Core Match): The position explicitly seeks expertise in Transportation Engineering, Transit Systems, Travel Behavior Analysis, Discrete Choice Modeling, Intelligent Transportation Systems (ITS), Mobility-as-a-Service (MaaS), or AI/Data Science applied to transportation/mobility.
    - 7-8 (Strong Interdisciplinary Match): The position is in Urban Planning, Systems Engineering, Industrial Engineering, or Computing/Data Science, but specifically focuses on transportation, mobility systems, smart cities, or urban analytics.
    - 4-6 (Moderate / Borderline Fit): Broad Civil & Environmental Engineering or Systems Engineering search where transportation is one of several acceptable sub-disciplines, or an open-topic data science/computing faculty search.
    - 1-3 (Low Relevance / Irrelevant): The role is in an unrelated field (e.g. English, Film, Nursing, Pharmacy, Education) OR is in a non-matching civil engineering subfield (e.g. Water Resources/Hydrology, Structural Engineering, Geotechnical Engineering, Environmental Chemistry) even if the description mentions a state Department of Transportation (e.g. TxDOT) merely as a potential funding source, partner, or advisory body.
-3. Provide a concise, 1-sentence "fit_reason" summarizing why this score was assigned (e.g., "Core match: focuses on transit planning and travel behavior analysis" or "Low fit: water resources management position; incidental mention of TX DOT co-work opportunity only").
+4. Provide a concise, 1-sentence "fit_reason" summarizing why this score was assigned (e.g., "Core match: focuses on transit planning and travel behavior analysis" or "Low fit: water resources management position; incidental mention of TX DOT co-work opportunity only").
 
 === REQUIRED JSON OUTPUT FORMAT ===
 Return strictly valid JSON with no markdown formatting or commentary:
@@ -48,7 +52,8 @@ Return strictly valid JSON with no markdown formatting or commentary:
   "tenure_track": "Tenure-Track, Tenured, Non-Tenure Track, or Unspecified",
   "deadline": "Application deadline (YYYY-MM-DD, or 'Open until filled', or 'Review begins [Date]')",
   "salary": "Salary range if mentioned, otherwise 'Not specified'",
-  "city_state": "City and State in USA (e.g. Austin, TX)",
+  "city_state": "City and State/Country (e.g. Austin, TX, or London, UK, or Taipei, Taiwan, or Singapore)",
+  "country": "Country name (e.g. United States, United Kingdom, Singapore, Taiwan, Japan, South Korea)",
   "research_topics": ["List 2 to 4 specific research areas/topics"],
   "concise_summary": "Strictly 1 concise sentence summarizing the primary focus of the role and minimum degree qualification."
 }}

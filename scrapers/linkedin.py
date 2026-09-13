@@ -28,7 +28,7 @@ class LinkedInScraper(BaseScraper):
         return ""
 
     def scrape(self, query: str = "Assistant Professor Transportation", max_results: int = 20) -> List[JobPosting]:
-        self.logger.info(f"Querying LinkedIn Guest API for: '{query}' in United States")
+        self.logger.info(f"Querying LinkedIn Guest API for: '{query}' (Target scope: US, Europe, East/SE Asia)")
         postings: List[JobPosting] = []
         seen_ids = set()
 
@@ -39,7 +39,6 @@ class LinkedInScraper(BaseScraper):
             try:
                 params = {
                     "keywords": query,
-                    "location": "United States",
                     "start": start,
                 }
                 resp = self.session.get(self.GUEST_URL, params=params, timeout=15)

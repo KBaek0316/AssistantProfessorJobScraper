@@ -3,7 +3,7 @@ import json
 import logging
 import os
 from datetime import datetime, timezone
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 from scrapers.base import JobPosting
 
 
@@ -136,14 +136,106 @@ class JobDeduplicator:
 
                     jobs[job_id] = posting
 
+            # Prune duplicate (institution, department) pairings loaded from disk
+            active_list, dupes = self.deduplicate_by_institution_department(list(jobs.values()))
+            jobs = {j.id: j for j in active_list}
+
             if filtered_to_cache:
                 self.save_filtered_jobs(filtered_to_cache)
 
-            self.logger.info(f"Loaded {len(jobs)} active jobs from {self.csv_filepath}")
+            self.logger.info(f"Loaded {len(jobs)} active unique jobs from {self.csv_filepath}")
         except Exception as e:
             self.logger.error(f"Error reading existing {self.csv_filepath}: {e}", exc_info=True)
 
         return jobs
+
+    @staticmethod
+    def normalize_institution_department(institution: str, department: str) -> Optional[Tuple[str, str]]:
+        """Normalize institution and department to form a canonical grouping key."""
+        if not institution or not department:
+            return None
+
+        import re
+        inst = institution.strip().lower()
+        dept = department.strip().lower()
+
+        # Discard generic department placeholders that shouldn't group unrelated jobs
+        generic_placeholders = {
+            "", "unspecified", "unknown", "n/a", "none", "various", "general",
+            "academic institution", "chronicle listed university", "higheredjobs listed university"
+        }
+        if dept in generic_placeholders or inst in generic_placeholders:
+            return None
+
+        # Strip common organizational prefixes from department
+        dept_clean = re.sub(r"^(department|dept\.?|school|division|college|faculty)\s+of\s+", "", dept)
+        dept_clean = re.sub(r"[\s,\-/]+", " ", dept_clean).strip()
+        inst_clean = re.sub(r"[\s,\-/]+", " ", inst).strip()
+
+        if not inst_clean or not dept_clean:
+            return None
+
+        return (inst_clean, dept_clean)
+
+    def deduplicate_by_institution_department(
+        self, jobs: List[JobPosting]
+    ) -> Tuple[List[JobPosting], List[JobPosting]]:
+        """
+        Groups jobs with the same institution and department.
+        Keeps only the single latest update per (institution, department) group.
+        The superseded duplicates are marked as 'Filtered (Duplicate)' and returned.
+
+        Returns:
+            Tuple[List[JobPosting] unique_active_jobs, List[JobPosting] duplicate_jobs]
+        """
+        from collections import defaultdict
+        groups: Dict[Tuple[str, str], List[JobPosting]] = defaultdict(list)
+        ungrouped: List[JobPosting] = []
+
+        for j in jobs:
+            key = self.normalize_institution_department(j.institution, j.field)
+            if key:
+                groups[key].append(j)
+            else:
+                ungrouped.append(j)
+
+        kept_jobs: List[JobPosting] = list(ungrouped)
+        duplicates: List[JobPosting] = []
+
+        for key, group in groups.items():
+            if len(group) == 1:
+                kept_jobs.append(group[0])
+            else:
+                # Sort group: latest update first
+                # 1. date_first_seen (descending)
+                # 2. date_last_verified (descending)
+                # 3. fit_score (descending)
+                # 4. id (deterministic)
+                sorted_group = sorted(
+                    group,
+                    key=lambda x: (
+                        x.date_first_seen or "",
+                        x.date_last_verified or "",
+                        x.fit_score or 0,
+                        x.id or "",
+                    ),
+                    reverse=True,
+                )
+                winner = sorted_group[0]
+                kept_jobs.append(winner)
+
+                for loser in sorted_group[1:]:
+                    loser.status = f"Filtered (Duplicate of {winner.id[:8]} - {winner.title[:30]})"
+                    duplicates.append(loser)
+                    self.logger.info(
+                        f"Deduplicated by (Inst, Dept): Kept '{winner.title}' ({winner.date_first_seen}), "
+                        f"filtered duplicate '{loser.title}' ({loser.date_first_seen}) at {key[0]} - {key[1]}"
+                    )
+
+        if duplicates:
+            self.save_filtered_jobs(duplicates)
+
+        return kept_jobs, duplicates
 
     def process_incoming(
         self, scraped_jobs: List[JobPosting]
@@ -177,6 +269,14 @@ class JobDeduplicator:
                 filtered_identifiers.add(normalized_link)
                 continue
 
+            # Location pre-check if location is present in scraped card
+            if job.location and not JobPosting.is_allowed_location(job.location):
+                job.status = "Filtered (Location Outside Scope)"
+                self.save_filtered_jobs([job])
+                filtered_identifiers.add(job.id)
+                filtered_identifiers.add(normalized_link)
+                continue
+
             matched_id = job.id if job.id in existing_jobs else link_to_id.get(normalized_link)
 
             if matched_id:
@@ -195,7 +295,12 @@ class JobDeduplicator:
                 link_to_id[normalized_link] = job.id
                 new_jobs.append(job)
 
+        # Apply institution & department deduplication across all active jobs
+        active_list, dupes = self.deduplicate_by_institution_department(list(existing_jobs.values()))
+        active_ids = {j.id for j in active_list}
+        new_jobs = [j for j in new_jobs if j.id in active_ids]
+
         self.logger.info(
-            f"Deduplication complete: {len(new_jobs)} new jobs, {len(existing_jobs)} active tracked jobs."
+            f"Deduplication complete: {len(new_jobs)} new jobs, {len(active_list)} active tracked jobs."
         )
-        return new_jobs, list(existing_jobs.values())
+        return new_jobs, active_list

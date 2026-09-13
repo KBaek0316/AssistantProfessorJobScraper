@@ -145,6 +145,86 @@ class TestComponents(unittest.TestCase):
                 if os.path.exists(f):
                     os.remove(f)
 
+    def test_location_filtering(self):
+        # Allowed target locations
+        self.assertTrue(JobPosting.is_allowed_location("Austin, TX", "United States"))
+        self.assertTrue(JobPosting.is_allowed_location("London", "United Kingdom"))
+        self.assertTrue(JobPosting.is_allowed_location("Munich", "Germany"))
+        self.assertTrue(JobPosting.is_allowed_location("Delft", "Netherlands"))
+        self.assertTrue(JobPosting.is_allowed_location("Zurich", "Switzerland"))
+        self.assertTrue(JobPosting.is_allowed_location("Singapore", "Singapore"))
+        self.assertTrue(JobPosting.is_allowed_location("Taipei", "Taiwan"))
+        self.assertTrue(JobPosting.is_allowed_location("Hong Kong", "Hong Kong"))
+        self.assertTrue(JobPosting.is_allowed_location("Hong Kong, China"))  # Must preserve HK!
+        self.assertTrue(JobPosting.is_allowed_location("Tokyo", "Japan"))
+        self.assertTrue(JobPosting.is_allowed_location("Seoul", "South Korea"))
+
+        # Excluded locations: Mainland China
+        self.assertFalse(JobPosting.is_allowed_location("Beijing", "China"))
+        self.assertFalse(JobPosting.is_allowed_location("Shanghai", "PRC"))
+        self.assertFalse(JobPosting.is_allowed_location("Shenzhen", "Mainland China"))
+        self.assertFalse(JobPosting.is_allowed_location("Hangzhou, China"))
+
+        # Excluded other non-target regions
+        self.assertFalse(JobPosting.is_allowed_location("Dubai", "UAE"))
+        self.assertFalse(JobPosting.is_allowed_location("Riyadh", "Saudi Arabia"))
+        self.assertFalse(JobPosting.is_allowed_location("Mumbai", "India"))
+        self.assertFalse(JobPosting.is_allowed_location("São Paulo", "Brazil"))
+
+    def test_institution_department_deduplication(self):
+        dedup = JobDeduplicator()
+        job_older = JobPosting(
+            id="job_old",
+            title="Assistant Professor / Associate Professor in Maritime Studies",
+            institution="Nanyang Technological University",
+            field="School of Civil and Environmental Engineering",
+            location="Singapore",
+            deadline="Open until filled",
+            salary="Not specified",
+            link="https://example.com/job/old",
+            source="AcademicKeys",
+            date_first_seen="2026-09-12",
+            date_last_verified="2026-09-13",
+            fit_score=5,
+        )
+        job_newer = JobPosting(
+            id="job_new",
+            title="Assistant Professor / Associate Professor (Tenure-Track) in Civil and Environmental Engineering",
+            institution="Nanyang Technological University",
+            field="Department of Civil and Environmental Engineering",
+            location="Singapore",
+            deadline="Open until filled",
+            salary="Not specified",
+            link="https://example.com/job/new",
+            source="AcademicKeys",
+            date_first_seen="2026-09-13",
+            date_last_verified="2026-09-13",
+            fit_score=7,
+        )
+        job_unrelated = JobPosting(
+            id="job_unrelated",
+            title="Assistant Professor of Transportation",
+            institution="Purdue University",
+            field="Civil Engineering",
+            location="West Lafayette, IN",
+            deadline="2026-12-01",
+            salary="$100k",
+            link="https://example.com/job/purdue",
+            source="AcademicKeys",
+            date_first_seen="2026-09-11",
+            date_last_verified="2026-09-13",
+            fit_score=9,
+        )
+
+        active, dupes = dedup.deduplicate_by_institution_department([job_older, job_newer, job_unrelated])
+        self.assertEqual(len(active), 2)
+        self.assertEqual(len(dupes), 1)
+        active_ids = [j.id for j in active]
+        self.assertIn("job_new", active_ids)
+        self.assertIn("job_unrelated", active_ids)
+        self.assertNotIn("job_old", active_ids)
+        self.assertEqual(dupes[0].id, "job_old")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -70,6 +70,107 @@ class JobPosting:
 
         return True
 
+    @staticmethod
+    def is_allowed_location(location: str, country: str = "") -> bool:
+        """
+        Validates whether a location or country falls within the target geographic scope:
+        Allowed: US, European countries, Hong Kong, Singapore, Japan, South Korea, Taiwan.
+        Strictly Excluded: Mainland China (PRC), other non-target countries (Middle East, Latin America, South Asia, Africa).
+        """
+        combined = f"{location} {country}".lower().strip()
+        if not combined:
+            return True
+
+        import re
+
+        # 1. Explicitly check Hong Kong or Taiwan first (preserves 'Hong Kong, China')
+        if re.search(r"\b(hong\s*kong|hk|taiwan|taipei|hsinchu|tainan|taichung)\b", combined):
+            return True
+
+        # 2. Exclude Mainland China
+        mainland_china_patterns = [
+            r"\bchina\b", r"\bprc\b", r"\bmainland china\b", r"\bpeople's republic of china\b",
+            r"\bbeijing\b", r"\bshanghai\b", r"\bshenzhen\b", r"\bguangzhou\b", r"\bwuhan\b",
+            r"\bchengdu\b", r"\bhangzhou\b", r"\bnanjing\b", r"\btianjin\b", r"\bxi'?an\b",
+            r"\bchongqing\b", r"\bharbin\b", r"\bsuzhou\b", r"\bzhejiang\b", r"\btsinghua\b",
+            r"\bpeking university\b", r"\bfudan\b"
+        ]
+        for pat in mainland_china_patterns:
+            if re.search(pat, combined):
+                return False
+
+        # 3. Exclude other non-target regions if explicitly mentioned
+        excluded_regions = [
+            r"\buae\b", r"\bunited arab emirates\b", r"\bsaudi arabia\b", r"\bqatar\b",
+            r"\bkuwait\b", r"\boman\b", r"\bbahrain\b", r"\begypt\b", r"\bisrael\b",
+            r"\bindia\b", r"\bpakistan\b", r"\bbangladesh\b",
+            r"\bbrazil\b", r"\bmexico\b", r"\bchile\b", r"\bcolombia\b", r"\bargentina\b",
+            r"\bsouth africa\b", r"\bnigeria\b", r"\bkenya\b",
+            r"\brussia\b", r"\bbelarus\b", r"\bturkey\b", r"\btürkiye\b"
+        ]
+        for pat in excluded_regions:
+            if re.search(pat, combined):
+                return False
+
+        # 4. Check Allowed Target Regions
+        # US States and indicators
+        us_patterns = [
+            r"\b(al|ak|az|ar|ca|co|ct|de|fl|ga|hi|id|il|in|ia|ks|ky|la|me|md|ma|mi|mn|ms|mo|mt|ne|nv|nh|nj|nm|ny|nc|nd|oh|ok|or|pa|ri|sc|sd|tn|tx|ut|vt|va|wa|wv|wi|wy|dc)\b",
+            r"\b(alabama|alaska|arizona|arkansas|california|colorado|connecticut|delaware|florida|georgia|hawaii|idaho|illinois|indiana|iowa|kansas|kentucky|louisiana|maine|maryland|massachusetts|michigan|minnesota|mississippi|missouri|montana|nebraska|nevada|new hampshire|new jersey|new mexico|new york|north carolina|north dakota|ohio|oklahoma|oregon|pennsylvania|rhode island|south carolina|south dakota|tennessee|texas|utah|vermont|virginia|washington|west virginia|wisconsin|wyoming)\b",
+            r"\b(usa|united states|u\.s\.a?\b|america|puerto rico)\b"
+        ]
+        for pat in us_patterns:
+            if re.search(pat, combined):
+                return True
+
+        # European countries
+        european_patterns = [
+            r"\b(united kingdom|uk|great britain|england|scotland|wales|northern ireland|london)\b",
+            r"\b(germany|deutschland|berlin|munich|hamburg|frankfurt|stuttgart|aachen)\b",
+            r"\b(france|paris|lyon|toulouse|marseille)\b",
+            r"\b(netherlands|holland|amsterdam|delft|rotterdam|eindhoven|utrecht)\b",
+            r"\b(switzerland|zurich|zürich|geneva|lausanne|eth zurich|epfl)\b",
+            r"\b(sweden|stockholm|gothenburg|uppsala|kth)\b",
+            r"\b(norway|oslo|trondheim|ntnu|bergen)\b",
+            r"\b(denmark|copenhagen|aarhus|dtu)\b",
+            r"\b(finland|helsinki|aalto|tampere|oulu)\b",
+            r"\b(italy|italia|rome|milan|turin|politecnico di milano|politecnico di torino|bologna)\b",
+            r"\b(spain|españa|madrid|barcelona|valencia)\b",
+            r"\b(belgium|brussels|leuven|ghent)\b",
+            r"\b(austria|vienna|wien|graz)\b",
+            r"\b(ireland|dublin|cork|galway)\b",
+            r"\b(poland|warsaw|krakow|kraków|gdansk)\b",
+            r"\b(portugal|lisbon|porto)\b",
+            r"\b(czech republic|czechia|prague|brno)\b",
+            r"\b(greece|athens|thessaloniki)\b",
+            r"\b(hungary|budapest)\b",
+            r"\b(slovakia|bratislava)\b",
+            r"\b(luxembourg)\b",
+            r"\b(iceland|reykjavik)\b",
+            r"\b(estonia|tallinn|tartu)\b",
+            r"\b(latvia|riga)\b",
+            r"\b(lithuania|vilnius|kaunas)\b",
+            r"\b(slovenia|ljubljana)\b",
+            r"\b(croatia|zagreb)\b",
+            r"\b(cyprus|nicosia)\b",
+            r"\b(malta|valletta)\b"
+        ]
+        for pat in european_patterns:
+            if re.search(pat, combined):
+                return True
+
+        # Target Asian countries/regions
+        target_asia = [
+            r"\b(singapore|ntu|nus|smu)\b",
+            r"\b(japan|tokyo|kyoto|osaka|nagoya|tohoku|hokkaido|kyushu|tsukuba)\b",
+            r"\b(korea|south korea|republic of korea|seoul|daejeon|busan|incheon|kaist|postech|yonsei|korea university|snu)\b"
+        ]
+        for pat in target_asia:
+            if re.search(pat, combined):
+                return True
+
+        return True
+
 
 class BaseScraper(ABC):
     """Abstract Base Class for all website scrapers."""
