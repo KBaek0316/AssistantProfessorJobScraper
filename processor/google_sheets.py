@@ -87,7 +87,13 @@ class GoogleSheetsSync:
             try:
                 worksheet = spreadsheet.worksheet(self.tab_name)
             except Exception:
-                worksheet = spreadsheet.add_worksheet(title=self.tab_name, rows=100, cols=20)
+                # If only 1 worksheet exists, rename it to avoid creating redundant tabs
+                all_sheets = spreadsheet.worksheets()
+                if len(all_sheets) == 1:
+                    worksheet = all_sheets[0]
+                    worksheet.update_title(self.tab_name)
+                else:
+                    worksheet = spreadsheet.add_worksheet(title=self.tab_name, rows=100, cols=20)
 
             # Build rows data
             rows = [self.COLUMNS]
