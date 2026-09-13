@@ -4,6 +4,7 @@ from .geocoder import UniversityGeocoder
 from .exporter import JobExporter
 from .google_sheets import GoogleSheetsSync
 from .map_generator import MapGenerator
+from .cv_matcher import CVProfileManager
 
 __all__ = [
     "JobDeduplicator",
@@ -12,4 +13,6 @@ __all__ = [
     "JobExporter",
     "GoogleSheetsSync",
     "MapGenerator",
+    "CVProfileManager",
 ]
+

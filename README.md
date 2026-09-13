@@ -13,25 +13,27 @@ It collects postings from **AcademicKeys**, **HigherEdJobs**, **The Chronicle of
   - [HigherEdJobs Faculty](https://www.higheredjobs.com/faculty/)
   - [The Chronicle of Higher Education Jobs](https://jobs.chronicle.com/)
   - **LinkedIn Jobs** (via public guest search API — no login required, zero account ban risk)
-- **AI-Powered Extraction & Summarization**:
-  - Powered by **Google Gemini 2.5 Flash**.
-  - Standardizes university names, departments, deadlines, and salary ranges.
-  - Automatically classifies tenure-track status (`Tenure-Track`, `Tenured`, `Open`).
-  - Generates a concise **2-sentence summary** covering the research/teaching focus and minimum candidate requirements.
-- **Smart Deduplication & Daily Tracking**:
-  - Compares newly scraped postings against historical records before querying Gemini (saving API calls).
-  - Tracks `Date Added`, `Last Verified`, and `Status` (`Active` / `Closed`).
+- **Candidate CV Fit Evaluation & 1–10 Relevance Scoring**:
+  - Automatically matches job postings against your research profile extracted from **`CV.pdf`**.
+  - Assigns a **1 to 10 Fit Score** and a concise **Fit Reason** explaining why each job is a match or mismatch.
+  - Highlights core Transportation Engineering & Planning roles (scores 8–10) in vibrant green in Excel and Folium map.
+  - Welcomes interdisciplinary positions (e.g. Urban Planning, Industrial/Systems Engineering, Data Science) *if* they genuinely seek mobility/transportation expertise.
+- **Weak Relevance Screening Filter**:
+  - Automatically screens out irrelevant subfields (e.g. Water Resources/Hydrology jobs that only mention DOTs incidentally, Structural, Geotechnical, or non-engineering disciplines like Film, Nursing, Pharmacy).
+  - Screened-out postings are excluded from active outputs and saved to `.cache/filtered_jobs.json` so they are never re-scraped or re-evaluated.
+  - Configurable sensitivity via `--min-fit-score` (default: `3`).
+- **User-Editable Evaluation Prompt (`eval_prompt.txt`)**:
+  - Customize how Gemini evaluates job postings simply by opening and editing [eval_prompt.txt](file:///c:/Users/baek0040/Documents/GitHub/AssistantProfessorJobScraper/eval_prompt.txt) in your favorite text editor.
+- **Complete CV Privacy**:
+  - **`CV.pdf`** is strictly listed in `.gitignore` and is never committed to GitHub.
+  - A built-in fallback profile ensures GitHub Actions workflows run seamlessly without needing your CV on GitHub.
 - **Dual Export & Real-Time Sync**:
-  - **Excel (`jobs.xlsx`)**: Cleanly formatted spreadsheet with colored headers, autofitted columns, and clickable application links.
-  - **Google Sheets**: Live synchronization to your personal Google Sheet via a Service Account.
-  - **CSV (`jobs.csv`)**: Raw tabular format for easy data analysis.
+  - **Excel (`jobs.xlsx`)**: Cleanly formatted spreadsheet with colored headers, fit score highlighting, and clickable application links.
+  - **Google Sheets**: Live synchronization with dedicated `Fit Score` and `Fit Reason` columns.
+  - **CSV (`jobs.csv`)**: Tabular format for easy data analysis.
 - **Interactive Map (`map.html`)**:
-  - Built with Folium & Leaflet.
-  - Markers clustered by university with rich popup cards displaying job details, Gemini summaries, and apply links.
-  - Built-in geocaching (`.cache/geocache.json`) to minimize rate limits.
-- **Automated Daily Runs (GitHub Actions)**:
-  - Scheduled to run daily at `06:00 UTC` in the cloud.
-  - Automatically commits updated files back to your GitHub repository without needing your local computer on.
+  - Built with Folium & Leaflet using high-reliability Esri basemaps.
+  - Interactive pins displaying fit score badges, research topics, summaries, and direct application links.
 
 ---
 

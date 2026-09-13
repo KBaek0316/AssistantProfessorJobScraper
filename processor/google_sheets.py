@@ -12,6 +12,8 @@ class GoogleSheetsSync:
         "Title",
         "Institution",
         "Field/Division",
+        "Fit Score (1-10)",
+        "Fit Reason",
         "Research Topics",
         "Tenure Track",
         "Location",
@@ -70,10 +72,13 @@ class GoogleSheetsSync:
         except Exception as e:
             self.logger.warning(f"Failed to initialize Google Sheets client: {e}")
 
-    def sync(self, postings: List[JobPosting]):
+    def sync(self, postings: List[JobPosting], include_filtered: bool = False):
         """Upload/sync current postings to Google Sheets."""
         if not self.client or not self.sheet_id:
             return
+
+        if not include_filtered:
+            postings = [p for p in postings if not p.status.startswith("Filtered")]
 
         try:
             spreadsheet = self.client.open_by_key(self.sheet_id)
@@ -91,6 +96,8 @@ class GoogleSheetsSync:
                     p.title,
                     p.institution,
                     p.field,
+                    p.fit_score if p.fit_score is not None else "",
+                    p.fit_reason,
                     p.research_topics,
                     p.tenure_track,
                     p.location,
@@ -109,9 +116,9 @@ class GoogleSheetsSync:
             worksheet.clear()
             worksheet.update("A1", rows)
             # Format header row with bold text
-            worksheet.format("A1:O1", {"textFormat": {"bold": True}})
+            worksheet.format("A1:Q1", {"textFormat": {"bold": True}})
 
-            self.logger.info(f"Successfully synced {len(postings)} jobs to Google Sheet '{spreadsheet.title}'")
+            self.logger.info(f"Successfully synced {len(postings)} active jobs to Google Sheet '{spreadsheet.title}'")
 
         except Exception as e:
             self.logger.error(f"Error syncing to Google Sheet: {e}", exc_info=True)

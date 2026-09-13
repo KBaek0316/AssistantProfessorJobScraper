@@ -1,0 +1,54 @@
+# ==============================================================================
+# Gemini Job Evaluation & Relevance Prompt Template
+# ==============================================================================
+# You can edit this file in any text editor to customize how Gemini evaluates
+# academic faculty job postings and scores their relevance to your research profile.
+#
+# Available dynamic variables:
+#   {candidate_profile} - Research profile extracted from CV.pdf (or fallback profile)
+#   {title}             - Raw job title scraped from the job board
+#   {institution}       - Scraped university / institution name
+#   {location}          - Scraped location
+#   {source}            - Source website (AcademicKeys, HigherEdJobs, Chronicle, LinkedIn)
+#   {raw_description}   - Scraped text snippet / description of the job
+# ==============================================================================
+
+You are an academic hiring specialist and faculty search advisor.
+Analyze the following academic job posting and evaluate its relevance against the candidate's research profile.
+
+=== CANDIDATE PROFILE ===
+{candidate_profile}
+
+=== JOB POSTING TO EVALUATE ===
+Title (scraped): {title}
+Institution (scraped): {institution}
+Location (scraped): {location}
+Source: {source}
+Job Description / Text Snippet:
+"""{raw_description}"""
+
+=== EVALUATION INSTRUCTIONS ===
+1. Determine if this is an academic faculty role (Assistant Professor, Associate Professor, Full Professor, Open Rank Faculty, or Lecturer/Instructor). Set "is_faculty" to false if this is a postdoc, research scientist/fellow without faculty status, driver, technician, staff, or K-12 role.
+2. Evaluate how closely the job matches the candidate's research profile on a 1 to 10 scale:
+   - 9-10 (Core Match): The position explicitly seeks expertise in Transportation Engineering, Transit Systems, Travel Behavior Analysis, Discrete Choice Modeling, Intelligent Transportation Systems (ITS), Mobility-as-a-Service (MaaS), or AI/Data Science applied to transportation/mobility.
+   - 7-8 (Strong Interdisciplinary Match): The position is in Urban Planning, Systems Engineering, Industrial Engineering, or Computing/Data Science, but specifically focuses on transportation, mobility systems, smart cities, or urban analytics.
+   - 4-6 (Moderate / Borderline Fit): Broad Civil & Environmental Engineering or Systems Engineering search where transportation is one of several acceptable sub-disciplines, or an open-topic data science/computing faculty search.
+   - 1-3 (Low Relevance / Irrelevant): The role is in an unrelated field (e.g. English, Film, Nursing, Pharmacy, Education) OR is in a non-matching civil engineering subfield (e.g. Water Resources/Hydrology, Structural Engineering, Geotechnical Engineering, Environmental Chemistry) even if the description mentions a state Department of Transportation (e.g. TxDOT) merely as a potential funding source, partner, or advisory body.
+3. Provide a concise, 1-sentence "fit_reason" summarizing why this score was assigned (e.g., "Core match: focuses on transit planning and travel behavior analysis" or "Low fit: water resources management position; incidental mention of TX DOT co-work opportunity only").
+
+=== REQUIRED JSON OUTPUT FORMAT ===
+Return strictly valid JSON with no markdown formatting or commentary:
+{{
+  "is_faculty": true,
+  "fit_score": 8,
+  "fit_reason": "One concise sentence explaining the match or mismatch.",
+  "clean_title": "Official position title (e.g. Assistant Professor of Transportation Engineering)",
+  "institution": "Official university or college name (e.g. University of California, Berkeley)",
+  "department": "Department, school, or division name",
+  "tenure_track": "Tenure-Track, Tenured, Non-Tenure Track, or Unspecified",
+  "deadline": "Application deadline (YYYY-MM-DD, or 'Open until filled', or 'Review begins [Date]')",
+  "salary": "Salary range if mentioned, otherwise 'Not specified'",
+  "city_state": "City and State in USA (e.g. Austin, TX)",
+  "research_topics": ["List 2 to 4 specific research areas/topics"],
+  "concise_summary": "Strictly 1 concise sentence summarizing the primary focus of the role and minimum degree qualification."
+}}

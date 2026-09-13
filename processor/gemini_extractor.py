@@ -3,15 +3,30 @@ import logging
 import os
 from typing import List, Optional
 from scrapers.base import JobPosting
+from processor.cv_matcher import CVProfileManager
 
 
 class GeminiExtractor:
-    """Uses Google Gemini (e.g. Gemini 2.5 Pro or Flash) to parse unstructured job descriptions into structured fields and concise summaries."""
+    """Uses Google Gemini to parse unstructured job descriptions into structured fields,
+    evaluating candidate fit (1-10) using candidate CV profile and user-editable prompt.
+    """
 
-    def __init__(self, api_key: Optional[str] = None, model_name: Optional[str] = None):
+    DEFAULT_PROMPT_FILE = "eval_prompt.txt"
+
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        model_name: Optional[str] = None,
+        prompt_file: Optional[str] = None,
+        min_fit_score: int = 3,
+        cv_path: Optional[str] = None,
+    ):
         self.logger = logging.getLogger("processor.gemini")
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "").strip()
-        self.model_name = model_name or os.environ.get("GEMINI_MODEL", "gemini-3.6-flash").strip()
+        self.model_name = model_name or os.environ.get("GEMINI_MODEL", "gemini-3.7-flash").strip()
+        self.prompt_file = prompt_file or self.DEFAULT_PROMPT_FILE
+        self.min_fit_score = min_fit_score
+        self.cv_matcher = CVProfileManager(cv_path=cv_path)
         self.client = None
 
         if self.api_key:
@@ -31,8 +46,30 @@ class GeminiExtractor:
         else:
             self.logger.warning("GEMINI_API_KEY not found in environment. Running in fallback mode without LLM summarization.")
 
+    def _get_prompt_template(self) -> str:
+        """Load prompt template from user-editable text file or fall back to default."""
+        if os.path.exists(self.prompt_file):
+            try:
+                with open(self.prompt_file, "r", encoding="utf-8") as f:
+                    content = f.read()
+                    if content.strip():
+                        return content
+            except Exception as e:
+                self.logger.warning(f"Failed reading prompt file {self.prompt_file}: {e}")
+
+        return """Analyze this academic job posting:
+{candidate_profile}
+Title: {title}
+Institution: {institution}
+Location: {location}
+Source: {source}
+Description: {raw_description}
+
+Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (str), clean_title, institution, department, tenure_track, deadline, salary, city_state, research_topics (list), concise_summary (str).
+"""
+
     def enrich_postings(self, postings: List[JobPosting]) -> List[JobPosting]:
-        """Enrich a list of newly found job postings with Gemini structured data."""
+        """Enrich a list of job postings with Gemini structured data and fit scores."""
         if not postings:
             return postings
 
@@ -43,13 +80,14 @@ class GeminiExtractor:
                     p.summary = p.raw_description[:200] + "..." if len(p.raw_description) > 200 else p.raw_description
             return postings
 
-        self.logger.info(f"Enriching {len(postings)} new job postings with Gemini ({self.model_name})...")
+        self.logger.info(f"Enriching {len(postings)} job postings with Gemini ({self.model_name})...")
         import time
 
         for idx, posting in enumerate(postings):
             try:
                 self._enrich_single(posting)
-                self.logger.info(f"[{idx+1}/{len(postings)}] Enriched: {posting.title} @ {posting.institution}")
+                score_str = f"Fit: {posting.fit_score}/10" if posting.fit_score else "Fit: N/A"
+                self.logger.info(f"[{idx+1}/{len(postings)}] Enriched: {posting.title} @ {posting.institution} ({score_str})")
             except Exception as e:
                 if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
                     self.logger.warning(f"Rate limit encountered on '{posting.title}'. Waiting 15s before retry...")
@@ -71,35 +109,31 @@ class GeminiExtractor:
         return postings
 
     def _enrich_single(self, posting: JobPosting):
-        prompt = f"""
-Analyze this academic job posting for an Assistant Professor in Transportation / Civil / Systems Engineering:
+        if not self.client:
+            return
 
-Title: {posting.title}
-Institution (scraped): {posting.institution}
-Location (scraped): {posting.location}
-Source: {posting.source}
-Raw description / text snippet:
-\"\"\"{posting.raw_description}\"\"\"
+        template = self._get_prompt_template()
+        candidate_profile_text = self.cv_matcher.get_prompt_context()
 
-Extract the following in strict JSON format:
-{{
-  "is_faculty": true, // set to false if this is a driver, technician, staff, postdoc, student, or non-faculty role
-  "clean_title": "Official position title (e.g. Assistant Professor of Transportation Engineering)",
-  "institution": "Official university or college name (e.g. University of California, Berkeley)",
-  "department": "Department, school, or division name",
-  "tenure_track": "Tenure-Track, Tenured, Non-Tenure Track, or Unspecified",
-  "deadline": "Application deadline (YYYY-MM-DD, or 'Open until filled', or 'Review begins [Date]')",
-  "salary": "Salary range if mentioned, otherwise 'Not specified'",
-  "city_state": "City and State in USA (e.g. Austin, TX)",
-  "research_topics": ["List 2 to 4 specific research areas/topics, e.g. Connected Vehicles, Traffic Flow, Transit"],
-  "concise_summary": "Strictly 1 concise sentence summarizing the primary focus of the role and minimum degree qualification."
-}}
-Return ONLY valid JSON without markdown formatting or conversational text.
-"""
+        # Safe variable replacement without interfering with JSON template braces
+        prompt = template.replace("{candidate_profile}", candidate_profile_text)
+        prompt = prompt.replace("{title}", posting.title or "")
+        prompt = prompt.replace("{institution}", posting.institution or "")
+        prompt = prompt.replace("{location}", posting.location or "")
+        prompt = prompt.replace("{source}", posting.source or "")
+        prompt = prompt.replace("{raw_description}", posting.raw_description or "")
+
         # Call Google GenAI SDK with multi-model fallback cascade
         response_text = ""
-        candidate_models = [self.model_name, "gemini-3.6-flash", "gemini-3.1-pro-preview", "gemini-1.5-flash"]
-        # Deduplicate while preserving order
+        candidate_models = [
+            self.model_name,
+            "gemini-3.5-flash-lite",
+            "gemini-3.1-flash-lite",
+            "gemini-3.7-flash",
+            "gemini-3.8-flash",
+            "gemini-3.5-flash",
+            "gemini-3.6-flash",
+        ]
         candidate_models = list(dict.fromkeys(candidate_models))
 
         last_error = None
@@ -137,12 +171,28 @@ Return ONLY valid JSON without markdown formatting or conversational text.
 
         data = json.loads(cleaned_json)
 
-        # If Gemini detects it is not an academic faculty role, flag status
+        # 1. Non-faculty role check
         if data.get("is_faculty") is False:
             posting.status = "Filtered (Non-Faculty)"
             return
 
-        # Update posting attributes
+        # 2. Fit evaluation (1-10 score & reason)
+        fit_score_raw = data.get("fit_score")
+        if fit_score_raw is not None:
+            try:
+                fit_score_int = int(fit_score_raw)
+                posting.fit_score = max(1, min(10, fit_score_int))
+            except (ValueError, TypeError):
+                posting.fit_score = None
+
+        if data.get("fit_reason"):
+            posting.fit_reason = str(data["fit_reason"]).strip()
+
+        # Weak screening filter: flag jobs with fit score below threshold
+        if posting.fit_score is not None and posting.fit_score < self.min_fit_score:
+            posting.status = "Filtered (Low Relevance)"
+
+        # 3. Update posting attributes
         if data.get("clean_title"):
             posting.title = data["clean_title"].strip()
         if data.get("institution"):

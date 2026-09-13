@@ -5,12 +5,14 @@ from scrapers.base import JobPosting
 
 
 class JobExporter:
-    """Exports job postings to CSV and formatted Excel (.xlsx) files."""
+    """Exports job postings to CSV and formatted Excel (.xlsx) files with Fit Score highlighting."""
 
     COLUMNS = [
         ("title", "Title"),
         ("institution", "Institution"),
         ("field", "Field/Division"),
+        ("fit_score", "Fit Score (1-10)"),
+        ("fit_reason", "Fit Reason"),
         ("research_topics", "Research Topics"),
         ("tenure_track", "Tenure Track"),
         ("location", "Location"),
@@ -32,8 +34,11 @@ class JobExporter:
         self.excel_filepath = excel_filepath
         self.logger = logging.getLogger("processor.exporter")
 
-    def export_csv(self, postings: List[JobPosting]):
+    def export_csv(self, postings: List[JobPosting], include_filtered: bool = False):
         """Export postings to CSV file."""
+        if not include_filtered:
+            postings = [p for p in postings if not p.status.startswith("Filtered")]
+
         fieldnames = [key for key, _ in self.COLUMNS]
         header_labels = [label for _, label in self.COLUMNS]
 
@@ -43,14 +48,17 @@ class JobExporter:
                 writer.writerow(header_labels)
                 for p in postings:
                     p_dict = p.to_dict()
-                    row = [p_dict.get(key, "") for key in fieldnames]
+                    row = [p_dict.get(key, "") if p_dict.get(key) is not None else "" for key in fieldnames]
                     writer.writerow(row)
-            self.logger.info(f"Successfully saved {len(postings)} jobs to {self.csv_filepath}")
+            self.logger.info(f"Successfully saved {len(postings)} active jobs to {self.csv_filepath}")
         except Exception as e:
             self.logger.error(f"Error exporting CSV to {self.csv_filepath}: {e}", exc_info=True)
 
-    def export_excel(self, postings: List[JobPosting]):
+    def export_excel(self, postings: List[JobPosting], include_filtered: bool = False):
         """Export postings to an elegantly formatted Excel spreadsheet."""
+        if not include_filtered:
+            postings = [p for p in postings if not p.status.startswith("Filtered")]
+
         try:
             import pandas as pd
             from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
@@ -63,7 +71,7 @@ class JobExporter:
             rows = []
             for p in postings:
                 p_dict = p.to_dict()
-                rows.append([p_dict.get(k, "") for k in fieldnames])
+                rows.append([p_dict.get(k, "") if p_dict.get(k) is not None else "" for k in fieldnames])
 
             df = pd.DataFrame(rows, columns=header_labels)
 
@@ -84,6 +92,12 @@ class JobExporter:
                     bottom=Side(style="thin", color="D9D9D9"),
                 )
 
+                # Fit Score Highlight Fills
+                high_fit_fill = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid")
+                high_fit_font = Font(name="Calibri", size=10, bold=True, color="276A3C")
+                med_fit_fill = PatternFill(start_color="EDF2F8", end_color="EDF2F8", fill_type="solid")
+                med_fit_font = Font(name="Calibri", size=10, bold=False, color="1F497D")
+
                 # Format header row
                 for col_num in range(1, len(header_labels) + 1):
                     cell = worksheet.cell(row=1, column=col_num)
@@ -95,19 +109,35 @@ class JobExporter:
                 # Data rows formatting
                 data_font = Font(name="Calibri", size=10)
                 data_align = Alignment(vertical="center")
-                summary_align = Alignment(vertical="center", wrap_text=True)
+                wrapped_align = Alignment(vertical="center", wrap_text=True)
+                center_align = Alignment(horizontal="center", vertical="center")
 
                 for row_idx, row in enumerate(worksheet.iter_rows(min_row=2, max_row=len(rows) + 1), start=2):
-                    worksheet.row_dimensions[row_idx].height = 24
+                    worksheet.row_dimensions[row_idx].height = 26
                     for col_idx, cell in enumerate(row, start=1):
                         cell.font = data_font
                         cell.border = thin_border
                         col_name = header_labels[col_idx - 1]
 
-                        if col_name == "Summary (Gemini)":
-                            cell.alignment = summary_align
+                        if col_name in ("Summary (Gemini)", "Fit Reason"):
+                            cell.alignment = wrapped_align
+                        elif col_name in ("Fit Score (1-10)", "Tenure Track", "Deadline", "Source", "Status"):
+                            cell.alignment = center_align
                         else:
                             cell.alignment = data_align
+
+                        # Highlight Fit Score
+                        if col_name == "Fit Score (1-10)" and cell.value:
+                            try:
+                                score = int(cell.value)
+                                if score >= 8:
+                                    cell.fill = high_fit_fill
+                                    cell.font = high_fit_font
+                                elif score >= 5:
+                                    cell.fill = med_fit_fill
+                                    cell.font = med_fit_font
+                            except (ValueError, TypeError):
+                                pass
 
                         # Add hyperlink to link column
                         if col_name == "Link" and cell.value and str(cell.value).startswith("http"):
@@ -119,7 +149,11 @@ class JobExporter:
                     col_letter = get_column_letter(col[0].column)
                     col_name = col[0].value
                     if col_name == "Summary (Gemini)":
-                        worksheet.column_dimensions[col_letter].width = 45
+                        worksheet.column_dimensions[col_letter].width = 42
+                    elif col_name == "Fit Reason":
+                        worksheet.column_dimensions[col_letter].width = 32
+                    elif col_name == "Fit Score (1-10)":
+                        worksheet.column_dimensions[col_letter].width = 16
                     elif col_name in ("Title", "Institution"):
                         worksheet.column_dimensions[col_letter].width = 30
                     elif col_name == "Link":

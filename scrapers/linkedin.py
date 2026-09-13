@@ -13,6 +13,20 @@ class LinkedInScraper(BaseScraper):
     def __init__(self):
         super().__init__("LinkedIn")
 
+    def _fetch_job_description(self, job_key: str) -> str:
+        """Fetch detailed job description snippet from LinkedIn guest API."""
+        try:
+            url = f"https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{job_key}"
+            resp = self.session.get(url, timeout=10)
+            if resp.status_code == 200:
+                soup = BeautifulSoup(resp.text, "html.parser")
+                desc = soup.find("div", class_=re.compile("description__text|show-more-less-html__markup"))
+                if desc:
+                    return desc.get_text(" ", strip=True)[:4000]
+        except Exception as e:
+            self.logger.debug(f"Failed fetching description for {job_key}: {e}")
+        return ""
+
     def scrape(self, query: str = "Assistant Professor Transportation", max_results: int = 20) -> List[JobPosting]:
         self.logger.info(f"Querying LinkedIn Guest API for: '{query}' in United States")
         postings: List[JobPosting] = []
@@ -83,6 +97,8 @@ class LinkedInScraper(BaseScraper):
 
                     job_id = JobPosting.generate_id("linkedin", job_key)
                     card_text = card.get_text(" ", strip=True)
+                    detailed_desc = self._fetch_job_description(job_key) if job_key.isdigit() else ""
+                    raw_description = detailed_desc if detailed_desc else card_text
 
                     postings.append(
                         JobPosting(
@@ -95,7 +111,7 @@ class LinkedInScraper(BaseScraper):
                             salary="Not specified",
                             link=raw_link,
                             source="LinkedIn",
-                            raw_description=card_text,
+                            raw_description=raw_description,
                         )
                     )
                     card_count_this_page += 1

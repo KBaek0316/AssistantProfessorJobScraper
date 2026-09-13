@@ -28,6 +28,8 @@ class JobPosting:
     raw_description: str = ""
     summary: str = ""
     research_topics: str = ""
+    fit_score: Optional[int] = None
+    fit_reason: str = ""
     tenure_track: str = "Unspecified"
     date_first_seen: str = field(default_factory=lambda: datetime.now(timezone.utc).strftime("%Y-%m-%d"))
     date_last_verified: str = field(default_factory=lambda: datetime.now(timezone.utc).strftime("%Y-%m-%d"))
