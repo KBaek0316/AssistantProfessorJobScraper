@@ -185,7 +185,7 @@ def main():
         )
 
         jobs_to_enrich = list(new_jobs)
-        if args.re-evaluate:
+        if args.re_evaluate:
             unscored_existing = [j for j in all_jobs if j.fit_score is None and j not in new_jobs]
             if unscored_existing:
                 print(f"[RE-EVALUATION] Found {len(unscored_existing)} existing jobs lacking fit score to evaluate...")
