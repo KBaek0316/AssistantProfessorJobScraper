@@ -31,10 +31,10 @@ jobs:
       - name: Run Job Scraper & Summarizer
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-3.7-flash' }}
-          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
-          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-          GOOGLE_SHEET_TAB_NAME: ${{ secrets.GOOGLE_SHEET_TAB_NAME }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL || secrets.GEMINI_MODEL || 'gemini-3.7-flash' }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID || vars.GOOGLE_SHEET_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS || secrets.GOOGLE_SERVICE_ACCOUNT || secrets.GOOGLE_SERVICE_ACCOUNT_JSON || secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          GOOGLE_SHEET_TAB_NAME: ${{ secrets.GOOGLE_SHEET_TAB_NAME || vars.GOOGLE_SHEET_TAB_NAME || 'Jobs' }}
         run: |
           python job_scraper.py
 

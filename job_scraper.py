@@ -245,8 +245,11 @@ def main():
         print("\n[GOOGLE-SHEETS] Checking Google Sheets synchronization...")
         sheets_sync = GoogleSheetsSync()
         if sheets_sync.client and sheets_sync.sheet_id:
-            sheets_sync.sync(all_jobs, include_filtered=args.include_filtered)
-            print("  -> Google Sheets updated successfully!")
+            ok = sheets_sync.sync(all_jobs, include_filtered=args.include_filtered)
+            if ok:
+                print(f"  -> Google Sheets updated successfully on tab '{sheets_sync.tab_name}'!")
+            else:
+                print(f"  -> Google Sheets sync FAILED. Check logs above for details.")
         else:
             if not sheets_sync.sheet_id:
                 print("  -> Google Sheets sync SKIPPED: GOOGLE_SHEET_ID is missing from environment/secrets.")
