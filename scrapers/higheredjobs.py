@@ -69,6 +69,19 @@ class HigherEdJobsScraper(BaseScraper):
                     if len(lines) > 2:
                         location = lines[2]
 
+                # Fetch full job page for complete description and deadline
+                try:
+                    detail_resp = self.session.get(full_url, timeout=10)
+                    if detail_resp.status_code == 200:
+                        detail_soup = BeautifulSoup(detail_resp.text, "html.parser")
+                        desc_div = detail_soup.find("div", id="job-description") or detail_soup.find("div", class_="job-description") or detail_soup.find("div", class_="col-sm-12")
+                        if desc_div:
+                            full_desc = desc_div.get_text(" ", strip=True)
+                            if len(full_desc) > len(raw_text):
+                                raw_text = full_desc
+                except Exception as detail_err:
+                    self.logger.debug(f"Could not fetch detail page for {full_url}: {detail_err}")
+
                 job_id = JobPosting.generate_id("higheredjobs", job_code)
                 postings.append(
                     JobPosting(

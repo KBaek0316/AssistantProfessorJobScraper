@@ -108,6 +108,19 @@ class ChronicleScraper(BaseScraper):
                     loc_elem = parent.find(class_=lambda c: c and "location" in c) if parent else None
                     location = loc_elem.get_text(strip=True) if loc_elem else "United States"
 
+                    # Fetch full job posting page to obtain complete description, salary, and deadlines
+                    try:
+                        detail_resp = self.session.get(full_url, timeout=10)
+                        if detail_resp.status_code == 200:
+                            detail_soup = BeautifulSoup(detail_resp.text, "html.parser")
+                            desc_div = detail_soup.find("div", class_=lambda c: c and "job-description" in c) or detail_soup.find("div", class_="mds-surface")
+                            if desc_div:
+                                full_desc = desc_div.get_text(" ", strip=True)
+                                if len(full_desc) > len(raw_text):
+                                    raw_text = full_desc
+                    except Exception as detail_err:
+                        self.logger.debug(f"Could not fetch detail page for {full_url}: {detail_err}")
+
                     id_match = re.search(r"/job/(\d+)", full_url)
                     job_id_key = id_match.group(1) if id_match else full_url
                     job_id = JobPosting.generate_id("chronicle", job_id_key)

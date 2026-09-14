@@ -27,9 +27,20 @@ def get_fit_marker_color(score: Optional[int]) -> str:
         return "gray"        # Minimal / Screened match (1-2)
 
 
+MONTH_NAMES = (
+    "january|february|march|april|may|june|july|august|september|october|november|december|"
+    "jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec"
+)
+
+
 def parse_deadline_info(deadline_str: Optional[str], ref_date: Optional[date] = None) -> Tuple[str, str, Optional[int]]:
     """
     Parses deadline text and computes relative urgency against ref_date (default: today).
+    Supports:
+      - ISO dates (YYYY-MM-DD)
+      - Standard dates (Month DD, YYYY)
+      - Dates without explicit year (e.g. 'September 30', 'Nov 1')
+      - Dual/multiple deadlines (e.g. 'Priority: Sep 15 / Final: Nov 1')
     Returns (category_key, badge_label, days_difference).
     """
     if not deadline_str:
@@ -39,39 +50,60 @@ def parse_deadline_info(deadline_str: Optional[str], ref_date: Optional[date] = 
         ref_date = date.today()
 
     s = str(deadline_str).strip()
+    found_dates = []
 
     # 1. Search for ISO format (YYYY-MM-DD)
-    parsed_date = None
-    iso_match = re.search(r'\b(\d{4})-(\d{1,2})-(\d{1,2})\b', s)
-    if iso_match:
+    for iso_match in re.finditer(r'\b(\d{4})-(\d{1,2})-(\d{1,2})\b', s):
         try:
-            parsed_date = date(int(iso_match.group(1)), int(iso_match.group(2)), int(iso_match.group(3)))
+            d = date(int(iso_match.group(1)), int(iso_match.group(2)), int(iso_match.group(3)))
+            found_dates.append(d)
         except ValueError:
             pass
 
-    # 2. Search for Month DD, YYYY formats (e.g., Oct. 1, 2025 or October 1, 2025)
-    if not parsed_date:
-        for m in re.finditer(r'[A-Za-z]+[\.]?\s+\d{1,2},?\s+\d{4}', s):
-            clean_str = m.group(0).replace('.', '').replace(',', '')
-            for fmt in ('%B %d %Y', '%b %d %Y'):
+    # 2. Search for Month DD, YYYY formats (e.g., September 30, 2026 or Nov. 1, 2026)
+    for m in re.finditer(rf'\b({MONTH_NAMES})[\.]?\s+(\d{{1,2}})(?:st|nd|rd|th)?,?\s+(\d{{4}})\b', s, re.IGNORECASE):
+        month_str = m.group(1).replace('.', '')
+        day_str = m.group(2)
+        year_str = m.group(3)
+        for fmt in ('%B %d %Y', '%b %d %Y'):
+            try:
+                d = datetime.strptime(f"{month_str} {day_str} {year_str}", fmt).date()
+                found_dates.append(d)
+                break
+            except ValueError:
+                pass
+
+    # 3. Search for Month DD without year (e.g. "September 30", "Nov 1")
+    if not found_dates:
+        for m in re.finditer(rf'\b({MONTH_NAMES})[\.]?\s+(\d{{1,2}})(?:st|nd|rd|th)?\b', s, re.IGNORECASE):
+            month_str = m.group(1).replace('.', '')
+            day_str = m.group(2)
+            for fmt in ('%B %d', '%b %d'):
                 try:
-                    parsed_date = datetime.strptime(clean_str, fmt).date()
+                    dt = datetime.strptime(f"{month_str} {day_str}", fmt)
+                    cand_year = ref_date.year
+                    if dt.month < ref_date.month and (ref_date.month - dt.month) > 2:
+                        cand_year = ref_date.year + 1
+                    found_dates.append(date(cand_year, dt.month, dt.day))
                     break
                 except ValueError:
                     pass
-            if parsed_date:
-                break
 
-    if parsed_date:
-        diff = (parsed_date - ref_date).days
+    if found_dates:
+        found_dates = sorted(set(found_dates))
+        future_dates = [d for d in found_dates if (d - ref_date).days >= 0]
+        target_date = future_dates[0] if future_dates else found_dates[-1]
+        diff = (target_date - ref_date).days
+        date_label = target_date.strftime('%b %d')
+
         if diff < 0:
             return ("passed", f"⏳ Passed ({abs(diff)}d ago)", diff)
         elif diff <= 7:
-            return ("urgent", f"🔥 Urgent: {diff}d left", diff)
+            return ("urgent", f"🔥 Urgent: {diff}d left ({date_label})", diff)
         elif diff <= 30:
-            return ("closing_soon", f"⚡ Closing: {diff}d left", diff)
+            return ("closing_soon", f"⚡ Closing: {diff}d left ({date_label})", diff)
         else:
-            return ("future", f"📅 Due in {diff}d ({parsed_date.strftime('%Y-%m-%d')})", diff)
+            return ("future", f"📅 Due in {diff}d ({target_date.strftime('%Y-%m-%d')})", diff)
 
     return ("open", "🟢 Open Until Filled / Rolling", None)
 

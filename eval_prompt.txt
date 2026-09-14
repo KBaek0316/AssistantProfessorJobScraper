@@ -50,7 +50,7 @@ Return strictly valid JSON with no markdown formatting or commentary:
   "institution": "Official university or college name (e.g. University of California, Berkeley)",
   "department": "Department, school, or division name",
   "tenure_track": "Tenure-Track, Tenured, Non-Tenure Track, or Unspecified",
-  "deadline": "Application deadline (YYYY-MM-DD, or 'Open until filled', or 'Review begins [Date]')",
+  "deadline": "Application deadline: use YYYY-MM-DD format if a single deadline is given, or 'Priority: YYYY-MM-DD / Final: YYYY-MM-DD' if both review/priority date and final close date are specified, or 'Open until filled'. If the year is omitted in the posting text, infer the current academic cycle year (e.g. 'September 30' -> '2026-09-30', 'November 1' -> '2026-11-01', 'January 15' -> '2027-01-15').",
   "salary": "Salary range if mentioned, otherwise 'Not specified'",
   "city_state": "City and State/Country (e.g. Austin, TX, or London, UK, or Taipei, Taiwan, or Singapore)",
   "country": "Country name (e.g. United States, United Kingdom, Singapore, Taiwan, Japan, South Korea)",

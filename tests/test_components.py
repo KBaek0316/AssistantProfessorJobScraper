@@ -90,6 +90,25 @@ class TestComponents(unittest.TestCase):
         cat, _, _ = parse_deadline_info("Not specified", ref_date=ref)
         self.assertEqual(cat, "open")
 
+        # Test yearless format (e.g. Loyola Marymount: "September 30")
+        cat, _, diff = parse_deadline_info("September 30", ref_date=ref)
+        self.assertEqual(cat, "closing_soon")
+        self.assertEqual(diff, 17)
+
+        cat, _, diff = parse_deadline_info("Nov 1", ref_date=ref)
+        self.assertEqual(cat, "future")
+        self.assertEqual(diff, 49)
+
+        # Test dual deadlines (e.g. UCLA: Priority Sep 15 / Final Nov 1)
+        cat, _, diff = parse_deadline_info("Priority: 2026-09-15 / Final: 2026-11-01", ref_date=ref)
+        self.assertEqual(cat, "urgent")
+        self.assertEqual(diff, 2)
+
+        # Once priority passes, verify it transitions to final deadline instead of 'passed'
+        cat2, _, diff2 = parse_deadline_info("Priority: 2026-09-15 / Final: 2026-11-01", ref_date=date(2026, 9, 16))
+        self.assertEqual(cat2, "future")
+        self.assertEqual(diff2, 46)
+
     def test_exporter_and_deduplicator(self):
         test_csv = "test_jobs.csv"
         test_xlsx = "test_jobs.xlsx"
