@@ -101,6 +101,13 @@ class ChronicleScraper(BaseScraper):
                     if not JobPosting.is_valid_faculty_posting(title, raw_text):
                         continue
 
+                    # Extract actual institution and location from card metadata if present
+                    rec_elem = parent.find(class_=lambda c: c and ("recruiter" in c or "employer" in c)) if parent else None
+                    institution = rec_elem.get_text(strip=True) if rec_elem else "Chronicle Listed University"
+
+                    loc_elem = parent.find(class_=lambda c: c and "location" in c) if parent else None
+                    location = loc_elem.get_text(strip=True) if loc_elem else "United States"
+
                     id_match = re.search(r"/job/(\d+)", full_url)
                     job_id_key = id_match.group(1) if id_match else full_url
                     job_id = JobPosting.generate_id("chronicle", job_id_key)
@@ -109,9 +116,9 @@ class ChronicleScraper(BaseScraper):
                         JobPosting(
                             id=job_id,
                             title=title,
-                            institution="Chronicle Listed University",
+                            institution=institution,
                             field="Transportation / Civil Engineering",
-                            location="United States",
+                            location=location,
                             deadline="See full listing",
                             salary="Not specified",
                             link=full_url,

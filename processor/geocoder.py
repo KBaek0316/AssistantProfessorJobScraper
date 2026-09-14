@@ -51,6 +51,8 @@ class UniversityGeocoder:
         "university of calgary": (51.0778, -114.1332),
         "polytechnique montréal": (45.5048, -73.6133),
         "polytechnique montreal": (45.5048, -73.6133),
+        "city colleges of chicago": (41.8837, -87.6324),
+        "embry-riddle aeronautical university": (29.1895, -81.0494),
     }
 
     def __init__(self):
@@ -117,17 +119,40 @@ class UniversityGeocoder:
 
         return None
 
+    GENERIC_INSTITUTIONS = {
+        "university / institution",
+        "chronicle listed university",
+        "higheredjobs listed university",
+        "institution",
+        "university",
+    }
+
     def enrich_coordinates(self, postings: List[JobPosting]):
         """Populate latitude and longitude on postings where missing."""
         for p in postings:
             if p.latitude is not None and p.longitude is not None:
                 continue
 
-            # First try university name + location
             coords = None
-            if p.institution and p.institution != "University / Institution":
+            clean_inst = (p.institution or "").strip().lower()
+            is_valid_inst = bool(clean_inst and clean_inst not in self.GENERIC_INSTITUTIONS)
+            has_specific_loc = bool(
+                p.location
+                and p.location.strip().lower() not in ("united states", "unspecified", "see full listing", "")
+            )
+
+            # 1. Try institution + specific location (prevents branch campus / remote facility mismatches)
+            if is_valid_inst and has_specific_loc:
+                coords = self.geocode(f"{p.institution}, {p.location}")
+
+            # 2. Try institution alone or with USA
+            if not coords and is_valid_inst:
                 coords = self.geocode(f"{p.institution}, USA")
-            if not coords and p.location:
+                if not coords:
+                    coords = self.geocode(p.institution)
+
+            # 3. Fallback to location alone
+            if not coords and has_specific_loc:
                 coords = self.geocode(p.location)
 
             if coords:
