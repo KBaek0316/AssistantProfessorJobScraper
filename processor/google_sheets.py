@@ -20,6 +20,7 @@ class GoogleSheetsSync:
         "Tenure Track",
         "Location",
         "Deadline",
+        "Deadline Date",
         "Salary",
         "Summary (Gemini)",
         "Link",
@@ -130,6 +131,9 @@ class GoogleSheetsSync:
         if not include_filtered:
             postings = [p for p in postings if not p.status.startswith("Filtered")]
 
+        from scrapers.base import sort_postings_by_deadline
+        postings = sort_postings_by_deadline(postings)
+
         try:
             spreadsheet = self.client.open_by_key(self.sheet_id)
 
@@ -158,6 +162,7 @@ class GoogleSheetsSync:
                     p.tenure_track,
                     p.location,
                     p.deadline,
+                    p.deadline_date,
                     p.salary,
                     p.summary,
                     p.link,
@@ -172,7 +177,7 @@ class GoogleSheetsSync:
             worksheet.clear()
             worksheet.update("A1", rows)
             # Format header row with bold text
-            worksheet.format("A1:Q1", {"textFormat": {"bold": True}})
+            worksheet.format("A1:R1", {"textFormat": {"bold": True}})
 
             self.logger.info(f"Successfully synced {len(postings)} active jobs to Google Sheet '{spreadsheet.title}'")
             return True

@@ -22,6 +22,12 @@ class GeminiExtractor:
         cv_path: Optional[str] = None,
     ):
         self.logger = logging.getLogger("processor.gemini")
+        if not api_key:
+            try:
+                from dotenv import load_dotenv
+                load_dotenv()
+            except ImportError:
+                pass
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "").strip()
         self.model_name = model_name or os.environ.get("GEMINI_MODEL", "gemini-3.7-flash").strip()
         self.prompt_file = prompt_file or self.DEFAULT_PROMPT_FILE
@@ -108,9 +114,115 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
 
         return postings
 
+    CACHE_DIR = ".cache"
+    DESCRIPTIONS_CACHE = os.path.join(CACHE_DIR, "job_descriptions.json")
+
+    def _load_description_cache(self) -> dict:
+        if os.path.exists(self.DESCRIPTIONS_CACHE):
+            try:
+                with open(self.DESCRIPTIONS_CACHE, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+        return {}
+
+    def _save_description_cache(self, cache: dict):
+        try:
+            os.makedirs(self.CACHE_DIR, exist_ok=True)
+            with open(self.DESCRIPTIONS_CACHE, "w", encoding="utf-8") as f:
+                json.dump(cache, f, indent=2)
+        except Exception:
+            pass
+
+    def _fetch_description_fallback(self, posting: JobPosting) -> str:
+        """Fetch full job description on-the-fly if missing during evaluation."""
+        clean_link = (posting.link or "").strip()
+        if not clean_link:
+            return ""
+
+        src = (posting.source or "").lower()
+        try:
+            if "academickeys" in src or "academickeys.com" in clean_link:
+                from scrapers.academickeys import AcademicKeysScraper
+                scraper = AcademicKeysScraper()
+                full_text, dept, dl = scraper._fetch_detail(clean_link)
+                if dept and (not posting.field or posting.field.strip().lower() in ("not specified", "unspecified", "none", "", "transportation / civil engineering")):
+                    posting.field = dept
+                if dl and (not posting.deadline or posting.deadline.strip().lower() in ("not specified", "unspecified", "none", "")):
+                    posting.deadline = dl
+                return full_text
+
+            elif "higheredjobs" in src or "higheredjobs.com" in clean_link:
+                from scrapers.higheredjobs import HigherEdJobsScraper
+                from bs4 import BeautifulSoup
+                scraper = HigherEdJobsScraper()
+                resp = scraper.session.get(clean_link, timeout=12)
+                if resp.status_code == 200:
+                    soup = BeautifulSoup(resp.text, "html.parser")
+                    div = (
+                        soup.find("div", id="mainContent")
+                        or soup.find("div", class_="main")
+                        or soup.find("div", id="job-description")
+                        or soup.find("div", class_="col-sm-12")
+                    )
+                    if div:
+                        return div.get_text(" ", strip=True)
+
+            elif "linkedin" in src or "linkedin.com" in clean_link:
+                import re
+                from scrapers.linkedin import LinkedInScraper
+                m = re.search(r"(\d{8,})", clean_link)
+                if m:
+                    scraper = LinkedInScraper()
+                    return scraper._fetch_job_description(m.group(1))
+
+            elif "chronicle" in src or "chronicle.com" in clean_link:
+                from scrapers.chronicle import ChronicleScraper
+                scraper = ChronicleScraper()
+                full_desc, dl, sal, inst, loc = scraper._fetch_detail_page(clean_link)
+                if dl and (not posting.deadline or posting.deadline.strip().lower() in ("not specified", "unspecified", "none", "")):
+                    posting.deadline = dl
+                return full_desc
+
+            elif "jobsacuk" in src or "jobs.ac.uk" in clean_link:
+                from scrapers.jobsacuk import JobsAcUkScraper
+                scraper = JobsAcUkScraper()
+                return scraper._fetch_job_description(clean_link)
+
+        except Exception as e:
+            self.logger.debug(f"Could not fetch description fallback for {clean_link}: {e}")
+        return ""
+
     def _enrich_single(self, posting: JobPosting):
+        # 0. Immediate Title-Level Seniority, Adjunct & Continuing Ed Pre-Filter
+        if not JobPosting.is_valid_faculty_posting(posting.title):
+            posting.status = "Filtered (Non-Faculty / Seniority / Adjunct)"
+            posting.fit_score = 1
+            posting.fit_reason = f"Screened out: Position title '{posting.title}' is senior-only, adjunct, continuing education, or non-faculty."
+            return
+
         if not self.client:
             return
+
+        # Ensure raw_description is populated via cache or on-demand fetch
+        desc_cache = self._load_description_cache()
+        if not posting.raw_description:
+            cached_desc = desc_cache.get(posting.id) or desc_cache.get(posting.link)
+            if cached_desc:
+                posting.raw_description = cached_desc
+            else:
+                fetched_desc = self._fetch_description_fallback(posting)
+                if fetched_desc:
+                    posting.raw_description = fetched_desc
+                    desc_cache[posting.id] = fetched_desc
+                    desc_cache[posting.link] = fetched_desc
+                    self._save_description_cache(desc_cache)
+        else:
+            # Store in cache
+            if posting.id not in desc_cache or len(posting.raw_description) > len(desc_cache.get(posting.id, "")):
+                desc_cache[posting.id] = posting.raw_description
+                desc_cache[posting.link] = posting.raw_description
+                self._save_description_cache(desc_cache)
 
         template = self._get_prompt_template()
         candidate_profile_text = self.cv_matcher.get_prompt_context()
@@ -171,9 +283,12 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
 
         data = json.loads(cleaned_json)
 
-        # 1. Non-faculty role check
+        # 1. Non-faculty / senior role check from LLM
         if data.get("is_faculty") is False:
-            posting.status = "Filtered (Non-Faculty)"
+            posting.status = "Filtered (Non-Faculty / Seniority)"
+            posting.fit_score = 1
+            if data.get("fit_reason"):
+                posting.fit_reason = str(data["fit_reason"]).strip()
             return
 
         # 2. Fit evaluation (1-10 score & reason)
@@ -203,6 +318,13 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
             posting.tenure_track = data["tenure_track"].strip()
         if data.get("deadline"):
             posting.deadline = data["deadline"].strip()
+
+        # Deterministic deadline fallback: if LLM returned unspecified/open or missing, check raw description
+        if not posting.deadline or posting.deadline.lower() in ("not specified", "unspecified", "see full listing", "open until filled"):
+            extracted_dl = JobPosting.extract_deadline_from_text(posting.raw_description)
+            if extracted_dl:
+                posting.deadline = extracted_dl
+
         if data.get("salary") and data["salary"] != "Not specified":
             posting.salary = data["salary"].strip()
         if data.get("city_state"):

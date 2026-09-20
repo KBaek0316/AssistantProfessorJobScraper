@@ -71,6 +71,28 @@ class JobDeduplicator:
         except Exception as e:
             self.logger.warning(f"Failed writing to {self.FILTERED_CACHE_FILE}: {e}")
 
+    @staticmethod
+    def refresh_deadline_status(posting: JobPosting, ref_date: Optional[object] = None):
+        """
+        Updates posting status based on deadline relative to ref_date (default: today).
+        If deadline is past by more than 30 days, status is marked 'Past Due'.
+        If previously 'Past Due' but deadline is within 30 days or rolling, restores to 'Active'.
+        Preserves 'Filtered (...)' statuses.
+        """
+        if posting.status.startswith("Filtered"):
+            return
+
+        from processor.map_generator import parse_deadline_info
+        cat_key, _, diff = parse_deadline_info(posting.deadline, ref_date=ref_date)
+        if cat_key == "past_due" or (diff is not None and diff < -30):
+            posting.status = "Past Due"
+        elif posting.status == "Past Due":
+            posting.status = "Active"
+
+        # Ensure normalized deadline_date is populated
+        if not posting.deadline_date and posting.deadline:
+            posting.deadline_date = JobPosting.extract_latest_deadline_date(posting.deadline, ref_date=ref_date)
+
     def load_existing_jobs(self) -> Dict[str, JobPosting]:
         """Load previously saved jobs from CSV file."""
         jobs: Dict[str, JobPosting] = {}
@@ -105,13 +127,17 @@ class JobDeduplicator:
                     title = norm_row.get("title", "")
                     status = norm_row.get("status", "Active")
 
+                    deadline_val = norm_row.get("deadline", "")
+                    deadline_date_val = norm_row.get("deadline date") or norm_row.get("deadline_date", "")
+
                     posting = JobPosting(
                         id=job_id,
                         title=title,
                         institution=norm_row.get("institution", ""),
                         field=norm_row.get("field/division") or norm_row.get("field", ""),
                         location=norm_row.get("location", ""),
-                        deadline=norm_row.get("deadline", ""),
+                        deadline=deadline_val,
+                        deadline_date=deadline_date_val,
                         salary=norm_row.get("salary", ""),
                         link=job_link,
                         source=job_source,
@@ -134,10 +160,13 @@ class JobDeduplicator:
                         filtered_to_cache.append(posting)
                         continue
 
+                    self.refresh_deadline_status(posting)
                     jobs[job_id] = posting
 
             # Prune duplicate (institution, department) pairings loaded from disk
             active_list, dupes = self.deduplicate_by_institution_department(list(jobs.values()))
+            for j in active_list:
+                self.refresh_deadline_status(j)
             jobs = {j.id: j for j in active_list}
 
             if filtered_to_cache:
@@ -321,7 +350,8 @@ class JobDeduplicator:
                 # Existing active job: update verification date
                 existing = existing_jobs[matched_id]
                 existing.date_last_verified = today
-                existing.status = "Active"
+                if not existing.status.startswith("Filtered"):
+                    self.refresh_deadline_status(existing)
                 if not existing.raw_description and job.raw_description:
                     existing.raw_description = job.raw_description
             else:
@@ -329,12 +359,15 @@ class JobDeduplicator:
                 job.date_first_seen = today
                 job.date_last_verified = today
                 job.status = "Active"
+                self.refresh_deadline_status(job)
                 existing_jobs[job.id] = job
                 link_to_id[normalized_link] = job.id
                 new_jobs.append(job)
 
         # Apply institution & department deduplication across all active jobs
         active_list, dupes = self.deduplicate_by_institution_department(list(existing_jobs.values()))
+        for j in active_list:
+            self.refresh_deadline_status(j)
         active_ids = {j.id for j in active_list}
         new_jobs = [j for j in new_jobs if j.id in active_ids]
 

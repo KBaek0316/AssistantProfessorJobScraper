@@ -100,11 +100,12 @@ class TestComponents(unittest.TestCase):
         self.assertEqual(diff, 49)
 
         # Test dual deadlines (e.g. UCLA: Priority Sep 15 / Final Nov 1)
+        # Per user specification, use the later deadline (2026-11-01)
         cat, _, diff = parse_deadline_info("Priority: 2026-09-15 / Final: 2026-11-01", ref_date=ref)
-        self.assertEqual(cat, "urgent")
-        self.assertEqual(diff, 2)
+        self.assertEqual(cat, "future")
+        self.assertEqual(diff, 49)
 
-        # Once priority passes, verify it transitions to final deadline instead of 'passed'
+        # On 2026-09-16, final deadline remains active
         cat2, _, diff2 = parse_deadline_info("Priority: 2026-09-15 / Final: 2026-11-01", ref_date=date(2026, 9, 16))
         self.assertEqual(cat2, "future")
         self.assertEqual(diff2, 46)
@@ -147,11 +148,12 @@ class TestComponents(unittest.TestCase):
             map_gen.generate_map(all_jobs)
             self.assertTrue(os.path.exists(test_map))
 
-            # Verify map HTML contains legend and deadline feature group controls (without marker clustering)
+            # Verify map HTML contains unified Fit Score Legend and 2-way filter controls
             with open(test_map, "r", encoding="utf-8") as f:
                 map_content = f.read()
                 self.assertIn("Fit Score Marker Legend", map_content)
-                self.assertIn("feature_group", map_content)
+                self.assertIn("score-filter-cb", map_content)
+                self.assertIn("dl-filter-cb", map_content)
 
             # Run deduplicator a second time with the same posting -> should have 0 new jobs
             dedup2 = JobDeduplicator(csv_filepath=test_csv)

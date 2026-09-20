@@ -22,6 +22,7 @@ from scrapers import (
     AcademicKeysScraper,
     ChronicleScraper,
     HigherEdJobsScraper,
+    JobsAcUkScraper,
     LinkedInScraper,
 )
 from processor import (
@@ -64,8 +65,8 @@ def parse_args():
     parser.add_argument(
         "--sources",
         type=str,
-        default="academickeys,higheredjobs,chronicle,linkedin",
-        help="Comma-separated list of sources to scrape: academickeys, higheredjobs, chronicle, linkedin",
+        default="academickeys,higheredjobs,chronicle,linkedin,jobsacuk",
+        help="Comma-separated list of sources to scrape: academickeys, higheredjobs, chronicle, linkedin, jobsacuk",
     )
     parser.add_argument(
         "--skip-gemini",
@@ -155,6 +156,8 @@ def main():
         scrapers.append(ChronicleScraper())
     if "linkedin" in active_sources:
         scrapers.append(LinkedInScraper())
+    if "jobsacuk" in active_sources:
+        scrapers.append(JobsAcUkScraper())
 
     # 2. Scrape Job Postings
     queries = [q.strip() for q in args.query.split(",") if q.strip()]
@@ -196,10 +199,10 @@ def main():
 
         jobs_to_enrich = list(new_jobs)
         if args.re_evaluate:
-            unscored_existing = [j for j in all_jobs if j.fit_score is None and j not in new_jobs]
-            if unscored_existing:
-                print(f"[RE-EVALUATION] Found {len(unscored_existing)} existing jobs lacking fit score to evaluate...")
-                jobs_to_enrich.extend(unscored_existing)
+            existing_to_reval = [j for j in all_jobs if j not in new_jobs]
+            if existing_to_reval:
+                print(f"[RE-EVALUATION] Re-evaluating all {len(existing_to_reval)} existing jobs with updated prompt and scoring rules...")
+                jobs_to_enrich.extend(existing_to_reval)
 
         if jobs_to_enrich:
             print(f"\n[GEMINI] Evaluating candidate fit (1-10) with {args.model} for {len(jobs_to_enrich)} postings...")
@@ -227,7 +230,11 @@ def main():
     geocoder = UniversityGeocoder()
     geocoder.enrich_coordinates(all_jobs)
 
-    # 6. Export to CSV and Excel (.xlsx)
+    # 6. Sort Postings by 4-Tier Deadline Urgency
+    from scrapers.base import sort_postings_by_deadline
+    all_jobs = sort_postings_by_deadline(all_jobs)
+
+    # 7. Export to CSV and Excel (.xlsx)
     print("\n[EXPORT] Exporting results to disk...")
     exporter = JobExporter(csv_filepath=args.csv_out, excel_filepath=args.excel_out)
     exporter.export_csv(all_jobs, include_filtered=args.include_filtered)

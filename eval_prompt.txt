@@ -17,7 +17,13 @@ You are an academic hiring specialist and faculty search advisor.
 Analyze the following academic job posting and evaluate its relevance against the candidate's research profile.
 
 === CANDIDATE PROFILE ===
-{candidate_profile}
+Name: Dr. Kwangho Baek
+Current Role: Postdoctoral Associate, Transit Lab, Department of Civil, Environmental, and Geo-Engineering, University of Minnesota, Twin Cities.
+Educational Background:
+- B.S. and M.S. in Urban Planning
+- Ph.D. in Civil Engineering (Transportation Engineering specialization)
+Core Research Areas: Public transit planning, travel behavior analysis, machine learning applications, discrete choice modeling, mobility simulation, and smart urban mobility systems.
+Target Positions: Tenure-track Assistant Professor (or Open Rank inclusive of Assistant Professor).
 
 === JOB POSTING TO EVALUATE ===
 Title (scraped): {title}
@@ -28,17 +34,33 @@ Job Description / Text Snippet:
 """{raw_description}"""
 
 === EVALUATION INSTRUCTIONS ===
-1. Determine if this is an academic faculty role (Assistant Professor, Associate Professor, Full Professor, Open Rank Faculty, or Lecturer/Instructor). Set "is_faculty" to false if this is a postdoc, research scientist/fellow without faculty status, driver, technician, staff, or K-12 role.
+1. Determine Position Eligibility & Seniority:
+   - Target positions: Tenure-track Assistant Professor, Open Rank Faculty searches that explicitly include Assistant Professor (e.g., "Assistant/Associate Professor" or "Open Rank"), and career-track university faculty appointments ("Assistant Professor of Teaching" at UCLA or "Lecturer in Discipline" at Columbia University).
+   - EXCLUDE (set "is_faculty" to false or assign fit_score: 1 with an explanatory fit_reason):
+     * Seniority-only roles: Pure Associate Professor (without Assistant), Full Professor, Department Chair, Division Chair, Dean, Endowed Chair (e.g. "Professor & Department Chair" at University of Pittsburgh).
+     * Contingent / part-time / non-degree roles: Adjunct Faculty/Professor (e.g. Morgan State University Adjunct), Lecturer in Continuing Education, Adult Education, Extension (e.g. City Colleges of Chicago Continuing Education). Note: "Lecturer in Discipline" (Columbia University) and "Assistant Professor of Teaching" (UCLA) are formal university faculty lines and must NOT be screened out as contingent.
+     * Trainees and non-faculty staff: Postdocs, research fellows, technicians, staff, drivers.
+
 2. Evaluate Geographic Scope:
    - Target Regions: United States (US), Canada, European countries (e.g. United Kingdom, Germany, France, Netherlands, Switzerland, Sweden, Norway, Denmark, Finland, Italy, Spain, Belgium, Austria, Ireland, Poland, Portugal, etc.), Hong Kong, Singapore, Japan, South Korea, and Taiwan.
    - EXCLUDE: Mainland China (PRC, Beijing, Shanghai, Shenzhen, etc. - explicitly DO NOT exclude Hong Kong or Taiwan) and non-target countries (e.g. Middle East, Latin America, South Asia, Africa).
-   - If a position is located in Mainland China or another non-target region, set "is_faculty" to false or assign fit_score: 1 with fit_reason: "Screened out: Location outside target geographic scope ([Location])".
-3. Evaluate how closely the job matches the candidate's research profile on a 1 to 10 scale:
-   - 9-10 (Core Match): The position explicitly seeks expertise in Transportation Engineering, Transit Systems, Travel Behavior Analysis, Discrete Choice Modeling, Intelligent Transportation Systems (ITS), Mobility-as-a-Service (MaaS), or AI/Data Science applied to transportation/mobility.
-   - 7-8 (Strong Interdisciplinary Match): The position is in Urban Planning, Systems Engineering, Industrial Engineering, or Computing/Data Science, but specifically focuses on transportation, mobility systems, smart cities, or urban analytics.
-   - 4-6 (Moderate / Borderline Fit): Broad Civil & Environmental Engineering or Systems Engineering search where transportation is one of several acceptable sub-disciplines, or an open-topic data science/computing faculty search.
-   - 1-3 (Low Relevance / Irrelevant): The role is in an unrelated field (e.g. English, Film, Nursing, Pharmacy, Education) OR is in a non-matching civil engineering subfield (e.g. Water Resources/Hydrology, Structural Engineering, Geotechnical Engineering, Environmental Chemistry) even if the description mentions a state Department of Transportation (e.g. TxDOT) merely as a potential funding source, partner, or advisory body.
-4. Provide a concise, 1-sentence "fit_reason" summarizing why this score was assigned (e.g., "Core match: focuses on transit planning and travel behavior analysis" or "Low fit: water resources management position; incidental mention of TX DOT co-work opportunity only").
+   - If outside target scope, set "is_faculty" to false or assign fit_score: 1 with fit_reason: "Screened out: Location outside target geographic scope ([Location])".
+
+3. Calibrated Candidate Fit Score (1 to 10 scale):
+   - 9-10 (Core Match): Dedicated Assistant Professor in Transportation Engineering, Traffic Systems, Public Transit Planning, Travel Behavior Analysis, Discrete Choice Modeling, or Smart Mobility (e.g., The College of New Jersey seeking Transportation Engineering Assistant Professor, South Dakota State, University of Cincinnati, UCLA).
+   - 7-8 (Strong Interdisciplinary Match): Assistant Professor or career-track faculty in Urban Planning, Industrial Engineering / Operations Research (e.g., Columbia University IEOR focusing on AI and Machine Learning applied to operations research/data science), Computing/Data Science, or Systems Engineering with strong applications to transportation, mobility, or urban systems.
+   - 6-7 (Multi-Track / Open Civil Engineering Fit): Broad or open-subdiscipline Civil Engineering Assistant Professor search where Transportation Engineering is explicitly listed as one of several acceptable sub-disciplines (e.g., Cedarville University or McNeese State University listing transportation among civil engineering specializations).
+   - 3-4 (Low / Poor Fit):
+     * General Civil Engineering faculty search that does NOT explicitly mention or prioritize Transportation. Note: The candidate's BS and MS degrees are in Urban Planning and PhD is in Civil Engineering focusing on Transportation/Travel Behavior; therefore, a general Civil Engineering position without a transportation aspect is a poor fit.
+     * Related business school searches (e.g. Supply Chain Management in a business school) with limited transportation overlap.
+   - 1-2 (Screened Out / Irrelevant):
+     * Non-matching Civil Engineering sub-disciplines that have NO transportation component (e.g., Water Resources/Hydrology, Environmental Engineering/Chemistry, Geotechnical Engineering, Structural Engineering) - even if incidental state agencies like DOT/TxDOT are mentioned as potential external partners, advisory bodies, or data sources (e.g., University of Texas at Arlington Water Resources Assistant Professor).
+     * Positions seeking senior-only appointments, adjuncts, continuing education, or completely unrelated fields (Nursing, Film, Pharmacy, K-12, etc.).
+
+4. Department & Focus Extraction:
+   - Diligently extract the official Department, School, or Division name from the posting body (e.g., "Department of Industrial Engineering and Operations Research (IEOR)" for Columbia University, "Department of Civil Engineering", etc.). NEVER leave department as "Not specified" if any department, school, college, or subject focus is mentioned in the text.
+
+5. Provide a concise, 1-sentence "fit_reason" explaining the score.
 
 === REQUIRED JSON OUTPUT FORMAT ===
 Return strictly valid JSON with no markdown formatting or commentary:
@@ -48,12 +70,13 @@ Return strictly valid JSON with no markdown formatting or commentary:
   "fit_reason": "One concise sentence explaining the match or mismatch.",
   "clean_title": "Official position title (e.g. Assistant Professor of Transportation Engineering)",
   "institution": "Official university or college name (e.g. University of California, Berkeley)",
-  "department": "Department, school, or division name",
+  "department": "Department, school, or division name (e.g. Department of Industrial Engineering and Operations Research)",
   "tenure_track": "Tenure-Track, Tenured, Non-Tenure Track, or Unspecified",
   "deadline": "Application deadline: use YYYY-MM-DD format if a single deadline is given, or 'Priority: YYYY-MM-DD / Final: YYYY-MM-DD' if both review/priority date and final close date are specified, or 'Open until filled'. If the year is omitted in the posting text, infer the current academic cycle year (e.g. 'September 30' -> '2026-09-30', 'November 1' -> '2026-11-01', 'January 15' -> '2027-01-15').",
   "salary": "Salary range if mentioned, otherwise 'Not specified'",
   "city_state": "City and State/Country (e.g. Austin, TX, or London, UK, or Taipei, Taiwan, or Singapore)",
-  "country": "Country name (e.g. United States, United Kingdom, Singapore, Taiwan, Japan, South Korea)",
+  "country": "Country name (e.g. United States, United Kingdom, Canada, Singapore, Taiwan, Japan, South Korea)",
   "research_topics": ["List 2 to 4 specific research areas/topics"],
   "concise_summary": "Strictly 1 concise sentence summarizing the primary focus of the role and minimum degree qualification."
 }}
+

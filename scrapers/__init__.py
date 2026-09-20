@@ -3,6 +3,7 @@ from .academickeys import AcademicKeysScraper
 from .higheredjobs import HigherEdJobsScraper
 from .chronicle import ChronicleScraper
 from .linkedin import LinkedInScraper
+from .jobsacuk import JobsAcUkScraper
 
 __all__ = [
     "JobPosting",
@@ -11,4 +12,6 @@ __all__ = [
     "HigherEdJobsScraper",
     "ChronicleScraper",
     "LinkedInScraper",
+    "JobsAcUkScraper",
 ]
+

@@ -1,6 +1,7 @@
+import json
 import re
 import xml.etree.ElementTree as ET
-from typing import List
+from typing import List, Optional, Tuple
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from .base import BaseScraper, JobPosting
@@ -14,6 +15,62 @@ class ChronicleScraper(BaseScraper):
 
     def __init__(self):
         super().__init__("Chronicle")
+
+    def _fetch_detail_page(self, url: str, fallback_text: str = "") -> Tuple[str, str, str, Optional[str], Optional[str]]:
+        """Fetches detail page to obtain complete description, salary, and deadline."""
+        raw_text = fallback_text
+        deadline = "Open until filled"
+        salary = "Not specified"
+        institution = None
+        location = None
+
+        try:
+            resp = self.session.get(url, timeout=12)
+            if resp.status_code == 200:
+                soup = BeautifulSoup(resp.text, "html.parser")
+
+                # Check for structured JSON-LD data
+                for s in soup.find_all("script", type="application/ld+json"):
+                    if s.string:
+                        try:
+                            data = json.loads(s.string)
+                            if isinstance(data, dict):
+                                if data.get("validThrough"):
+                                    vt = str(data["validThrough"]).split("T")[0]
+                                    if re.match(r"^\d{4}-\d{2}-\d{2}$", vt):
+                                        deadline = vt
+                                if data.get("baseSalary"):
+                                    salary = str(data["baseSalary"])
+                                if data.get("hiringOrganization") and isinstance(data["hiringOrganization"], dict):
+                                    institution = data["hiringOrganization"].get("name")
+                                if data.get("jobLocation"):
+                                    loc_obj = data["jobLocation"]
+                                    if isinstance(loc_obj, list) and loc_obj:
+                                        loc_obj = loc_obj[0]
+                                    if isinstance(loc_obj, dict) and loc_obj.get("address"):
+                                        addr = loc_obj["address"]
+                                        if isinstance(addr, dict):
+                                            parts = [addr.get("addressLocality"), addr.get("addressRegion"), addr.get("addressCountry")]
+                                            location = ", ".join(p for p in parts if p)
+                        except Exception:
+                            pass
+
+                # Extract full description
+                desc_div = soup.find("div", class_=lambda c: c and "job-description" in c) or soup.find("div", class_="mds-surface")
+                if desc_div:
+                    full_desc = desc_div.get_text(" ", strip=True)
+                    if len(full_desc) > len(raw_text):
+                        raw_text = full_desc
+
+                # Deterministic deadline extraction from description text
+                text_deadline = JobPosting.extract_deadline_from_text(raw_text)
+                if text_deadline:
+                    deadline = text_deadline
+
+        except Exception as e:
+            self.logger.debug(f"Could not fetch detail page for {url}: {e}")
+
+        return raw_text, deadline, salary, institution, location
 
     def scrape(self, query: str = "Assistant Professor Transportation", max_results: int = 25) -> List[JobPosting]:
         self.logger.info(f"Querying Chronicle of Higher Ed with: '{query}'")
@@ -30,7 +87,6 @@ class ChronicleScraper(BaseScraper):
                     title_elem = item.find("title")
                     link_elem = item.find("link")
                     desc_elem = item.find("description")
-                    pub_elem = item.find("pubDate")
 
                     title = title_elem.text.strip() if title_elem is not None and title_elem.text else ""
                     link = link_elem.text.strip() if link_elem is not None and link_elem.text else ""
@@ -47,9 +103,11 @@ class ChronicleScraper(BaseScraper):
                     job_id_key = id_match.group(1) if id_match else link
                     job_id = JobPosting.generate_id("chronicle", job_id_key)
 
-                    # Extract institution/location from description or title
-                    institution = "Chronicle Listed University"
-                    location = "United States"
+                    # Fetch full detail page for complete description and deadline
+                    raw_text, deadline, salary, inst_detail, loc_detail = self._fetch_detail_page(link, fallback_text=desc or title)
+
+                    institution = inst_detail or "Chronicle Listed University"
+                    location = loc_detail or "United States"
 
                     postings.append(
                         JobPosting(
@@ -58,11 +116,11 @@ class ChronicleScraper(BaseScraper):
                             institution=institution,
                             field="Transportation / Civil Engineering",
                             location=location,
-                            deadline="See full listing",
-                            salary="Not specified",
+                            deadline=deadline,
+                            salary=salary,
                             link=link,
                             source="Chronicle",
-                            raw_description=desc or title,
+                            raw_description=raw_text,
                         )
                     )
 
@@ -109,17 +167,11 @@ class ChronicleScraper(BaseScraper):
                     location = loc_elem.get_text(strip=True) if loc_elem else "United States"
 
                     # Fetch full job posting page to obtain complete description, salary, and deadlines
-                    try:
-                        detail_resp = self.session.get(full_url, timeout=10)
-                        if detail_resp.status_code == 200:
-                            detail_soup = BeautifulSoup(detail_resp.text, "html.parser")
-                            desc_div = detail_soup.find("div", class_=lambda c: c and "job-description" in c) or detail_soup.find("div", class_="mds-surface")
-                            if desc_div:
-                                full_desc = desc_div.get_text(" ", strip=True)
-                                if len(full_desc) > len(raw_text):
-                                    raw_text = full_desc
-                    except Exception as detail_err:
-                        self.logger.debug(f"Could not fetch detail page for {full_url}: {detail_err}")
+                    raw_text, deadline, salary, inst_detail, loc_detail = self._fetch_detail_page(full_url, fallback_text=raw_text)
+                    if inst_detail:
+                        institution = inst_detail
+                    if loc_detail:
+                        location = loc_detail
 
                     id_match = re.search(r"/job/(\d+)", full_url)
                     job_id_key = id_match.group(1) if id_match else full_url
@@ -132,8 +184,8 @@ class ChronicleScraper(BaseScraper):
                             institution=institution,
                             field="Transportation / Civil Engineering",
                             location=location,
-                            deadline="See full listing",
-                            salary="Not specified",
+                            deadline=deadline,
+                            salary=salary,
                             link=full_url,
                             source="Chronicle",
                             raw_description=raw_text,

@@ -13,6 +13,48 @@ class AcademicKeysScraper(BaseScraper):
     def __init__(self):
         super().__init__("AcademicKeys")
 
+    def _fetch_detail(self, url: str):
+        """Fetch AcademicKeys job display page for full description, department, deadline, and salary."""
+        try:
+            resp = self.session.get(url, timeout=12)
+            if resp.status_code == 200:
+                soup = BeautifulSoup(resp.text, "html.parser")
+                full_text = soup.get_text(" ", strip=True)
+
+                department = ""
+                # AcademicKeys detail pages feature 'Department [Department Name]'
+                for row in soup.find_all("tr"):
+                    row_text = row.get_text(" ", strip=True)
+                    if "department" in row_text.lower():
+                        m = re.search(
+                            r"department\s*[:\-]?\s*([A-Za-z0-9&/,\.\-\s]+?)(?=\s*(?:application\s+deadline|deadline|position\s+start|date\s+posted|salary|job\s+categories|$))",
+                            row_text,
+                            re.IGNORECASE,
+                        )
+                        if m:
+                            dept_cand = m.group(1).strip()
+                            if dept_cand.lower().startswith("department of "):
+                                department = "Department of " + dept_cand[14:].strip()
+                            elif dept_cand.lower().startswith("department "):
+                                department = "Department of " + dept_cand[11:].strip()
+                            elif dept_cand:
+                                department = dept_cand
+                            break
+
+                deadline = ""
+                dl_m = re.search(
+                    r"(?:application\s+deadline|deadline)\s*[:\-]?\s*([A-Za-z0-9&/,\.\-\s]+?)(?=\s*(?:position\s+start|date\s+posted|salary|job\s+categories|$))",
+                    full_text,
+                    re.IGNORECASE,
+                )
+                if dl_m:
+                    deadline = dl_m.group(1).strip()
+
+                return full_text, department, deadline
+        except Exception as e:
+            self.logger.debug(f"Failed fetching AcademicKeys detail page {url}: {e}")
+        return "", "", ""
+
     def scrape(self, query: str = "Assistant Professor Transportation", max_results: int = 25) -> List[JobPosting]:
         self.logger.info(f"Querying AcademicKeys with: '{query}'")
         postings: List[JobPosting] = []
@@ -50,7 +92,7 @@ class AcademicKeysScraper(BaseScraper):
                 tr = a.find_parent("tr")
                 parent_text = tr.get_text(" ", strip=True) if tr else a.parent.get_text(" ", strip=True)
 
-                # Filter out non-faculty postings (postdocs, technicians, staff, drivers)
+                # Filter out non-faculty postings (postdocs, technicians, staff, drivers, adjunct, seniority)
                 if not JobPosting.is_valid_faculty_posting(title, parent_text):
                     continue
 
@@ -74,6 +116,15 @@ class AcademicKeysScraper(BaseScraper):
                         if "Deadline" in line and i + 1 < len(text_lines):
                             deadline = text_lines[i + 1]
 
+                # Fetch full detail page for rich description and department
+                detail_desc, detail_dept, detail_dl = self._fetch_detail(clean_url)
+                if detail_dept:
+                    field_name = detail_dept
+                if detail_dl:
+                    deadline = detail_dl
+
+                raw_desc = detail_desc if detail_desc and len(detail_desc) > len(parent_text) else (parent_text or title)
+
                 job_id = JobPosting.generate_id("academickeys", clean_url)
                 postings.append(
                     JobPosting(
@@ -86,7 +137,7 @@ class AcademicKeysScraper(BaseScraper):
                         salary="Not specified",
                         link=clean_url,
                         source="AcademicKeys",
-                        raw_description=parent_text or title,
+                        raw_description=raw_desc,
                     )
                 )
 
@@ -95,3 +146,4 @@ class AcademicKeysScraper(BaseScraper):
 
         self.logger.info(f"Retrieved {len(postings)} listings from AcademicKeys")
         return postings
+

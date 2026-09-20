@@ -17,6 +17,7 @@ class JobExporter:
         ("tenure_track", "Tenure Track"),
         ("location", "Location"),
         ("deadline", "Deadline"),
+        ("deadline_date", "Deadline Date"),
         ("salary", "Salary"),
         ("summary", "Summary (Gemini)"),
         ("link", "Link"),
@@ -39,6 +40,9 @@ class JobExporter:
         if not include_filtered:
             postings = [p for p in postings if not p.status.startswith("Filtered")]
 
+        from scrapers.base import sort_postings_by_deadline
+        postings = sort_postings_by_deadline(postings)
+
         fieldnames = [key for key, _ in self.COLUMNS]
         header_labels = [label for _, label in self.COLUMNS]
 
@@ -58,6 +62,9 @@ class JobExporter:
         """Export postings to an elegantly formatted Excel spreadsheet."""
         if not include_filtered:
             postings = [p for p in postings if not p.status.startswith("Filtered")]
+
+        from scrapers.base import sort_postings_by_deadline
+        postings = sort_postings_by_deadline(postings)
 
         try:
             import pandas as pd
@@ -121,7 +128,7 @@ class JobExporter:
 
                         if col_name in ("Summary (Gemini)", "Fit Reason"):
                             cell.alignment = wrapped_align
-                        elif col_name in ("Fit Score (1-10)", "Tenure Track", "Deadline", "Source", "Status"):
+                        elif col_name in ("Fit Score (1-10)", "Tenure Track", "Deadline", "Deadline Date", "Source", "Status"):
                             cell.alignment = center_align
                         else:
                             cell.alignment = data_align
@@ -138,6 +145,15 @@ class JobExporter:
                                     cell.font = med_fit_font
                             except (ValueError, TypeError):
                                 pass
+
+                        # Highlight Status
+                        if col_name == "Status" and cell.value:
+                            val_str = str(cell.value).strip()
+                            if val_str == "Past Due":
+                                cell.fill = PatternFill(start_color="FCE8E6", end_color="FCE8E6", fill_type="solid")
+                                cell.font = Font(name="Calibri", size=10, bold=True, color="C5221F")
+                            elif val_str == "Active":
+                                cell.font = Font(name="Calibri", size=10, bold=True, color="137333")
 
                         # Add hyperlink to link column
                         if col_name == "Link" and cell.value and str(cell.value).startswith("http"):

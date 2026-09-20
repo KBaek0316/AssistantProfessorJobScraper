@@ -1,5 +1,6 @@
 import html
 import logging
+import os
 import re
 from datetime import datetime, date
 from typing import List, Tuple, Optional
@@ -25,6 +26,29 @@ def get_fit_marker_color(score: Optional[int]) -> str:
         return "lightred"    # Low match (3-4)
     else:
         return "gray"        # Minimal / Screened match (1-2)
+
+
+def get_fit_score_tier(score: Optional[int]) -> Optional[str]:
+    """
+    Returns the score tier key for filtering.
+    Per user specification, scores 1-2 and unscored are excluded from the filter/legend.
+    """
+    if score is None:
+        return None
+    try:
+        s = int(score)
+    except (ValueError, TypeError):
+        return None
+
+    if s >= 9:
+        return "tier_9_10"
+    elif s >= 7:
+        return "tier_7_8"
+    elif s >= 5:
+        return "tier_5_6"
+    elif s >= 3:
+        return "tier_3_4"
+    return None
 
 
 MONTH_NAMES = (
@@ -91,12 +115,14 @@ def parse_deadline_info(deadline_str: Optional[str], ref_date: Optional[date] = 
 
     if found_dates:
         found_dates = sorted(set(found_dates))
-        future_dates = [d for d in found_dates if (d - ref_date).days >= 0]
-        target_date = future_dates[0] if future_dates else found_dates[-1]
+        # Per user specification: If multiple deadlines exist, use the later one
+        target_date = found_dates[-1]
         diff = (target_date - ref_date).days
         date_label = target_date.strftime('%b %d')
 
-        if diff < 0:
+        if diff < -30:
+            return ("past_due", f"🚫 Past Due ({abs(diff)}d ago)", diff)
+        elif diff < 0:
             return ("passed", f"⏳ Passed ({abs(diff)}d ago)", diff)
         elif diff <= 7:
             return ("urgent", f"🔥 Urgent: {diff}d left ({date_label})", diff)
@@ -116,11 +142,10 @@ class MapGenerator:
         self.logger = logging.getLogger("processor.map")
 
     def generate_map(self, postings: List[JobPosting], include_filtered: bool = False):
-        """Create and save the interactive map with color-coded fit scores and deadline filters."""
+        """Create and save the interactive map with color-coded fit scores and 2-way interactive filters."""
         try:
             import folium
-            from folium.plugins import MarkerCluster, FeatureGroupSubGroup
-            import os
+            from folium.plugins import MarkerCluster
             import shutil
 
             if isinstance(postings, dict):
@@ -128,6 +153,9 @@ class MapGenerator:
 
             if not include_filtered:
                 postings = [p for p in postings if not p.status.startswith("Filtered")]
+
+            from scrapers.base import sort_postings_by_deadline
+            postings = sort_postings_by_deadline(postings)
 
             # Center map on geographic center of contiguous United States
             job_map = folium.Map(
@@ -161,7 +189,7 @@ class MapGenerator:
                 overlay=False,
             ).add_to(job_map)
 
-            # 2. MarkerCluster: aggregates nearby markers with job count badges when zoomed out
+            # 2. MarkerCluster
             marker_cluster = MarkerCluster(
                 control=False,
                 showCoverageOnHover=False,
@@ -169,20 +197,55 @@ class MapGenerator:
                 maxClusterRadius=40,
             ).add_to(job_map)
 
-            # 3. Deadline Categories Definitions
-            categories = {
-                "urgent": {"label": "🔥 Deadline ≤ 7 Days", "markers": []},
-                "closing_soon": {"label": "⚡ Deadline in 8–30 Days", "markers": []},
-                "future": {"label": "📅 Deadline > 30 Days", "markers": []},
-                "open": {"label": "🟢 Open Until Filled / Rolling", "markers": []},
-                "passed": {"label": "⏳ Deadline / Priority Passed", "markers": []},
+            # 3. Dynamic Google Sheet Link
+            raw_sheet_id = os.environ.get("GOOGLE_SHEET_ID", "1IYVg0CeSIq3OdUtvluMo7dm6usRFcIn8oeIiwy3y3w4").strip()
+            sheet_match = re.search(r"/spreadsheets/d/([a-zA-Z0-9-_]+)", raw_sheet_id)
+            sheet_id = sheet_match.group(1) if sheet_match else raw_sheet_id
+            sheet_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/edit"
+
+            # 4. Filter categories setup and count tracking
+            score_tiers_def = {
+                "tier_9_10": {"label": "9–10: Outstanding Match", "color": "#2d6a4f", "count": 0},
+                "tier_7_8": {"label": "7–8: Strong Match", "color": "#52b788", "count": 0},
+                "tier_5_6": {"label": "5–6: Moderate Match", "color": "#f77f00", "count": 0},
+                "tier_3_4": {"label": "3–4: Low Match", "color": "#fb6f92", "count": 0},
+            }
+
+            deadline_cats_def = {
+                "urgent": {"label": "🔥 Urgent: ≤ 7 Days", "badge_bg": "#fee2e2", "badge_color": "#991b1b", "count": 0},
+                "closing_soon": {"label": "⚡ Closing: 8–30 Days", "badge_bg": "#fef9c3", "badge_color": "#854d0e", "count": 0},
+                "future": {"label": "📅 Due in > 30 Days", "badge_bg": "#e0f2fe", "badge_color": "#075985", "count": 0},
+                "open": {"label": "🟢 Open / Rolling", "badge_bg": "#f0fdf4", "badge_color": "#166534", "count": 0},
+                "passed": {"label": "⏳ Passed (≤ 30d ago)", "badge_bg": "#fee2e2", "badge_color": "#991b1b", "count": 0},
             }
 
             plotted_count = 0
+            marker_js_items = []
 
             for p in postings:
                 if p.latitude is None or p.longitude is None:
                     continue
+
+                # 1) Exclude entries whose status is 'Past Due'
+                if p.status == "Past Due":
+                    continue
+
+                # 2) Deadline parsing
+                cat_key, timing_badge_text, diff = parse_deadline_info(p.deadline)
+
+                # If deadline is past more than 30 days, do NOT show on map
+                if cat_key == "past_due" or (diff is not None and diff < -30):
+                    continue
+
+                # 3) Fit score tier check (exclude 1-2 / Unscored from map and filter per user instructions)
+                score_tier = get_fit_score_tier(p.fit_score)
+                if not score_tier:
+                    continue
+
+                # Update counts
+                score_tiers_def[score_tier]["count"] += 1
+                if cat_key in deadline_cats_def:
+                    deadline_cats_def[cat_key]["count"] += 1
 
                 safe_title = html.escape(p.title)
                 safe_inst = html.escape(p.institution)
@@ -195,9 +258,6 @@ class MapGenerator:
                 safe_link = html.escape(p.link)
                 safe_tenure = html.escape(p.tenure_track)
                 safe_reason = html.escape(p.fit_reason) if p.fit_reason else ""
-
-                # Deadline parsing & timing badge
-                cat_key, timing_badge_text, _ = parse_deadline_info(p.deadline)
 
                 # Fit Score Badge & Marker Color
                 marker_color = get_fit_marker_color(p.fit_score)
@@ -285,68 +345,233 @@ class MapGenerator:
                     tooltip=f"{p.institution}: {p.title} ({score_label})",
                     icon=folium.Icon(color=marker_color, icon="graduation-cap", prefix="fa"),
                 )
+                marker.add_to(marker_cluster)
 
-                categories[cat_key]["markers"].append(marker)
+                marker_js_items.append({
+                    "var_name": marker.get_name(),
+                    "score_tier": score_tier,
+                    "deadline_cat": cat_key,
+                })
                 plotted_count += 1
 
-            # 4. Attach each deadline category to marker_cluster via FeatureGroupSubGroup so they can be toggled
-            for cat_key, cat_data in categories.items():
-                count = len(cat_data["markers"])
-                group_name = f"{cat_data['label']} ({count})"
-                group = FeatureGroupSubGroup(marker_cluster, name=group_name, show=True).add_to(job_map)
-                for marker in cat_data["markers"]:
-                    marker.add_to(group)
+            # 5. Build Unified 2-Way Filter & Legend Control HTML
+            cluster_var = marker_cluster.get_name()
 
-            # 5. Add floating Fit Score Color Legend
-            legend_html = """
-            <div style="
+            filter_control_html = f"""
+            <div id="filter-legend-panel" style="
                 position: fixed;
-                bottom: 25px;
-                left: 25px;
+                top: 25px;
+                right: 25px;
                 z-index: 9999;
-                background: rgba(255, 255, 255, 0.95);
-                padding: 12px 16px;
-                border-radius: 10px;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-                font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+                background: rgba(255, 255, 255, 0.96);
+                padding: 14px 18px;
+                border-radius: 12px;
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
                 font-size: 12px;
                 line-height: 1.5;
                 border: 1px solid #e2e8f0;
-                backdrop-filter: blur(8px);
-                pointer-events: auto;
-                max-width: 250px;
+                backdrop-filter: blur(10px);
+                max-width: 320px;
+                color: #1e293b;
             ">
-                <div style="font-weight: 700; font-size: 13px; color: #0f172a; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                    <span>🎯 Fit Score Marker Legend</span>
+                <!-- Header with Title and Google Sheets Link -->
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
+                    <div style="font-weight: 700; font-size: 13px; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+                        <span>🎯 Fit Score Marker Legend & 2-Way Filter</span>
+                    </div>
+                    <a href="{sheet_url}" target="_blank" style="
+                        font-size: 11px;
+                        background: #0284c7;
+                        color: white;
+                        text-decoration: none;
+                        padding: 3px 9px;
+                        border-radius: 6px;
+                        font-weight: 600;
+                        display: flex;
+                        align-items: center;
+                        gap: 4px;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                    ">
+                        📊 Google Sheets ↗
+                    </a>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                    <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #2d6a4f; border: 1px solid rgba(0,0,0,0.2);"></span>
-                    <span><b>9–10:</b> Outstanding Match</span>
+
+                <!-- Section 1: Candidate Fit Score Filter -->
+                <div style="margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span style="font-weight: 700; color: #334155; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Fit Score</span>
+                        <div style="font-size: 10px; display: flex; gap: 6px;">
+                            <a href="javascript:void(0)" onclick="setScoreAll(true)" style="color: #2563eb; text-decoration: none; font-weight: 600;">All</a>
+                            <span style="color: #cbd5e1;">|</span>
+                            <a href="javascript:void(0)" onclick="setScoreAll(false)" style="color: #64748b; text-decoration: none;">None</a>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
+                            <input type="checkbox" class="score-filter-cb" value="tier_9_10" checked onchange="applyFilters()" style="cursor: pointer;">
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background: #2d6a4f; display: inline-block;"></span>
+                            <span style="flex-grow: 1;"><b>9–10:</b> Outstanding Match</span>
+                            <span style="color: #64748b; font-size: 11px; font-weight: 600;">({score_tiers_def['tier_9_10']['count']})</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
+                            <input type="checkbox" class="score-filter-cb" value="tier_7_8" checked onchange="applyFilters()" style="cursor: pointer;">
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background: #52b788; display: inline-block;"></span>
+                            <span style="flex-grow: 1;"><b>7–8:</b> Strong Match</span>
+                            <span style="color: #64748b; font-size: 11px; font-weight: 600;">({score_tiers_def['tier_7_8']['count']})</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
+                            <input type="checkbox" class="score-filter-cb" value="tier_5_6" checked onchange="applyFilters()" style="cursor: pointer;">
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background: #f77f00; display: inline-block;"></span>
+                            <span style="flex-grow: 1;"><b>5–6:</b> Moderate Match</span>
+                            <span style="color: #64748b; font-size: 11px; font-weight: 600;">({score_tiers_def['tier_5_6']['count']})</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
+                            <input type="checkbox" class="score-filter-cb" value="tier_3_4" checked onchange="applyFilters()" style="cursor: pointer;">
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background: #fb6f92; display: inline-block;"></span>
+                            <span style="flex-grow: 1;"><b>3–4:</b> Low Match</span>
+                            <span style="color: #64748b; font-size: 11px; font-weight: 600;">({score_tiers_def['tier_3_4']['count']})</span>
+                        </label>
+                    </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                    <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #52b788; border: 1px solid rgba(0,0,0,0.2);"></span>
-                    <span><b>7–8:</b> Strong Match</span>
+
+                <!-- Section 2: Deadline Urgency Filter -->
+                <div style="margin-bottom: 10px; border-top: 1px solid #f1f5f9; padding-top: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span style="font-weight: 700; color: #334155; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Deadline Urgency</span>
+                        <div style="font-size: 10px; display: flex; gap: 6px;">
+                            <a href="javascript:void(0)" onclick="setDeadlineAll(true)" style="color: #2563eb; text-decoration: none; font-weight: 600;">All</a>
+                            <span style="color: #cbd5e1;">|</span>
+                            <a href="javascript:void(0)" onclick="setDeadlineAll(false)" style="color: #64748b; text-decoration: none;">None</a>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
+                            <input type="checkbox" class="dl-filter-cb" value="urgent" checked onchange="applyFilters()" style="cursor: pointer;">
+                            <span style="flex-grow: 1;">🔥 Deadline ≤ 7 Days</span>
+                            <span style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['urgent']['count']})</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
+                            <input type="checkbox" class="dl-filter-cb" value="closing_soon" checked onchange="applyFilters()" style="cursor: pointer;">
+                            <span style="flex-grow: 1;">⚡ Deadline in 8–30 Days</span>
+                            <span style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['closing_soon']['count']})</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
+                            <input type="checkbox" class="dl-filter-cb" value="future" checked onchange="applyFilters()" style="cursor: pointer;">
+                            <span style="flex-grow: 1;">📅 Deadline > 30 Days</span>
+                            <span style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['future']['count']})</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
+                            <input type="checkbox" class="dl-filter-cb" value="open" checked onchange="applyFilters()" style="cursor: pointer;">
+                            <span style="flex-grow: 1;">🟢 Open Until Filled / Rolling</span>
+                            <span style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['open']['count']})</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
+                            <input type="checkbox" class="dl-filter-cb" value="passed" checked onchange="applyFilters()" style="cursor: pointer;">
+                            <span style="flex-grow: 1;">⏳ Passed (≤ 30d ago)</span>
+                            <span style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['passed']['count']})</span>
+                        </label>
+                    </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                    <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #f77f00; border: 1px solid rgba(0,0,0,0.2);"></span>
-                    <span><b>5–6:</b> Moderate Match</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                    <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #fb6f92; border: 1px solid rgba(0,0,0,0.2);"></span>
-                    <span><b>3–4:</b> Low Match</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #94a3b8; border: 1px solid rgba(0,0,0,0.2);"></span>
-                    <span><b>1–2 / Unscored:</b> Minimal / Other</span>
+
+                <!-- Footer Summary Counter -->
+                <div style="border-top: 1px solid #f1f5f9; padding-top: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #475569;">
+                    <span>Showing: <b id="visible-job-count" style="color: #0f172a;">{plotted_count}</b> / {plotted_count} positions</span>
+                    <a href="javascript:void(0)" onclick="resetAllFilters()" style="color: #2563eb; text-decoration: none; font-weight: 600;">Reset</a>
                 </div>
             </div>
             """
-            job_map.get_root().html.add_child(folium.Element(legend_html))
+            job_map.get_root().html.add_child(folium.Element(filter_control_html))
 
-            # 6. Add LayerControl with expanded view so deadline filters are immediately visible
-            folium.LayerControl(collapsed=False).add_to(job_map)
+            # 6. Build JavaScript for real-time 2-Way Filtering
+            js_items_str = ",\n".join(
+                f"{{ marker: {item['var_name']}, scoreTier: '{item['score_tier']}', deadlineCat: '{item['deadline_cat']}' }}"
+                for item in marker_js_items
+            )
+
+            filter_script = f"""
+            <script>
+            (function() {{
+                var clusterGroup = null;
+                var allMarkers = [];
+
+                function initFilterSystem() {{
+                    if (typeof {cluster_var} === 'undefined') {{
+                        setTimeout(initFilterSystem, 100);
+                        return;
+                    }}
+                    clusterGroup = {cluster_var};
+                    allMarkers = [
+                        {js_items_str}
+                    ];
+                }}
+
+                window.applyFilters = function() {{
+                    if (!clusterGroup) return;
+
+                    var scoreCheckboxes = document.querySelectorAll('.score-filter-cb:checked');
+                    var activeScores = Array.from(scoreCheckboxes).map(function(cb) {{ return cb.value; }});
+
+                    var dlCheckboxes = document.querySelectorAll('.dl-filter-cb:checked');
+                    var activeDeadlines = Array.from(dlCheckboxes).map(function(cb) {{ return cb.value; }});
+
+                    var visibleCount = 0;
+                    allMarkers.forEach(function(item) {{
+                        var matchScore = activeScores.indexOf(item.scoreTier) !== -1;
+                        var matchDeadline = activeDeadlines.indexOf(item.deadlineCat) !== -1;
+
+                        if (matchScore && matchDeadline) {{
+                            if (!clusterGroup.hasLayer(item.marker)) {{
+                                clusterGroup.addLayer(item.marker);
+                            }}
+                            visibleCount++;
+                        }} else {{
+                            if (clusterGroup.hasLayer(item.marker)) {{
+                                clusterGroup.removeLayer(item.marker);
+                            }}
+                        }}
+                    }});
+
+                    var counterElem = document.getElementById('visible-job-count');
+                    if (counterElem) {{
+                        counterElem.innerText = visibleCount;
+                    }}
+                }};
+
+                window.setScoreAll = function(val) {{
+                    document.querySelectorAll('.score-filter-cb').forEach(function(cb) {{
+                        cb.checked = val;
+                    }});
+                    applyFilters();
+                }};
+
+                window.setDeadlineAll = function(val) {{
+                    document.querySelectorAll('.dl-filter-cb').forEach(function(cb) {{
+                        cb.checked = val;
+                    }});
+                    applyFilters();
+                }};
+
+                window.resetAllFilters = function() {{
+                    document.querySelectorAll('.score-filter-cb').forEach(function(cb) {{ cb.checked = true; }});
+                    document.querySelectorAll('.dl-filter-cb').forEach(function(cb) {{ cb.checked = true; }});
+                    applyFilters();
+                }};
+
+                if (document.readyState === 'complete' || document.readyState === 'interactive') {{
+                    initFilterSystem();
+                }} else {{
+                    window.addEventListener('DOMContentLoaded', initFilterSystem);
+                }}
+            }})();
+            </script>
+            """
+            job_map.get_root().html.add_child(folium.Element(filter_script))
+
+            # 7. Add LayerControl for base layers (placed bottom-left to avoid colliding with upper-right filter)
+            folium.LayerControl(collapsed=True, position='bottomleft').add_to(job_map)
             job_map.save(self.output_filepath)
-            self.logger.info(f"Generated interactive map with {plotted_count} locations across deadline filters at {self.output_filepath}")
+            self.logger.info(f"Generated interactive map with {plotted_count} locations across 2-way filters at {self.output_filepath}")
 
             # Also mirror to index.html if saving map.html for direct root hosting on GitHub Pages
             if os.path.basename(self.output_filepath) == "map.html":

@@ -74,7 +74,13 @@ class HigherEdJobsScraper(BaseScraper):
                     detail_resp = self.session.get(full_url, timeout=10)
                     if detail_resp.status_code == 200:
                         detail_soup = BeautifulSoup(detail_resp.text, "html.parser")
-                        desc_div = detail_soup.find("div", id="job-description") or detail_soup.find("div", class_="job-description") or detail_soup.find("div", class_="col-sm-12")
+                        desc_div = (
+                            detail_soup.find("div", id="mainContent")
+                            or detail_soup.find("div", class_="main")
+                            or detail_soup.find("div", id="job-description")
+                            or detail_soup.find("div", class_="job-description")
+                            or detail_soup.find("div", class_="col-sm-12")
+                        )
                         if desc_div:
                             full_desc = desc_div.get_text(" ", strip=True)
                             if len(full_desc) > len(raw_text):
