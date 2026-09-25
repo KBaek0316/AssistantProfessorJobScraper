@@ -358,6 +358,85 @@ class MapGenerator:
             cluster_var = marker_cluster.get_name()
 
             filter_control_html = f"""
+            <style>
+            @keyframes filterFadeIn {{
+                from {{ opacity: 0; transform: scale(0.96) translateY(-4px); }}
+                to {{ opacity: 1; transform: scale(1) translateY(0); }}
+            }}
+            #filter-legend-panel {{
+                animation: filterFadeIn 0.2s ease-out;
+                max-height: calc(100vh - 50px);
+                overflow-y: auto;
+                box-sizing: border-box;
+            }}
+            #filter-legend-panel::-webkit-scrollbar {{
+                width: 5px;
+            }}
+            #filter-legend-panel::-webkit-scrollbar-thumb {{
+                background: #cbd5e1;
+                border-radius: 3px;
+            }}
+            #filter-legend-panel::-webkit-scrollbar-thumb:hover {{
+                background: #94a3b8;
+            }}
+            #filter-toggle-pill {{
+                animation: filterFadeIn 0.2s ease-out;
+                box-sizing: border-box;
+            }}
+            @media (max-width: 640px) {{
+                #filter-legend-panel {{
+                    top: 10px !important;
+                    right: 10px !important;
+                    left: 10px !important;
+                    max-width: none !important;
+                    width: auto !important;
+                    max-height: 82vh !important;
+                    padding: 12px 14px !important;
+                }}
+                #filter-toggle-pill {{
+                    top: 10px !important;
+                    right: 10px !important;
+                    padding: 7px 12px !important;
+                    font-size: 11px !important;
+                }}
+            }}
+            </style>
+
+            <!-- Floating Minimized Pill Button -->
+            <button id="filter-toggle-pill" onclick="toggleFilterPanel(true)" type="button" style="
+                position: fixed;
+                top: 25px;
+                right: 25px;
+                z-index: 9999;
+                background: rgba(255, 255, 255, 0.96);
+                padding: 8px 14px;
+                border-radius: 20px;
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08);
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                font-size: 12px;
+                font-weight: 600;
+                color: #0f172a;
+                border: 1px solid #cbd5e1;
+                backdrop-filter: blur(10px);
+                cursor: pointer;
+                display: none;
+                align-items: center;
+                gap: 6px;
+                user-select: none;
+                touch-action: manipulation;
+                transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+            " onmouseover="this.style.background='#f8fafc'; this.style.boxShadow='0 10px 24px rgba(0,0,0,0.2)';"
+              onmouseout="this.style.background='rgba(255, 255, 255, 0.96)'; this.style.boxShadow='0 8px 20px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08)';"
+              aria-label="Open filter panel" title="Show filters and legend">
+                <span style="font-size: 14px;">🎯</span>
+                <span>Filters & Legend</span>
+                <span style="background: #e0f2fe; color: #0369a1; padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 700;">
+                    <span id="min-filter-count">{plotted_count}</span>
+                </span>
+                <span style="font-size: 10px; color: #64748b; margin-left: 2px;">▾</span>
+            </button>
+
+            <!-- Expanded Filter & Legend Panel -->
             <div id="filter-legend-panel" style="
                 position: fixed;
                 top: 25px;
@@ -375,26 +454,49 @@ class MapGenerator:
                 max-width: 320px;
                 color: #1e293b;
             ">
-                <!-- Header with Title and Google Sheets Link -->
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
-                    <div style="font-weight: 700; font-size: 13px; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+                <!-- Header with Title, Google Sheets Link, and Minimize Button -->
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; flex-wrap: wrap;">
+                    <div style="font-weight: 700; font-size: 12px; color: #0f172a; display: flex; align-items: center; gap: 4px;">
                         <span>🎯 Fit Score Marker Legend & 2-Way Filter</span>
                     </div>
-                    <a href="{sheet_url}" target="_blank" style="
-                        font-size: 11px;
-                        background: #0284c7;
-                        color: white;
-                        text-decoration: none;
-                        padding: 3px 9px;
-                        border-radius: 6px;
-                        font-weight: 600;
-                        display: flex;
-                        align-items: center;
-                        gap: 4px;
-                        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                    ">
-                        📊 Google Sheets ↗
-                    </a>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <a href="{sheet_url}" target="_blank" style="
+                            font-size: 11px;
+                            background: #0284c7;
+                            color: white;
+                            text-decoration: none;
+                            padding: 2px 7px;
+                            border-radius: 6px;
+                            font-weight: 600;
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 3px;
+                            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                            white-space: nowrap;
+                        ">
+                            📊 Sheets ↗
+                        </a>
+                        <button id="filter-collapse-btn" onclick="toggleFilterPanel(false)" type="button" style="
+                            font-size: 11px;
+                            background: #f1f5f9;
+                            color: #475569;
+                            border: 1px solid #cbd5e1;
+                            padding: 2px 7px;
+                            border-radius: 6px;
+                            font-weight: 600;
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 3px;
+                            cursor: pointer;
+                            white-space: nowrap;
+                            transition: all 0.15s ease;
+                        " onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a';"
+                          onmouseout="this.style.background='#f1f5f9'; this.style.color='#475569';"
+                          aria-label="Minimize filter panel" title="Minimize filter panel">
+                            <span>−</span>
+                            <span>Hide</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Section 1: Candidate Fit Score Filter -->
@@ -476,14 +578,26 @@ class MapGenerator:
 
                 <!-- Footer Summary Counter -->
                 <div style="border-top: 1px solid #f1f5f9; padding-top: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #475569;">
-                    <span>Showing: <b id="visible-job-count" style="color: #0f172a;">{plotted_count}</b> / {plotted_count} positions</span>
-                    <a href="javascript:void(0)" onclick="resetAllFilters()" style="color: #2563eb; text-decoration: none; font-weight: 600;">Reset</a>
+                    <span>Showing: <b id="visible-job-count" style="color: #0f172a;">{plotted_count}</b> / {plotted_count}</span>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <a href="javascript:void(0)" onclick="resetAllFilters()" style="color: #2563eb; text-decoration: none; font-weight: 600;">Reset</a>
+                        <button onclick="toggleFilterPanel(false)" type="button" style="
+                            background: #eff6ff;
+                            color: #2563eb;
+                            border: 1px solid #bfdbfe;
+                            padding: 2px 7px;
+                            border-radius: 4px;
+                            font-size: 10px;
+                            font-weight: 600;
+                            cursor: pointer;
+                        " title="Hide filter panel and view map">Map ✕</button>
+                    </div>
                 </div>
             </div>
             """
             job_map.get_root().html.add_child(folium.Element(filter_control_html))
 
-            # 6. Build JavaScript for real-time 2-Way Filtering
+            # 6. Build JavaScript for real-time 2-Way Filtering and Panel Toggle
             js_items_str = ",\n".join(
                 f"{{ marker: {item['var_name']}, scoreTier: '{item['score_tier']}', deadlineCat: '{item['deadline_cat']}' }}"
                 for item in marker_js_items
@@ -504,6 +618,35 @@ class MapGenerator:
                     allMarkers = [
                         {js_items_str}
                     ];
+                    initPanelState();
+                }}
+
+                window.toggleFilterPanel = function(show) {{
+                    var panel = document.getElementById('filter-legend-panel');
+                    var pill = document.getElementById('filter-toggle-pill');
+                    if (!panel || !pill) return;
+
+                    if (show) {{
+                        panel.style.display = 'block';
+                        pill.style.display = 'none';
+                        try {{ localStorage.setItem('map_filter_collapsed', 'false'); }} catch (e) {{}}
+                    }} else {{
+                        panel.style.display = 'none';
+                        pill.style.display = 'inline-flex';
+                        try {{ localStorage.setItem('map_filter_collapsed', 'true'); }} catch (e) {{}}
+                    }}
+                }};
+
+                function initPanelState() {{
+                    var saved = null;
+                    try {{
+                        saved = localStorage.getItem('map_filter_collapsed');
+                    }} catch (e) {{}}
+
+                    // On mobile screens (<= 768px), default to collapsed so map is visible
+                    var isMobile = (window.innerWidth <= 768);
+                    var shouldCollapse = (saved !== null) ? (saved === 'true') : isMobile;
+                    window.toggleFilterPanel(!shouldCollapse);
                 }}
 
                 window.applyFilters = function() {{
@@ -535,6 +678,10 @@ class MapGenerator:
                     var counterElem = document.getElementById('visible-job-count');
                     if (counterElem) {{
                         counterElem.innerText = visibleCount;
+                    }}
+                    var minCounterElem = document.getElementById('min-filter-count');
+                    if (minCounterElem) {{
+                        minCounterElem.innerText = visibleCount;
                     }}
                 }};
 
