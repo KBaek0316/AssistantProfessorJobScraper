@@ -17,13 +17,8 @@ You are an academic hiring specialist and faculty search advisor.
 Analyze the following academic job posting and evaluate its relevance against the candidate's research profile.
 
 === CANDIDATE PROFILE ===
-Name: Dr. Kwangho Baek
-Current Role: Postdoctoral Associate, Transit Lab, Department of Civil, Environmental, and Geo-Engineering, University of Minnesota, Twin Cities.
-Educational Background:
-- B.S. and M.S. in Urban Planning
-- Ph.D. in Civil Engineering (Transportation Engineering specialization)
-Core Research Areas: Public transit planning, travel behavior analysis, machine learning applications, discrete choice modeling, mobility simulation, and smart urban mobility systems.
-Target Positions: Tenure-track Assistant Professor (or Open Rank inclusive of Assistant Professor).
+{candidate_profile}
+Target Positions: Tenure-track Assistant Professor, Open Rank Faculty searches inclusive of Assistant Professor, or career-track university teaching faculty appointments.
 
 === JOB POSTING TO EVALUATE ===
 Title (scraped): {title}
@@ -47,18 +42,19 @@ Job Description / Text Snippet:
    - If outside target scope, set "is_faculty" to false or assign fit_score: 1 with fit_reason: "Screened out: Location outside target geographic scope ([Location])".
 
 3. Calibrated Candidate Fit Score (1 to 10 scale):
-   - 9-10 (Core Match): Dedicated Assistant Professor in Transportation Engineering, Traffic Systems, Public Transit Planning, Travel Behavior Analysis, Discrete Choice Modeling, or Smart Mobility (e.g., The College of New Jersey seeking Transportation Engineering Assistant Professor, South Dakota State, University of Cincinnati, UCLA).
-   - 7-8 (Strong Interdisciplinary Match): Assistant Professor or career-track faculty in Urban Planning, Industrial Engineering / Operations Research (e.g., Columbia University IEOR focusing on AI and Machine Learning applied to operations research/data science), Computing/Data Science, or Systems Engineering with strong applications to transportation, mobility, or urban systems.
-   - 6-7 (Multi-Track / Open Civil Engineering Fit): Broad or open-subdiscipline Civil Engineering Assistant Professor search where Transportation Engineering is explicitly listed as one of several acceptable sub-disciplines (e.g., Cedarville University or McNeese State University listing transportation among civil engineering specializations).
+   Evaluate the posting against the candidate's Core Field, Target Departments, and Research Specialties in the CANDIDATE PROFILE:
+   - 9-10 (Core Match): Dedicated Assistant Professor position directly matching the candidate's primary field and core research specialties (e.g., searches specifically seeking expertise in the candidate's primary subdiscipline or core research topics).
+   - 7-8 (Strong Interdisciplinary Match): Assistant Professor or career-track faculty in related disciplines or departments (listed under Target Departments) that explicitly seek applications to the candidate's core domain, research methods, or interdisciplinary specialties.
+   - 6-7 (Multi-Track / Broad Fit): Broad or open-subdiscipline searches within the candidate's primary department where the candidate's subfield is explicitly listed as one of several acceptable focus areas.
    - 3-4 (Low / Poor Fit):
-     * General Civil Engineering faculty search that does NOT explicitly mention or prioritize Transportation. Note: The candidate's BS and MS degrees are in Urban Planning and PhD is in Civil Engineering focusing on Transportation/Travel Behavior; therefore, a general Civil Engineering position without a transportation aspect is a poor fit.
-     * Related business school searches (e.g. Supply Chain Management in a business school) with limited transportation overlap.
+     * General department faculty searches that do NOT explicitly mention or prioritize the candidate's subfield or research specialties.
+     * Peripheral departments or business/policy schools with only incidental overlap.
    - 1-2 (Screened Out / Irrelevant):
-     * Non-matching Civil Engineering sub-disciplines that have NO transportation component (e.g., Water Resources/Hydrology, Environmental Engineering/Chemistry, Geotechnical Engineering, Structural Engineering) - even if incidental state agencies like DOT/TxDOT are mentioned as potential external partners, advisory bodies, or data sources (e.g., University of Texas at Arlington Water Resources Assistant Professor).
+     * Non-matching subdisciplines listed under 'Irrelevant / Non-Matching Subfields' that have NO component of the candidate's core expertise — even if incidental external agencies, partners, or data sources are mentioned.
      * Positions seeking senior-only appointments, adjuncts, continuing education, or completely unrelated fields (Nursing, Film, Pharmacy, K-12, etc.).
 
 4. Department & Focus Extraction:
-   - Diligently extract the official Department, School, or Division name from the posting body (e.g., "Department of Industrial Engineering and Operations Research (IEOR)" for Columbia University, "Department of Civil Engineering", etc.). NEVER leave department as "Not specified" if any department, school, college, or subject focus is mentioned in the text.
+   - Diligently extract the official Department, School, or Division name from the posting body (e.g., "Department of Civil and Environmental Engineering", "Department of Industrial Engineering", etc.). NEVER leave department as "Not specified" if any department, school, college, or subject focus is mentioned in the text.
 
 5. Provide a concise, 1-sentence "fit_reason" explaining the score.
 

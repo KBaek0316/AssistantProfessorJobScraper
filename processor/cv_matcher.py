@@ -106,7 +106,7 @@ Return strictly valid JSON with this structure:
   "primary_field": "Primary research field (e.g. Transportation Engineering & Planning)",
   "research_specialties": ["List 5-8 primary research areas"],
   "target_departments": ["Academic departments where this candidate is a strong fit"],
-  "irrelevant_subfields": ["Subfields in civil/urban/engineering that this candidate does NOT do (e.g. Water Resources, Structures, Geotech)"]
+  "irrelevant_subfields": ["Subfields in the candidate's broader discipline that this candidate does NOT do (e.g. if civil engineering: Water Resources, Structures; if computer science: Graphics, Hardware; if other fields: subdisciplines outside their research)"]
 }}
 """
             resp_text = None
@@ -154,5 +154,5 @@ Return strictly valid JSON with this structure:
 - Core Field: {p.get('primary_field', 'Transportation Engineering')}
 - Target Departments: {departments}
 - Core Research Specialties: {specialties}
-- Irrelevant / Non-Matching Subfields: {irrelevant} (e.g. water resources, structures, environmental chemistry without transportation, or non-transportation disciplines)
+- Irrelevant / Non-Matching Subfields: {irrelevant if irrelevant else 'None specified'}
 """
