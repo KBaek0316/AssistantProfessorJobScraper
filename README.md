@@ -158,9 +158,82 @@ To allow the daily GitHub Action to run automatically in the cloud:
 
 ---
 
-## Running the Scraper
+## 🚀 Quick-Start Tutorial for Non-Coders (Customizing & Triggering an Update)
 
-### Basic Run
+If you downloaded or forked this repository and want to run it for your own academic faculty job search, follow this simple walkthrough. **No advanced programming knowledge required.**
+
+### Step 1: Prepare Your Personal Files
+1. **Your CV**: Replace `CV.pdf` in the project root folder with your own academic CV (keep the filename as `CV.pdf`, or use `--cv-path path/to/your_cv.pdf`).
+2. **Your Free Gemini API Key**:
+   - Get a free key in 30 seconds at [Google AI Studio](https://aistudio.google.com/) (click **Get API key** &rarr; **Create API key**). No credit card required.
+   - In the project folder, create or open your `.env` file (copy `.env.example` and rename it to `.env`), and paste your key:
+     ```env
+     GEMINI_API_KEY=your_actual_key_here
+     ```
+3. **Your Evaluation Criteria (Optional)**:
+   - Open [eval_prompt.txt](eval_prompt.txt) in any text editor (Notepad, TextEdit, VS Code).
+   - The prompt dynamically reads `{candidate_profile}` directly from your `CV.pdf`. You can customize the geographic regions, target positions, or departmental boundaries if desired.
+
+---
+
+### Step 2: How to Trigger an Update
+
+You can trigger an update in two ways: **locally on your computer** or **in the cloud via GitHub Actions**.
+
+#### Method A: Triggering Locally on Your Computer
+
+1. **Open your Terminal / Command Prompt in the project folder**:
+   - **Windows**: Open the folder in File Explorer, click the address bar at the top, type `cmd` (or `powershell`), and press Enter.
+   - **macOS / Linux**: Right-click the project folder in Finder and select *New Terminal at Folder*.
+2. **Make sure Python dependencies are installed** (one-time setup):
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. **Trigger the Scraper & Re-Evaluation**:
+   - **For your specific discipline** (e.g. Computer Science, Economics, Chemistry, Mechanical Engineering):
+     ```bash
+     python job_scraper.py --query "Assistant Professor Computer Science, Assistant Professor Machine Learning" --re-evaluate
+     ```
+   - **Or to re-evaluate the default positions against your new CV**:
+     ```bash
+     python job_scraper.py --re-evaluate
+     ```
+
+> [!IMPORTANT]
+> **Why use the `--re-evaluate` flag?**
+> By default, the scraper only calls Gemini for newly discovered jobs to conserve API quota. Adding `--re-evaluate` forces Gemini to re-evaluate and re-score **all existing jobs** in the database against *your* new CV and prompt instead of keeping previous scores.
+
+---
+
+#### Method B: Triggering in the Cloud via GitHub Actions (1-Click Automation)
+
+If you forked this repository to your personal GitHub account:
+
+1. **Add Your Gemini API Key to GitHub**:
+   - In your GitHub fork, navigate to **Settings > Secrets and variables > Actions**.
+   - Click **New repository secret**, name it `GEMINI_API_KEY`, and paste your key.
+2. **Commit your `CV.pdf` and `eval_prompt.txt`** to your repository's `main` branch.
+3. **Trigger an Immediate Run**:
+   - Go to the **Actions** tab at the top of your GitHub repository.
+   - In the left sidebar, click **Daily Academic Job Scraper**.
+   - Click the **Run workflow** dropdown on the right &rarr; click the green **Run workflow** button.
+4. **Automated Completion**:
+   - GitHub's cloud runner will execute the pipeline, scrape the 5 job boards, score all positions against your CV, and commit the updated `jobs.xlsx`, `jobs.csv`, and `map.html` directly back to your repository within 2–3 minutes.
+   - It will also continue running automatically every day at `06:00 UTC`.
+
+---
+
+### Step 3: View Your Results
+
+Once the update completes, explore your personalized faculty openings:
+* **Interactive Map (`map.html`)**: Double-click `map.html` to open an interactive world map of hiring universities color-coded by your 1–10 fit score directly in your web browser.
+* **Excel Spreadsheet (`jobs.xlsx`)**: Double-click `jobs.xlsx` to view a clean spreadsheet sorted by application deadline with fit reasons, salary ranges, and direct application links.
+
+---
+
+## Command-Line Options & Advanced Usage
+
+### Basic CLI Run
 Run with default settings (scrapes Transportation and Mobility queries across all 5 platforms):
 ```bash
 python job_scraper.py
