@@ -164,6 +164,36 @@ class MapGenerator:
                 tiles=None,
             )
 
+            # 0. Open Graph, Twitter Cards, Title, and SEO Meta Tags
+            og_image_url = "https://raw.githubusercontent.com/KBaek0316/AssistantProfessorJobScraper/main/social_preview.png"
+            page_url = "https://kbaek0316.github.io/AssistantProfessorJobScraper/"
+            seo_header_html = f"""
+            <title>Assistant Professor Job Scraper | Interactive Map & AI Advisor</title>
+            <meta name="description" content="Daily automated job aggregator across 5 platforms with dynamic CV matching, calibrated 1–10 fit scoring, and interactive global mapping." />
+            <meta name="author" content="Kwangho Baek" />
+            <link rel="canonical" href="{page_url}" />
+
+            <!-- Open Graph / Facebook / LinkedIn / Slack -->
+            <meta property="og:type" content="website" />
+            <meta property="og:url" content="{page_url}" />
+            <meta property="og:title" content="Assistant Professor Job Scraper | Interactive Map & AI Advisor" />
+            <meta property="og:description" content="Daily automated job aggregator across 5 platforms with dynamic CV matching, calibrated 1–10 fit scoring, and interactive global mapping." />
+            <meta property="og:image" content="{og_image_url}" />
+            <meta property="og:image:secure_url" content="{og_image_url}" />
+            <meta property="og:image:type" content="image/png" />
+            <meta property="og:image:width" content="1280" />
+            <meta property="og:image:height" content="640" />
+            <meta property="og:image:alt" content="Assistant Professor Job Scraper Social Preview" />
+
+            <!-- Twitter / X Card -->
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:url" content="{page_url}" />
+            <meta name="twitter:title" content="Assistant Professor Job Scraper | Interactive Map & AI Advisor" />
+            <meta name="twitter:description" content="Daily automated job aggregator across 5 platforms with dynamic CV matching, calibrated 1–10 fit scoring, and interactive global mapping." />
+            <meta name="twitter:image" content="{og_image_url}" />
+            """
+            job_map.get_root().header.add_child(folium.Element(seo_header_html))
+
             # 1. Base Layer Options
             folium.TileLayer(
                 tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
