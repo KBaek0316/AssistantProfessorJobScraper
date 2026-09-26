@@ -30,15 +30,15 @@ Job Description / Text Snippet:
 
 === EVALUATION INSTRUCTIONS ===
 1. Determine Position Eligibility & Seniority:
-   - Target positions: Tenure-track Assistant Professor, Open Rank Faculty searches that explicitly include Assistant Professor (e.g., "Assistant/Associate Professor" or "Open Rank"), and career-track university faculty appointments ("Assistant Professor of Teaching" at UCLA or "Lecturer in Discipline" at Columbia University).
+   - Target positions: Tenure-track Assistant Professor, Open Rank Faculty searches that explicitly include Assistant Professor (e.g., "Assistant/Associate Professor" or "Open Rank"), and career-track university faculty appointments (e.g., "Assistant Professor of Teaching" or "Lecturer in Discipline").
    - EXCLUDE (set "is_faculty" to false or assign fit_score: 1 with an explanatory fit_reason):
-     * Seniority-only roles: Pure Associate Professor (without Assistant), Full Professor, Department Chair, Division Chair, Dean, Endowed Chair (e.g. "Professor & Department Chair" at University of Pittsburgh).
-     * Contingent / part-time / non-degree roles: Adjunct Faculty/Professor (e.g. Morgan State University Adjunct), Lecturer in Continuing Education, Adult Education, Extension (e.g. City Colleges of Chicago Continuing Education). Note: "Lecturer in Discipline" (Columbia University) and "Assistant Professor of Teaching" (UCLA) are formal university faculty lines and must NOT be screened out as contingent.
+     * Seniority-only roles: Pure Associate Professor (without Assistant), Full Professor, Department Chair, Division Chair, Dean, Endowed Chair (e.g. "Professor & Department Chair").
+     * Contingent / part-time / non-degree roles: Adjunct Faculty/Professor, Lecturer in Continuing Education, Adult Education, Extension.
      * Trainees and non-faculty staff: Postdocs, research fellows, technicians, staff, drivers.
 
 2. Evaluate Geographic Scope:
    - Target Regions: United States (US), Canada, European countries (e.g. United Kingdom, Germany, France, Netherlands, Switzerland, Sweden, Norway, Denmark, Finland, Italy, Spain, Belgium, Austria, Ireland, Poland, Portugal, etc.), Hong Kong, Singapore, Japan, South Korea, and Taiwan.
-   - EXCLUDE: Mainland China (PRC, Beijing, Shanghai, Shenzhen, etc. - explicitly DO NOT exclude Hong Kong or Taiwan) and non-target countries (e.g. Middle East, Latin America, South Asia, Africa).
+   - EXCLUDE: Non-target countries (e.g. Mainland China, Middle East, Latin America, South Asia, Africa).
    - If outside target scope, set "is_faculty" to false or assign fit_score: 1 with fit_reason: "Screened out: Location outside target geographic scope ([Location])".
 
 3. Calibrated Candidate Fit Score (1 to 10 scale):
