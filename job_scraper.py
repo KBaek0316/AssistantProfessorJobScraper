@@ -69,6 +69,11 @@ def parse_args():
         help="Comma-separated list of sources to scrape: academickeys, higheredjobs, chronicle, linkedin, jobsacuk",
     )
     parser.add_argument(
+        "--skip-scrape",
+        action="store_true",
+        help="Skip web scraping and only process or re-evaluate existing database records",
+    )
+    parser.add_argument(
         "--skip-gemini",
         action="store_true",
         help="Skip Gemini LLM summarization even if API key is present",
@@ -81,8 +86,8 @@ def parse_args():
     parser.add_argument(
         "--model",
         type=str,
-        default=os.environ.get("GEMINI_MODEL", "gemini-3.6-flash"),
-        help="Gemini model to use (default: gemini-3.6-flash)",
+        default=os.environ.get("GEMINI_MODEL", "gemini-3.7-flash"),
+        help="Gemini model to use (default: gemini-3.7-flash)",
     )
     parser.add_argument(
         "--min-fit-score",
@@ -105,7 +110,14 @@ def parse_args():
     parser.add_argument(
         "--re-evaluate",
         action="store_true",
-        help="Re-evaluate existing jobs in jobs.csv lacking a fit score",
+        help="Re-evaluate existing jobs in jobs.csv with current CV and prompt template",
+    )
+    parser.add_argument(
+        "--re-evaluate-mode",
+        type=str,
+        choices=["update", "fresh"],
+        default="update",
+        help="Re-evaluation mode (only applicable when --re-evaluate is fed): 'update' (default: keeps existing jobs, updates scores/summaries, only deduplicates, and creates timestamped backups in Excel and/or a new Google Sheet tab) or 'fresh' (completely starts evaluation anew and filters out low-scoring jobs).",
     )
     parser.add_argument(
         "--include-filtered",
@@ -130,7 +142,14 @@ def parse_args():
         default="map.html",
         help="Output HTML map path (default: map.html)",
     )
-    return parser.parse_args()
+    parsed = parser.parse_args()
+
+    # Enforce rule: --re-evaluate-mode is only applicable when --re-evaluate is specified
+    has_mode_flag = any(arg.startswith("--re-evaluate-mode") for arg in sys.argv)
+    if has_mode_flag and not parsed.re_evaluate:
+        parser.error("--re-evaluate-mode is only applicable when --re-evaluate is specified.")
+
+    return parsed
 
 
 def main():
@@ -142,45 +161,51 @@ def main():
     print(f"  Gemini Model:       '{args.model}'")
     print(f"  Min Fit Threshold:  {args.min_fit_score}/10")
     print(f"  Prompt Template:    '{args.eval_prompt}'")
+    if args.re_evaluate:
+        print(f"  Re-evaluate Mode:   '{args.re_evaluate_mode.upper()}' (CV: '{args.cv_path}')")
     print("=" * 70)
 
     # 1. Initialize Scrapers
     active_sources = [s.strip().lower() for s in args.sources.split(",") if s.strip()]
     scrapers = []
 
-    if "academickeys" in active_sources:
-        scrapers.append(AcademicKeysScraper())
-    if "higheredjobs" in active_sources:
-        scrapers.append(HigherEdJobsScraper())
-    if "chronicle" in active_sources:
-        scrapers.append(ChronicleScraper())
-    if "linkedin" in active_sources:
-        scrapers.append(LinkedInScraper())
-    if "jobsacuk" in active_sources:
-        scrapers.append(JobsAcUkScraper())
+    if not args.skip_scrape:
+        if "academickeys" in active_sources:
+            scrapers.append(AcademicKeysScraper())
+        if "higheredjobs" in active_sources:
+            scrapers.append(HigherEdJobsScraper())
+        if "chronicle" in active_sources:
+            scrapers.append(ChronicleScraper())
+        if "linkedin" in active_sources:
+            scrapers.append(LinkedInScraper())
+        if "jobsacuk" in active_sources:
+            scrapers.append(JobsAcUkScraper())
 
     # 2. Scrape Job Postings
     queries = [q.strip() for q in args.query.split(",") if q.strip()]
     scraped_postings = []
     seen_urls_overall = set()
 
-    for scraper in scrapers:
-        print(f"\n[SCRAPING] Fetching listings from {scraper.name} across {len(queries)} search terms...")
-        for q in queries:
-            try:
-                results = scraper.scrape(query=q, max_results=args.max_per_source)
-                new_results = []
-                for r in results:
-                    clean_link = r.link.strip().rstrip("/")
-                    if clean_link not in seen_urls_overall:
-                        seen_urls_overall.add(clean_link)
-                        new_results.append(r)
-                scraped_postings.extend(new_results)
-                print(f"  -> [{scraper.name}] '{q}': {len(results)} found ({len(new_results)} new unique)")
-            except Exception as e:
-                logger.error(f"Failed scraping {scraper.name} for query '{q}': {e}", exc_info=True)
+    if not args.skip_scrape:
+        for scraper in scrapers:
+            print(f"\n[SCRAPING] Fetching listings from {scraper.name} across {len(queries)} search terms...")
+            for q in queries:
+                try:
+                    results = scraper.scrape(query=q, max_results=args.max_per_source)
+                    new_results = []
+                    for r in results:
+                        clean_link = r.link.strip().rstrip("/")
+                        if clean_link not in seen_urls_overall:
+                            seen_urls_overall.add(clean_link)
+                            new_results.append(r)
+                    scraped_postings.extend(new_results)
+                    print(f"  -> [{scraper.name}] '{q}': {len(results)} found ({len(new_results)} new unique)")
+                except Exception as e:
+                    logger.error(f"Failed scraping {scraper.name} for query '{q}': {e}", exc_info=True)
 
-    print(f"\n[SUMMARY] Total unique raw listings fetched across all sources: {len(scraped_postings)}")
+        print(f"\n[SUMMARY] Total unique raw listings fetched across all sources: {len(scraped_postings)}")
+    else:
+        print("\n[SCRAPING] Web scraping skipped via --skip-scrape flag. Operating on existing database.")
 
     # 3. Deduplicate and Track Historical Records
     deduplicator = JobDeduplicator(csv_filepath=args.csv_out)
@@ -188,7 +213,24 @@ def main():
     print(f"[DEDUPLICATION] Brand new postings discovered today: {len(new_jobs)}")
     print(f"[DEDUPLICATION] Total active and tracked postings:   {len(all_jobs)}")
 
-    # 4. Candidate Fit Evaluation & Gemini Structured Extraction
+    # 4. Handle Pre-Evaluation Backups (if --re-evaluate in 'update' mode)
+    if args.re_evaluate and args.re_evaluate_mode == "update" and all_jobs:
+        print("\n[BACKUP] Initiating automated backup of existing listings prior to re-evaluation...")
+        exporter = JobExporter(csv_filepath=args.csv_out, excel_filepath=args.excel_out)
+        backup_xlsx = exporter.create_backup(all_jobs)
+        backup_sheet = exporter.add_backup_sheet(all_jobs)
+        print(f"  -> Local Excel backup saved: {backup_xlsx}")
+        if backup_sheet:
+            print(f"  -> Added backup tab '{backup_sheet}' inside {os.path.abspath(args.excel_out)}")
+
+        if not args.skip_sheets:
+            sheets_sync = GoogleSheetsSync()
+            if sheets_sync.client and sheets_sync.sheet_id:
+                gs_tab = sheets_sync.create_backup_tab(all_jobs)
+                if gs_tab:
+                    print(f"  -> Google Sheets backup tab created: '{gs_tab}'")
+
+    # 5. Candidate Fit Evaluation & Gemini Structured Extraction
     if not args.skip_gemini:
         extractor = GeminiExtractor(
             model_name=args.model,
@@ -198,43 +240,62 @@ def main():
         )
 
         jobs_to_enrich = list(new_jobs)
+        existing_to_reval = []
         if args.re_evaluate:
             existing_to_reval = [j for j in all_jobs if j not in new_jobs]
             if existing_to_reval:
-                print(f"[RE-EVALUATION] Re-evaluating all {len(existing_to_reval)} existing jobs with updated prompt and scoring rules...")
+                mode_desc = "updating scores while preserving listings" if args.re_evaluate_mode == "update" else "fresh evaluation"
+                print(f"[RE-EVALUATION] Re-evaluating all {len(existing_to_reval)} existing jobs ({mode_desc})...")
                 jobs_to_enrich.extend(existing_to_reval)
 
         if jobs_to_enrich:
             print(f"\n[GEMINI] Evaluating candidate fit (1-10) with {args.model} for {len(jobs_to_enrich)} postings...")
             extractor.enrich_postings(jobs_to_enrich)
 
-            # Detect any jobs screened out by weak filter or non-faculty rule
-            filtered_jobs = [j for j in all_jobs if j.status.startswith("Filtered")]
-            if filtered_jobs:
-                print(f"[FILTER] Screened out {len(filtered_jobs)} low-relevance / non-faculty positions.")
-                deduplicator.save_filtered_jobs(filtered_jobs)
-                if not args.include_filtered:
-                    all_jobs = [j for j in all_jobs if not j.status.startswith("Filtered")]
+            if args.re_evaluate and args.re_evaluate_mode == "update":
+                # UPDATE MODE:
+                # Screen out genuinely non-faculty or low relevance among brand-new jobs,
+                # but retain existing jobs even if new score is low or enrichment had transient issues.
+                new_filtered = [j for j in new_jobs if j.status.startswith("Filtered")]
+                if new_filtered:
+                    print(f"[FILTER] Screened out {len(new_filtered)} new low-relevance / non-faculty positions.")
+                    deduplicator.save_filtered_jobs(new_filtered)
+                    if not args.include_filtered:
+                        all_jobs = [j for j in all_jobs if j not in new_filtered]
 
-            # Post-enrichment deduplication by (institution, department)
-            all_jobs, post_dupes = deduplicator.deduplicate_by_institution_department(all_jobs)
-            if post_dupes:
-                print(f"[DEDUPLICATION] Pruned {len(post_dupes)} duplicate positions sharing same institution and department.")
+                # De-duplicate existing and new postings by institution/department/link
+                all_jobs, post_dupes = deduplicator.deduplicate_by_institution_department(all_jobs)
+                if post_dupes:
+                    print(f"[DEDUPLICATION] Pruned {len(post_dupes)} duplicate positions sharing same institution and department.")
+            else:
+                # FRESH / STANDARD MODE:
+                # Screen out all jobs failing weak filter or non-faculty rule
+                filtered_jobs = [j for j in all_jobs if j.status.startswith("Filtered")]
+                if filtered_jobs:
+                    print(f"[FILTER] Screened out {len(filtered_jobs)} low-relevance / non-faculty positions.")
+                    deduplicator.save_filtered_jobs(filtered_jobs)
+                    if not args.include_filtered:
+                        all_jobs = [j for j in all_jobs if not j.status.startswith("Filtered")]
+
+                # Post-enrichment deduplication by (institution, department)
+                all_jobs, post_dupes = deduplicator.deduplicate_by_institution_department(all_jobs)
+                if post_dupes:
+                    print(f"[DEDUPLICATION] Pruned {len(post_dupes)} duplicate positions sharing same institution and department.")
         else:
             print("\n[GEMINI] No new postings to evaluate with Gemini.")
     else:
         print("\n[GEMINI] Gemini evaluation skipped via --skip-gemini flag.")
 
-    # 5. Geocode Institutions / Locations
+    # 6. Geocode Institutions / Locations
     print("\n[GEOCODING] Geocoding university locations for interactive map...")
     geocoder = UniversityGeocoder()
     geocoder.enrich_coordinates(all_jobs)
 
-    # 6. Sort Postings by 4-Tier Deadline Urgency
+    # 7. Sort Postings by 4-Tier Deadline Urgency
     from scrapers.base import sort_postings_by_deadline
     all_jobs = sort_postings_by_deadline(all_jobs)
 
-    # 7. Export to CSV and Excel (.xlsx)
+    # 8. Export to CSV and Excel (.xlsx)
     print("\n[EXPORT] Exporting results to disk...")
     exporter = JobExporter(csv_filepath=args.csv_out, excel_filepath=args.excel_out)
     exporter.export_csv(all_jobs, include_filtered=args.include_filtered)
@@ -242,12 +303,12 @@ def main():
     print(f"  -> Saved CSV to: {os.path.abspath(args.csv_out)}")
     print(f"  -> Saved Excel to: {os.path.abspath(args.excel_out)}")
 
-    # 7. Generate Interactive Folium Map
+    # 9. Generate Interactive Folium Map
     map_generator = MapGenerator(output_filepath=args.map_out)
     map_generator.generate_map(all_jobs, include_filtered=args.include_filtered)
     print(f"  -> Saved Map to: {os.path.abspath(args.map_out)}")
 
-    # 8. Sync to Google Sheets (if configured)
+    # 10. Sync to Google Sheets (if configured)
     if not args.skip_sheets:
         print("\n[GOOGLE-SHEETS] Checking Google Sheets synchronization...")
         sheets_sync = GoogleSheetsSync()
@@ -260,10 +321,10 @@ def main():
         else:
             if not sheets_sync.sheet_id:
                 print("  -> Google Sheets sync SKIPPED: GOOGLE_SHEET_ID is missing from environment/secrets.")
-            elif not sheets_sync.client:
-                print("  -> Google Sheets sync SKIPPED: Google Service Account credentials missing (GOOGLE_CREDENTIALS secret or credentials.json file).")
+            elif sheets_sync.init_error:
+                print(f"  -> Google Sheets sync SKIPPED: {sheets_sync.init_error}")
             else:
-                print("  -> Google Sheets sync skipped.")
+                print("  -> Google Sheets sync SKIPPED: Google Service Account credentials missing or invalid.")
 
     print("\n" + "=" * 70)
     print("[SUCCESS] Pipeline completed successfully!")

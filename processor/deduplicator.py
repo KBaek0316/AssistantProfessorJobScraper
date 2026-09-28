@@ -16,8 +16,38 @@ class JobDeduplicator:
         self.csv_filepath = csv_filepath
         self.logger = logging.getLogger("processor.deduplicator")
 
+    def cleanup_mistakenly_filtered_cache(self) -> int:
+        """
+        Removes mistakenly cached 'Filtered (Non-Faculty)' entries whose titles
+        are actually valid faculty positions. Returns number of repaired entries.
+        """
+        if not os.path.exists(self.FILTERED_CACHE_FILE):
+            return 0
+        try:
+            with open(self.FILTERED_CACHE_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            repaired = []
+            removed_count = 0
+            for item in data:
+                if isinstance(item, dict):
+                    status = item.get("status", "")
+                    title = item.get("title", "")
+                    if "Non-Faculty" in status and JobPosting.is_valid_faculty_posting(title):
+                        removed_count += 1
+                        continue
+                    repaired.append(item)
+            if removed_count > 0:
+                with open(self.FILTERED_CACHE_FILE, "w", encoding="utf-8") as f:
+                    json.dump(repaired, f, indent=2)
+                self.logger.info(f"Repaired filtered cache: unblocked {removed_count} valid faculty positions.")
+            return removed_count
+        except Exception as e:
+            self.logger.warning(f"Could not clean filtered cache: {e}")
+            return 0
+
     def load_filtered_ids(self) -> Set[str]:
-        """Load IDs and links of previously screened-out jobs."""
+        """Load IDs and links of previously screened-out jobs, self-healing false-positive exclusions."""
+        self.cleanup_mistakenly_filtered_cache()
         filtered_identifiers: Set[str] = set()
         if os.path.exists(self.FILTERED_CACHE_FILE):
             try:
@@ -25,6 +55,11 @@ class JobDeduplicator:
                     data = json.load(f)
                     for item in data:
                         if isinstance(item, dict):
+                            status = item.get("status", "")
+                            title = item.get("title", "")
+                            # Self-healing: do not block if title is a valid faculty position
+                            if "Non-Faculty" in status and JobPosting.is_valid_faculty_posting(title):
+                                continue
                             if item.get("id"):
                                 filtered_identifiers.add(item["id"])
                             if item.get("link"):

@@ -39,9 +39,14 @@ class GoogleSheetsSync:
         tab_name: Optional[str] = None,
     ):
         self.logger = logging.getLogger("processor.google_sheets")
+        try:
+            from dotenv import load_dotenv
+            load_dotenv()
+        except ImportError:
+            pass
 
         # Normalize and extract Sheet ID (in case a full URL was provided)
-        raw_sheet_id = sheet_id or os.environ.get("GOOGLE_SHEET_ID")
+        raw_sheet_id = sheet_id if sheet_id is not None else os.environ.get("GOOGLE_SHEET_ID")
         if raw_sheet_id:
             raw_sheet_id = str(raw_sheet_id).strip().strip("'\"")
             m = re.search(r"/spreadsheets/d/([a-zA-Z0-9-_]+)", raw_sheet_id)
@@ -56,38 +61,74 @@ class GoogleSheetsSync:
         self.credentials_file = credentials_file or os.environ.get("GOOGLE_SERVICE_ACCOUNT_FILE", "credentials.json")
         self.credentials_json = credentials_json or os.environ.get("GOOGLE_CREDENTIALS")
         self.client = None
+        self.init_error: Optional[str] = None
 
         self._initialize_client()
 
+    def _find_credentials_file(self) -> Optional[str]:
+        """Locates service account credentials JSON file across potential paths."""
+        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        candidates = []
+
+        if self.credentials_file:
+            candidates.extend([
+                self.credentials_file,
+                os.path.join(repo_root, self.credentials_file),
+                os.path.join(os.getcwd(), self.credentials_file),
+            ])
+
+        for fname in ("credentials.json", "service_account.json", "google_credentials.json"):
+            candidates.extend([
+                fname,
+                os.path.join(repo_root, fname),
+                os.path.join(os.getcwd(), fname),
+            ])
+
+        env_app_cred = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+        if env_app_cred:
+            candidates.append(env_app_cred)
+
+        for path in candidates:
+            if path and os.path.exists(path) and os.path.isfile(path):
+                return os.path.abspath(path)
+
+        return None
+
     def _initialize_client(self):
         if not self.sheet_id:
+            self.init_error = "GOOGLE_SHEET_ID not provided in environment or arguments."
             self.logger.info("GOOGLE_SHEET_ID not provided. Google Sheets sync is disabled.")
             return
 
         try:
             import gspread
             from google.oauth2.service_account import Credentials
+        except ImportError as ie:
+            self.init_error = f"gspread or google-auth package is not installed: {ie}"
+            self.logger.warning(self.init_error)
+            return
 
-            scopes = [
-                "https://www.googleapis.com/auth/spreadsheets",
-                "https://www.googleapis.com/auth/drive",
-            ]
+        scopes = [
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive",
+        ]
 
-            # Fallback checks for alternative credential env var names
-            if not self.credentials_json:
-                for alt_var in (
-                    "GOOGLE_SERVICE_ACCOUNT",
-                    "GOOGLE_SERVICE_ACCOUNT_JSON",
-                    "GOOGLE_APPLICATION_CREDENTIALS_JSON",
-                    "SERVICE_ACCOUNT_KEY",
-                    "SERVICE_ACCOUNT_JSON",
-                    "GSPREAD_CREDENTIALS",
-                ):
-                    val = os.environ.get(alt_var)
-                    if val and val.strip():
-                        self.credentials_json = val.strip()
-                        break
+        # Fallback checks for alternative credential env var names
+        if not self.credentials_json:
+            for alt_var in (
+                "GOOGLE_SERVICE_ACCOUNT",
+                "GOOGLE_SERVICE_ACCOUNT_JSON",
+                "GOOGLE_APPLICATION_CREDENTIALS_JSON",
+                "SERVICE_ACCOUNT_KEY",
+                "SERVICE_ACCOUNT_JSON",
+                "GSPREAD_CREDENTIALS",
+            ):
+                val = os.environ.get(alt_var)
+                if val and val.strip():
+                    self.credentials_json = val.strip()
+                    break
 
+        try:
             if self.credentials_json and self.credentials_json.strip():
                 raw_cred = self.credentials_json.strip().strip("'\"")
                 creds_dict = None
@@ -105,20 +146,84 @@ class GoogleSheetsSync:
                     creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
                     self.client = gspread.authorize(creds)
                     self.logger.info("Authorized Google Sheets client via JSON credentials string.")
+                    return
                 elif os.path.exists(raw_cred):
                     creds = Credentials.from_service_account_file(raw_cred, scopes=scopes)
                     self.client = gspread.authorize(creds)
                     self.logger.info(f"Authorized Google Sheets client via file: {raw_cred}")
+                    return
                 else:
                     self.logger.warning("Could not parse GOOGLE_CREDENTIALS as valid JSON or existing file path.")
-            elif os.path.exists(self.credentials_file):
-                creds = Credentials.from_service_account_file(self.credentials_file, scopes=scopes)
+
+            # Search on-disk credentials file
+            resolved_file = self._find_credentials_file()
+            if resolved_file:
+                creds = Credentials.from_service_account_file(resolved_file, scopes=scopes)
                 self.client = gspread.authorize(creds)
-                self.logger.info(f"Authorized Google Sheets client via file: {self.credentials_file}")
+                self.credentials_file = resolved_file
+                self.logger.info(f"Authorized Google Sheets client via file: {resolved_file}")
             else:
-                self.logger.info("No service account credentials found. Google Sheets sync disabled.")
+                self.init_error = f"No service account credentials file found (searched credentials.json, service_account.json in {os.getcwd()} and project root)."
+                self.logger.info(self.init_error)
         except Exception as e:
-            self.logger.warning(f"Failed to initialize Google Sheets client: {e}")
+            self.init_error = f"Failed to authorize Google Sheets service account: {e}"
+            self.logger.warning(self.init_error)
+
+    def create_backup_tab(self, postings: List[JobPosting], tab_name: Optional[str] = None) -> Optional[str]:
+        """
+        Creates a new backup worksheet in the Google Sheet containing previous postings.
+        Returns the title of the created backup tab on success, or None on failure.
+        """
+        if not self.client or not self.sheet_id:
+            return None
+
+        from datetime import datetime, timezone
+        now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        target_tab = (tab_name or f"Backup_{now_str}").strip()
+
+        from scrapers.base import sort_postings_by_deadline
+        sorted_postings = sort_postings_by_deadline(postings)
+
+        try:
+            spreadsheet = self.client.open_by_key(self.sheet_id)
+
+            # Ensure unique tab name if already exists
+            existing_sheet_titles = [s.title for s in spreadsheet.worksheets()]
+            if target_tab in existing_sheet_titles:
+                target_tab = f"Backup_{now_str}"
+
+            worksheet = spreadsheet.add_worksheet(title=target_tab, rows=max(len(sorted_postings) + 10, 100), cols=22)
+
+            rows = [self.COLUMNS]
+            for p in sorted_postings:
+                rows.append([
+                    p.title,
+                    p.institution,
+                    p.field,
+                    p.fit_score if p.fit_score is not None else "",
+                    p.fit_reason,
+                    p.research_topics,
+                    p.tenure_track,
+                    p.location,
+                    p.deadline,
+                    p.deadline_date,
+                    p.salary,
+                    p.summary,
+                    p.link,
+                    p.source,
+                    p.date_first_seen,
+                    p.date_last_verified,
+                    p.status,
+                    p.id,
+                ])
+
+            worksheet.update("A1", rows)
+            worksheet.format("A1:R1", {"textFormat": {"bold": True}})
+            self.logger.info(f"Created Google Sheets backup tab '{target_tab}' with {len(sorted_postings)} records.")
+            return target_tab
+        except Exception as e:
+            self.logger.error(f"Error creating Google Sheet backup tab '{target_tab}': {e}", exc_info=True)
+            return None
 
     def sync(self, postings: List[JobPosting], include_filtered: bool = False) -> bool:
         """Upload/sync current postings to Google Sheets. Returns True on success, False otherwise."""
@@ -147,7 +252,7 @@ class GoogleSheetsSync:
                     worksheet = all_sheets[0]
                     worksheet.update_title(self.tab_name)
                 else:
-                    worksheet = spreadsheet.add_worksheet(title=self.tab_name, rows=100, cols=20)
+                    worksheet = spreadsheet.add_worksheet(title=self.tab_name, rows=max(len(postings) + 10, 100), cols=22)
 
             # Build rows data
             rows = [self.COLUMNS]

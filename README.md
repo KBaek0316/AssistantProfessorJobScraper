@@ -37,6 +37,10 @@ It collects postings from **5 major academic job platforms** ([AcademicKeys](htt
 - **Smart Deduplication & Daily Tracking**:
   - Deduplicates positions across multiple job boards by normalized URL and `(institution, department)`.
   - Tracks `Date Added`, `Last Verified`, and `Status` (`Active` / `Closed`).
+- **Dual-Track Re-Evaluation & Automated Backups**:
+  - Re-score existing database records against updated CVs or prompt templates at any time.
+  - Choose between `--re-evaluate-mode update` (keeps existing jobs, refreshes scores, only deduplicates, and automatically creates timestamped backups in `.xlsx` and a new Google Sheet tab) and `--re-evaluate-mode fresh` (re-evaluates from scratch and filters strictly).
+  - Use `--skip-scrape` for instant re-evaluations without re-scraping job boards.
 
 ---
 
@@ -251,6 +255,9 @@ python job_scraper.py --max-per-source 30
 # Scrape specific sources only (academickeys, higheredjobs, chronicle, linkedin, jobsacuk)
 python job_scraper.py --sources higheredjobs,linkedin,jobsacuk
 
+# Fast re-run skipping web scraping (processes/re-evaluates existing database records only)
+python job_scraper.py --skip-scrape
+
 # Specify a custom candidate CV (default: CV.pdf)
 python job_scraper.py --cv-path path/to/my_cv.pdf
 
@@ -260,13 +267,24 @@ python job_scraper.py --min-fit-score 4
 # Specify a custom evaluation prompt template (default: eval_prompt.txt)
 python job_scraper.py --eval-prompt eval_prompt.txt
 
-# Re-evaluate all previously tracked jobs with an updated prompt or CV
+# Re-evaluate existing listings with updated CV/prompt (Default 'update' mode: preserves existing jobs,
+# only deduplicates, and creates automated timestamped backups in Excel and Google Sheets)
 python job_scraper.py --re-evaluate
+
+# Re-evaluate with explicit 'update' mode (keeps all previously tracked listings, only deduplicating;
+# saves jobs_backup_YYYYMMDD_HHMMSS.xlsx, adds a backup sheet to jobs.xlsx, and creates a new tab in Google Sheets)
+python job_scraper.py --re-evaluate --re-evaluate-mode update
+
+# Fast re-evaluation of existing jobs without re-scraping job boards
+python job_scraper.py --re-evaluate --re-evaluate-mode update --skip-scrape
+
+# Re-evaluate with 'fresh' mode (completely restarts evaluation anew, filtering out low scores)
+python job_scraper.py --re-evaluate --re-evaluate-mode fresh
 
 # Include screened-out (filtered) positions in CSV/Excel/Map exports
 python job_scraper.py --include-filtered
 
-# Choose Gemini model (default: gemini-3.6-flash or gemini-3.7-flash)
+# Choose Gemini model (default: gemini-3.7-flash, gemini-3.8-flash)
 python job_scraper.py --model gemini-3.7-flash
 
 # Fast dry run without calling Gemini LLM
@@ -275,6 +293,12 @@ python job_scraper.py --skip-gemini
 # Skip Google Sheets sync
 python job_scraper.py --skip-sheets
 ```
+
+> [!TIP]
+> **Re-evaluation Modes Explained (`--re-evaluate-mode`):**
+> * `--re-evaluate-mode update` (*Default*): Re-evaluates all jobs against your updated CV or prompt to refresh fit scores, reasons, and summaries. Existing jobs are **never deleted or dropped**; only genuine cross-platform duplicates are pruned. Before modifying any records, it automatically creates a timestamped local Excel backup (`jobs_backup_YYYYMMDD_HHMMSS.xlsx`), appends a backup sheet tab inside `jobs.xlsx`, and creates a new historical tab in your Google Sheet (e.g. `Backup_20260927_160000`).
+> * `--re-evaluate-mode fresh`: Starts the evaluation from a clean slate. Listings scoring below `--min-fit-score` are screened out and removed from the active database.
+> * Note: `--re-evaluate-mode` is only applicable when `--re-evaluate` is specified.
 
 ---
 

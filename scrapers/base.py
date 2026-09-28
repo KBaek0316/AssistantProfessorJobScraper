@@ -300,19 +300,29 @@ class JobPosting:
         Must be an Assistant Professor, Open Rank (including Assistant), or tenure-track faculty role.
         """
         import re
-        t_lower = title.lower().strip()
-        combined = f"{title} {text_snippet}".lower()
+        t_lower = (title or "").lower().strip()
+        combined = f"{title or ''} {text_snippet or ''}".lower()
 
-        # 1. Non-faculty staff, trainees, contingent, or continuing ed
-        excluded_patterns = [
+        # 1. Non-faculty staff, trainees, contingent, or continuing ed in position title
+        title_excluded_patterns = [
             r"\bdriver\b", r"\bbus driver\b", r"\bpostdoc\b", r"\bpost-doc\b",
             r"\bpostdoctoral\b", r"\bresearch fellow\b", r"\bproject officer\b",
             r"\bintern\b", r"\btechnician\b", r"\bcustodian\b", r"\belementary\b",
-            r"\bk-12\b", r"\blab manager\b", r"\bundergraduate\b", r"\bgraduate student\b",
+            r"\bk-12\b", r"\blab manager\b", r"\bundergraduate student\b", r"\bgraduate student\b",
             r"\badjunct\b", r"\bcontinuing education\b", r"\badult education\b",
             r"\bcommunity education\b", r"\bextension agent\b", r"\bvisiting scholar\b",
         ]
-        for pat in excluded_patterns:
+        for pat in title_excluded_patterns:
+            if re.search(pat, t_lower):
+                return False
+
+        # Explicit non-faculty role indicators in snippet (if title was vague)
+        snippet_role_exclusions = [
+            r"\b(job type|position type|appointment type)\s*:\s*(postdoc|postdoctoral|adjunct|intern|technician)\b",
+            r"\bthis is an adjunct\b",
+            r"\bpostdoctoral fellowship\b",
+        ]
+        for pat in snippet_role_exclusions:
             if re.search(pat, combined):
                 return False
 
@@ -339,9 +349,12 @@ class JobPosting:
             if not re.search(r"\b(assistant|open rank|open-rank)\b", t_lower):
                 return False
 
-        # 3. Must indicate an academic faculty appointment
-        faculty_indicators = [r"\bassistant\b", r"\bprofessor\b", r"\bfaculty\b", r"\blecturer\b", r"\binstructor\b", r"\bopen rank\b", r"\bopen-rank\b"]
-        if not any(re.search(ind, t_lower) for ind in faculty_indicators):
+        # 3. Must indicate an academic faculty appointment in either title or snippet
+        faculty_indicators = [
+            r"\bassistant\b", r"\bprofessor\b", r"\bfaculty\b", r"\blecturer\b",
+            r"\binstructor\b", r"\bopen rank\b", r"\bopen-rank\b", r"\btenure-track\b", r"\btenure track\b"
+        ]
+        if not any(re.search(ind, combined) for ind in faculty_indicators):
             return False
 
         return True

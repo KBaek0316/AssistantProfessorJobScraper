@@ -319,6 +319,77 @@ class TestComponents(unittest.TestCase):
         self.assertEqual(len(uic_active), 1)
         self.assertEqual(uic_active[0].id, "uic_chronicle")
 
+    def test_re_evaluate_mode_validation(self):
+        """Test CLI argument validation for --re-evaluate and --re-evaluate-mode."""
+        import sys
+        from unittest.mock import patch
+        from job_scraper import parse_args
+
+        # Case 1: --re-evaluate-mode without --re-evaluate must trigger parser error
+        with patch.object(sys, "argv", ["job_scraper.py", "--re-evaluate-mode", "fresh"]):
+            with self.assertRaises(SystemExit):
+                parse_args()
+
+        # Case 2: --re-evaluate with --re-evaluate-mode update succeeds
+        with patch.object(sys, "argv", ["job_scraper.py", "--re-evaluate", "--re-evaluate-mode", "update", "--skip-scrape"]):
+            args = parse_args()
+            self.assertTrue(args.re_evaluate)
+            self.assertEqual(args.re_evaluate_mode, "update")
+            self.assertTrue(args.skip_scrape)
+
+        # Case 3: --re-evaluate with --re-evaluate-mode fresh succeeds
+        with patch.object(sys, "argv", ["job_scraper.py", "--re-evaluate", "--re-evaluate-mode", "fresh"]):
+            args = parse_args()
+            self.assertTrue(args.re_evaluate)
+            self.assertEqual(args.re_evaluate_mode, "fresh")
+
+    def test_faculty_posting_with_mentoring_description(self):
+        """Ensure real faculty openings are not rejected when duties mention postdocs or undergraduates."""
+        title = "Assistant Professor of Transportation Engineering"
+        desc = "The candidate will teach undergraduate courses, advise graduate students, and supervise postdocs."
+        self.assertTrue(JobPosting.is_valid_faculty_posting(title, desc))
+
+        # Real role that is actually a postdoc or driver must still be rejected
+        self.assertFalse(JobPosting.is_valid_faculty_posting("Postdoctoral Fellow in Transportation Systems"))
+        self.assertFalse(JobPosting.is_valid_faculty_posting("Bus Driver - University Shuttle"))
+
+    def test_exporter_backup_methods(self):
+        """Test local Excel backup generation and backup worksheet creation."""
+        exporter = JobExporter(csv_filepath="test_backup_jobs.csv", excel_filepath="test_backup_jobs.xlsx")
+        posting = JobPosting(
+            id="backup_p1",
+            title="Assistant Professor in Transit Analytics",
+            institution="University of Minnesota",
+            field="Civil Engineering",
+            location="Minneapolis, MN",
+            deadline="2026-11-15",
+            salary="$110k",
+            link="https://example.com/transit",
+            source="LinkedIn",
+        )
+        exporter.export_excel([posting])
+
+        # Test standalone backup file creation
+        backup_path = exporter.create_backup([posting], backup_filepath="test_backup_out.xlsx")
+        self.assertTrue(os.path.exists(backup_path))
+
+        # Test adding backup worksheet to existing workbook
+        sheet_name = exporter.add_backup_sheet([posting], sheet_name="Backup_TestTab")
+        self.assertEqual(sheet_name, "Backup_TestTab")
+
+        # Cleanup test artifacts
+        for f in ("test_backup_jobs.csv", "test_backup_jobs.xlsx", "test_backup_out.xlsx"):
+            if os.path.exists(f):
+                os.remove(f)
+
+    def test_google_sheets_error_diagnostics(self):
+        """Ensure GoogleSheetsSync records detailed error diagnostic when sheet ID or credentials missing."""
+        from processor.google_sheets import GoogleSheetsSync
+        sync = GoogleSheetsSync(sheet_id="")
+        self.assertIsNone(sync.client)
+        self.assertIn("GOOGLE_SHEET_ID not provided", sync.init_error)
+
 
 if __name__ == "__main__":
     unittest.main()
+

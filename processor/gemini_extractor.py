@@ -90,27 +90,30 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
         import time
 
         for idx, posting in enumerate(postings):
-            try:
-                self._enrich_single(posting)
-                score_str = f"Fit: {posting.fit_score}/10" if posting.fit_score else "Fit: N/A"
-                self.logger.info(f"[{idx+1}/{len(postings)}] Enriched: {posting.title} @ {posting.institution} ({score_str})")
-            except Exception as e:
-                if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
-                    self.logger.warning(f"Rate limit encountered on '{posting.title}'. Waiting 15s before retry...")
-                    time.sleep(15)
-                    try:
-                        self._enrich_single(posting)
-                        self.logger.info(f"[{idx+1}/{len(postings)}] Retry succeeded: {posting.title}")
-                    except Exception as retry_err:
-                        self.logger.error(f"Retry failed for '{posting.title}': {retry_err}")
-                else:
-                    self.logger.error(f"Failed to enrich job '{posting.title}': {e}")
-                if not posting.summary:
-                    posting.summary = posting.raw_description[:200]
+            max_retries = 4
+            backoff_delays = [5, 15, 30, 60]
+            for attempt in range(max_retries):
+                try:
+                    self._enrich_single(posting)
+                    score_str = f"Fit: {posting.fit_score}/10" if posting.fit_score else "Fit: N/A"
+                    self.logger.info(f"[{idx+1}/{len(postings)}] Enriched: {posting.title} @ {posting.institution} ({score_str})")
+                    break
+                except Exception as e:
+                    err_str = str(e).upper()
+                    is_transient = any(x in err_str for x in ("429", "RESOURCE_EXHAUSTED", "503", "UNAVAILABLE", "OVERLOADED"))
+                    if is_transient and attempt < max_retries - 1:
+                        delay = backoff_delays[attempt]
+                        self.logger.warning(f"Rate limit / transient error on '{posting.title}' (attempt {attempt+1}/{max_retries}). Backing off {delay}s...")
+                        time.sleep(delay)
+                    else:
+                        self.logger.error(f"Failed to enrich job '{posting.title}': {e}")
+                        break
+            if not posting.summary:
+                posting.summary = posting.raw_description[:200] if posting.raw_description else (posting.field or posting.title)
 
-            # Polite delay between API calls to respect free tier rate limits
+            # Polite delay between API calls to respect free tier rate limits (15 RPM -> >= 4.0s)
             if idx < len(postings) - 1:
-                time.sleep(3.0)
+                time.sleep(4.0)
 
         return postings
 
@@ -193,9 +196,38 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
             self.logger.debug(f"Could not fetch description fallback for {clean_link}: {e}")
         return ""
 
+    @staticmethod
+    def _parse_llm_json(response_text: str) -> dict:
+        """Robustly parse JSON from LLM output, extracting code fences or {...} blocks."""
+        import re
+        text = response_text.strip()
+        # 1. Direct parse attempt
+        try:
+            return json.loads(text)
+        except Exception:
+            pass
+
+        # 2. Extract ```json ... ``` blocks
+        m_block = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text, re.IGNORECASE)
+        if m_block:
+            try:
+                return json.loads(m_block.group(1).strip())
+            except Exception:
+                pass
+
+        # 3. Extract outermost { ... }
+        m_curly = re.search(r"\{[\s\S]*\}", text)
+        if m_curly:
+            try:
+                return json.loads(m_curly.group(0).strip())
+            except Exception:
+                pass
+
+        raise ValueError(f"Could not parse valid JSON from LLM response: {text[:200]}...")
+
     def _enrich_single(self, posting: JobPosting):
         # 0. Immediate Title-Level Seniority, Adjunct & Continuing Ed Pre-Filter
-        if not JobPosting.is_valid_faculty_posting(posting.title):
+        if not JobPosting.is_valid_faculty_posting(posting.title, posting.raw_description or posting.summary):
             posting.status = "Filtered (Non-Faculty / Seniority / Adjunct)"
             posting.fit_score = 1
             posting.fit_reason = f"Screened out: Position title '{posting.title}' is senior-only, adjunct, continuing education, or non-faculty."
@@ -204,7 +236,7 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
         if not self.client:
             return
 
-        # Ensure raw_description is populated via cache or on-demand fetch
+        # Ensure raw_description is populated via cache, on-demand fetch, or metadata synthesis
         desc_cache = self._load_description_cache()
         if not posting.raw_description:
             cached_desc = desc_cache.get(posting.id) or desc_cache.get(posting.link)
@@ -217,6 +249,16 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
                     desc_cache[posting.id] = fetched_desc
                     desc_cache[posting.link] = fetched_desc
                     self._save_description_cache(desc_cache)
+                else:
+                    # Synthesize description from available metadata rather than leaving it empty
+                    posting.raw_description = (
+                        f"Position Title: {posting.title}. "
+                        f"Institution: {posting.institution}. "
+                        f"Department / Division: {posting.field or 'Academic Department'}. "
+                        f"Location: {posting.location or 'Not specified'}. "
+                        f"Summary Context: {posting.summary or 'Tenure-track academic faculty position'}. "
+                        f"Official Application Link: {posting.link}"
+                    )
         else:
             # Store in cache
             if posting.id not in desc_cache or len(posting.raw_description) > len(desc_cache.get(posting.id, "")):
@@ -235,16 +277,25 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
         prompt = prompt.replace("{source}", posting.source or "")
         prompt = prompt.replace("{raw_description}", posting.raw_description or "")
 
-        # Call Google GenAI SDK with multi-model fallback cascade
+        # Prepare JSON format config if supported by google-genai
+        gen_config = None
+        try:
+            from google.genai import types
+            gen_config = types.GenerateContentConfig(
+                response_mime_type="application/json",
+                automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+            )
+        except Exception:
+            pass
+
+        # Call Google GenAI SDK with verified multi-model fallback cascade
         response_text = ""
         candidate_models = [
             self.model_name,
-            "gemini-3.5-flash-lite",
-            "gemini-3.1-flash-lite",
-            "gemini-3.7-flash",
             "gemini-3.8-flash",
-            "gemini-3.5-flash",
+            "gemini-3.7-flash",
             "gemini-3.6-flash",
+            "gemini-3.5-flash",
         ]
         candidate_models = list(dict.fromkeys(candidate_models))
 
@@ -252,10 +303,10 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
         for m in candidate_models:
             try:
                 if hasattr(self.client, "models"):
-                    response = self.client.models.generate_content(
-                        model=m,
-                        contents=prompt,
-                    )
+                    kwargs = {"model": m, "contents": prompt}
+                    if gen_config:
+                        kwargs["config"] = gen_config
+                    response = self.client.models.generate_content(**kwargs)
                     response_text = response.text
                 else:
                     # Legacy SDK
@@ -266,7 +317,7 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
                     break
             except Exception as err:
                 last_error = err
-                self.logger.warning(f"Model '{m}' failed with {err}. Trying next candidate model...")
+                self.logger.warning(f"Model '{m}' call failed: {err}. Trying next candidate model...")
                 continue
 
         if not response_text:
@@ -274,14 +325,7 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
                 raise last_error
             return
 
-        # Clean markdown codeblocks if model wrapped in ```json ... ```
-        cleaned_json = response_text.strip()
-        if cleaned_json.startswith("```"):
-            cleaned_json = cleaned_json.strip("`")
-            if cleaned_json.startswith("json"):
-                cleaned_json = cleaned_json[4:].strip()
-
-        data = json.loads(cleaned_json)
+        data = self._parse_llm_json(response_text)
 
         # 1. Non-faculty / senior role check from LLM
         if data.get("is_faculty") is False:
@@ -309,7 +353,9 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
 
         # 3. Update posting attributes
         if data.get("clean_title"):
-            posting.title = data["clean_title"].strip()
+            clean_t = data["clean_title"].strip()
+            if JobPosting.is_valid_faculty_posting(clean_t, posting.raw_description):
+                posting.title = clean_t
         if data.get("institution"):
             posting.institution = data["institution"].strip()
         if data.get("department"):
