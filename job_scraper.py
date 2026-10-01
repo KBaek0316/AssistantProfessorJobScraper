@@ -53,8 +53,8 @@ def parse_args():
     parser.add_argument(
         "--query",
         type=str,
-        default="Assistant Professor Transportation, Assistant Professor Mobility, Assistant Professor Public Transportation",
-        help="Comma-separated search queries for job boards (default: Transportation, Mobility, Public Transportation)",
+        default="Assistant Professor Transportation, Assistant Professor Mobility, Assistant Professor Public Transportation, Assistant Professor Urban Analytics, Assistant Professor Urban Planning, Assistant Professor Transportation Planning",
+        help="Comma-separated search queries for job boards (default: Transportation, Mobility, Public Transportation, Urban Analytics, Urban Planning, Transportation Planning)",
     )
     parser.add_argument(
         "--max-per-source",

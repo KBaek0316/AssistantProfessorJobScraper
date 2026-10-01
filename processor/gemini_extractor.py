@@ -238,18 +238,18 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
 
         # Ensure raw_description is populated via cache, on-demand fetch, or metadata synthesis
         desc_cache = self._load_description_cache()
-        if not posting.raw_description:
+        if not posting.raw_description or len(posting.raw_description.strip()) < 300:
             cached_desc = desc_cache.get(posting.id) or desc_cache.get(posting.link)
-            if cached_desc:
+            if cached_desc and len(cached_desc.strip()) >= 300:
                 posting.raw_description = cached_desc
             else:
                 fetched_desc = self._fetch_description_fallback(posting)
-                if fetched_desc:
+                if fetched_desc and len(fetched_desc.strip()) > len(posting.raw_description or ""):
                     posting.raw_description = fetched_desc
                     desc_cache[posting.id] = fetched_desc
                     desc_cache[posting.link] = fetched_desc
                     self._save_description_cache(desc_cache)
-                else:
+                elif not posting.raw_description:
                     # Synthesize description from available metadata rather than leaving it empty
                     posting.raw_description = (
                         f"Position Title: {posting.title}. "
@@ -370,6 +370,9 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
             extracted_dl = JobPosting.extract_deadline_from_text(posting.raw_description)
             if extracted_dl:
                 posting.deadline = extracted_dl
+
+        if posting.deadline:
+            posting.deadline_date = JobPosting.extract_latest_deadline_date(posting.deadline)
 
         if data.get("salary") and data["salary"] != "Not specified":
             posting.salary = data["salary"].strip()

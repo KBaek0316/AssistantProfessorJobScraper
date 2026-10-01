@@ -225,10 +225,34 @@ class JobDeduplicator:
         "and", "the", "to", "&", "/", "-", "position", "positions",
     }
 
+    INSTITUTION_ALIASES = [
+        (r"\bumass\b", "university of massachusetts"),
+        (r"\buc\s+", "university of california "),
+        (r"\buiuc\b", "university of illinois urbana champaign"),
+        (r"\bmit\b", "massachusetts institute of technology"),
+        (r"\bcmu\b", "carnegie mellon university"),
+        (r"\bgatech\b|\bgeorgia tech\b(?:\s+university)?", "georgia institute of technology"),
+        (r"\bcaltech\b", "california institute of technology"),
+        (r"\bpenn state\b(?:\s+university)?", "pennsylvania state university"),
+        (r"\btamu\b|\btexas a&m\b(?:\s+university)?", "texas a&m university"),
+        (r"\bunc\b", "university of north carolina"),
+        (r"\bvirginia tech\b(?:\s+university)?", "virginia polytechnic institute"),
+        (r"\buoft\b", "university of toronto"),
+        (r"\bubc\b", "university of british columbia"),
+        (r"\bpolyu\b", "the hong kong polytechnic university"),
+        (r"\bntu\b", "nanyang technological university"),
+        (r"\bnus\b", "national university of singapore"),
+        (r"\bkaist\b", "korea advanced institute of science and technology"),
+        (r"\bsnu\b", "seoul national university"),
+    ]
+
     @classmethod
     def clean_institution(cls, inst: str) -> str:
         import re
-        return re.sub(r"[\s,\-/]+", " ", (inst or "").lower()).strip()
+        s = (inst or "").lower().strip()
+        for pat, repl in cls.INSTITUTION_ALIASES:
+            s = re.sub(pat, repl, s)
+        return re.sub(r"[\s,\-/]+", " ", s).strip()
 
     @classmethod
     def get_dept_tokens(cls, dept: str) -> Set[str]:
@@ -327,6 +351,13 @@ class JobDeduplicator:
                 kept_jobs.append(winner)
 
                 for loser in sorted_cluster[1:]:
+                    if (not winner.salary or winner.salary == "Not specified") and loser.salary and loser.salary != "Not specified":
+                        winner.salary = loser.salary
+                    if (not winner.deadline or "open" in winner.deadline.lower()) and loser.deadline and "open" not in loser.deadline.lower():
+                        winner.deadline = loser.deadline
+                        winner.deadline_date = loser.deadline_date
+                    if len(loser.raw_description or "") > len(winner.raw_description or ""):
+                        winner.raw_description = loser.raw_description
                     loser.status = f"Filtered (Duplicate of {winner.id[:8]} - {winner.title[:30]})"
                     duplicates.append(loser)
                     self.logger.info(
@@ -387,8 +418,13 @@ class JobDeduplicator:
                 existing.date_last_verified = today
                 if not existing.status.startswith("Filtered"):
                     self.refresh_deadline_status(existing)
-                if not existing.raw_description and job.raw_description:
+                if len(job.raw_description or "") > len(existing.raw_description or ""):
                     existing.raw_description = job.raw_description
+                if job.salary and job.salary != "Not specified" and (not existing.salary or existing.salary == "Not specified"):
+                    existing.salary = job.salary
+                if job.deadline and "open" not in job.deadline.lower() and "open" in (existing.deadline or "").lower():
+                    existing.deadline = job.deadline
+                    existing.deadline_date = job.deadline_date
             else:
                 # Brand new job
                 job.date_first_seen = today

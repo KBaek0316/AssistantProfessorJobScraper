@@ -390,6 +390,60 @@ class TestComponents(unittest.TestCase):
         self.assertIn("GOOGLE_SHEET_ID not provided", sync.init_error)
 
 
+    def test_institution_alias_normalization(self):
+        """Ensure clean_institution normalizes common university abbreviations and aliases."""
+        clean = JobDeduplicator.clean_institution
+        self.assertEqual(clean("UMass Boston"), clean("University of Massachusetts - Boston"))
+        self.assertEqual(clean("UMass Amherst"), clean("University of Massachusetts Amherst"))
+        self.assertEqual(clean("UC Berkeley"), clean("University of California, Berkeley"))
+        self.assertEqual(clean("Georgia Tech"), clean("Georgia Institute of Technology"))
+        self.assertEqual(clean("UIUC"), clean("University of Illinois Urbana-Champaign"))
+        self.assertEqual(clean("Penn State"), clean("Pennsylvania State University"))
+        self.assertEqual(clean("Texas A&M"), clean("Texas A&M University"))
+
+    def test_umass_boston_cross_board_deduplication(self):
+        """Ensure UMass Boston posting across HigherEdJobs and LinkedIn resolves as duplicate and merges."""
+        dedup = JobDeduplicator()
+        p_highered = JobPosting(
+            id="umass_hej",
+            title="Assistant Professor - Urban Analytics",
+            institution="University of Massachusetts - Boston",
+            field="Civil & Environmental / Transportation Engineering",
+            location="Boston, MA",
+            deadline="Open until filled",
+            salary="$80,000 - $98,003 per year",
+            link="https://www.higheredjobs.com/search/details.cfm?JobCode=179566167",
+            source="HigherEdJobs",
+            raw_description="Short snippet from HigherEdJobs card",
+            date_first_seen="2026-09-28",
+        )
+        p_linkedin = JobPosting(
+            id="umass_li",
+            title="Assistant Professor - Urban Analytics",
+            institution="UMass Boston",
+            field="Department of Urban Planning and Community Development",
+            location="Greater Boston",
+            deadline="2026-10-18",
+            salary="$80,000 - $98,003",
+            link="https://www.linkedin.com/jobs/view/4469629227",
+            source="LinkedIn",
+            raw_description="The Department of Urban Planning and Community Development (UPCD) in the School for the Environment at the University of Massachusetts Boston invites applications for Assistant Professor in Urban Analytics and AI...",
+            date_first_seen="2026-09-30",
+            fit_score=8,
+            fit_reason="Strong interdisciplinary match in urban planning and mobility analytics",
+        )
+
+        self.assertTrue(dedup.is_same_position(p_highered, p_linkedin))
+        active, dupes = dedup.deduplicate_by_institution_department([p_highered, p_linkedin])
+        self.assertEqual(len(active), 1)
+        self.assertEqual(len(dupes), 1)
+        winner = active[0]
+        self.assertEqual(winner.id, "umass_li")
+        self.assertEqual(winner.fit_score, 8)
+        self.assertEqual(winner.deadline, "2026-10-18")
+
+
 if __name__ == "__main__":
     unittest.main()
+
 

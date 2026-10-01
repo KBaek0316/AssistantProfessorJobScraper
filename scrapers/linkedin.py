@@ -42,19 +42,24 @@ class LinkedInScraper(BaseScraper):
         postings: List[JobPosting] = []
         seen_ids = set()
 
-        # Distribute max_results across locations
-        per_location_max = max(4, max_results // len(self.TARGET_LOCATIONS) + 2)
+        # Ensure balanced, deep pagination across regions without choking the primary market (US)
+        max_total = max(max_results * 2, 35)
 
         for loc in self.TARGET_LOCATIONS:
-            if len(postings) >= max_results:
+            if len(postings) >= max_total:
                 break
 
-            self.logger.info(f"  -> LinkedIn querying location: '{loc}'...")
+            # The US is the candidate's primary market: allow full max_results quota.
+            # Other regions receive a proportional quota to preserve geographic diversity.
+            loc_max = max(max_results, 20) if loc == "United States" else max(5, max_results // 2)
+
+            self.logger.info(f"  -> LinkedIn querying location: '{loc}' (quota: up to {loc_max})...")
             start = 0
             batch_size = 10
             loc_count = 0
+            max_start = 80  # Allow deep pagination (up to 8 pages)
 
-            while loc_count < per_location_max and len(postings) < max_results and start < 30:
+            while loc_count < loc_max and len(postings) < max_total and start < max_start:
                 try:
                     params = {
                         "keywords": query,
@@ -73,7 +78,7 @@ class LinkedInScraper(BaseScraper):
 
                     card_count_this_page = 0
                     for card in cards:
-                        if len(postings) >= max_results or loc_count >= per_location_max:
+                        if len(postings) >= max_total or loc_count >= loc_max:
                             break
 
                         # Title and link
@@ -119,10 +124,9 @@ class LinkedInScraper(BaseScraper):
                         posted_date = time_elem.get_text(strip=True) if time_elem else "Recently"
 
                         job_id = JobPosting.generate_id("linkedin", job_key)
-                        detailed_desc = self._fetch_job_description(job_key) if job_key.isdigit() else ""
-                        raw_description = detailed_desc if detailed_desc else card_text
+                        raw_description = card_text
 
-                        # Check for explicit deadline mentioned in description
+                        # Check for explicit deadline mentioned in description or card text
                         deadline = f"Posted {posted_date}"
                         text_dl = JobPosting.extract_deadline_from_text(raw_description)
                         if text_dl:
