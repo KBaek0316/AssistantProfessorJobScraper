@@ -240,10 +240,12 @@ class JobDeduplicator:
         (r"\buoft\b", "university of toronto"),
         (r"\bubc\b", "university of british columbia"),
         (r"\bpolyu\b", "the hong kong polytechnic university"),
-        (r"\bntu\b", "nanyang technological university"),
+        (r"\bntu\b|\bnanyang technological university(?:\s+singapore)?\b", "nanyang technological university"),
         (r"\bnus\b", "national university of singapore"),
         (r"\bkaist\b", "korea advanced institute of science and technology"),
         (r"\bsnu\b", "seoul national university"),
+        (r"\bdtu\b(?:\s*-\s*technical university of denmark)?|\bdenmark technological university\b|\btechnical university of denmark\b", "technical university of denmark"),
+        (r"\buniversity of missouri(?:\s*-\s*columbia)?\b", "university of missouri columbia"),
     ]
 
     @classmethod
@@ -254,6 +256,41 @@ class JobDeduplicator:
             s = re.sub(pat, repl, s)
         s = re.sub(r"^the\s+", "", s)
         return re.sub(r"[\s,\-/]+", " ", s).strip()
+
+    @classmethod
+    def is_same_institution(cls, j1: JobPosting, j2: JobPosting) -> bool:
+        """Determines if two postings belong to the same university/institution."""
+        c1 = cls.clean_institution(j1.institution)
+        c2 = cls.clean_institution(j2.institution)
+        if not c1 or not c2:
+            return False
+        if c1 == c2:
+            return True
+
+        # Check DTU variations (including cases where department 'DTU Management' was parsed as institution)
+        dtu_keys = ("technical university of denmark", "dtu")
+        if any(k in c1 or k in (j1.institution or "").lower() for k in dtu_keys) and \
+           any(k in c2 or k in (j2.institution or "").lower() for k in dtu_keys):
+            return True
+
+        # Check NTU variations
+        if "nanyang technological university" in c1 and "nanyang technological university" in c2:
+            return True
+
+        # Check Missouri Columbia variations
+        if "university of missouri" in c1 and "university of missouri" in c2:
+            conflicting = ("kansas", "st louis", "science and technology")
+            if not any(k in c1 or k in c2 for k in conflicting):
+                return True
+
+        # Substring / containment check with allowed suffixes
+        if c1 in c2 or c2 in c1:
+            longer, shorter = (c1, c2) if len(c1) > len(c2) else (c2, c1)
+            diff = longer.replace(shorter, "").strip()
+            if diff in ("singapore", "columbia", "management", "usa", "us", "uk", "ireland"):
+                return True
+
+        return False
 
     @classmethod
     def get_dept_tokens(cls, dept: str) -> Set[str]:
@@ -272,7 +309,7 @@ class JobDeduplicator:
     @classmethod
     def is_same_position(cls, j1: JobPosting, j2: JobPosting) -> bool:
         """Determines if two postings represent the same position at the same institution."""
-        if cls.clean_institution(j1.institution) != cls.clean_institution(j2.institution):
+        if not cls.is_same_institution(j1, j2):
             return False
 
         # If both links are identical
@@ -287,16 +324,16 @@ class JobDeduplicator:
         dept_ov = len(d1 & d2) / min(len(d1), len(d2)) if (d1 and d2) else 0.0
         title_ov = len(t1 & t2) / min(len(t1), len(t2)) if (t1 and t2) else 0.0
 
-        # 1. Exact or near-identical title at same institution (e.g. Wisconsin Madison)
-        if title_ov >= 0.85:
+        # 1. Exact or near-identical title at same institution (e.g. Wisconsin Madison, DTU)
+        if title_ov >= 0.7:
             return True
 
-        # 2. Strong title and department overlap (e.g. UIC Operations Management / IDS)
-        if title_ov >= 0.6 and dept_ov >= 0.5:
+        # 2. Same or similar department at same institution (User rule: university same and department same or similar)
+        if dept_ov >= 0.6:
             return True
 
-        # 3. Same department at same institution (User rule: "If multiple jobs' institution and department are same, keep only the latest update")
-        if dept_ov >= 0.75:
+        # 3. Moderate department and title overlap (e.g. UIC Operations Management / IDS)
+        if title_ov >= 0.4 and dept_ov >= 0.4:
             return True
 
         return False
@@ -374,6 +411,10 @@ class JobDeduplicator:
                     if winner.latitude is None and loser.latitude is not None and loser.longitude is not None:
                         winner.latitude = loser.latitude
                         winner.longitude = loser.longitude
+                    if "management" in (winner.institution or "").lower() and "technical university of denmark" in (loser.institution or "").lower():
+                        winner.institution = loser.institution
+                    elif (winner.institution or "").lower() == "dtu - technical university of denmark":
+                        winner.institution = "Technical University of Denmark"
 
                     loser.status = f"Filtered (Duplicate of {winner.id[:8]} - {winner.title[:30]})"
                     duplicates.append(loser)

@@ -478,6 +478,61 @@ class TestComponents(unittest.TestCase):
         finally:
             sys.argv = orig_argv
 
+    def test_dtu_cross_board_deduplication(self):
+        """Ensure Technical University of Denmark (DTU) postings across boards are deduplicated."""
+        dedup = JobDeduplicator()
+        p1 = JobPosting(
+            id="dtu_jobsacuk",
+            title="Associate Professor or DTU Tenure Track Assistant Professor in Sustainable Travel Behaviour",
+            institution="Technical University of Denmark",
+            field="DTU Management",
+            location="Kongens Lyngby, Denmark",
+            deadline="2026-11-01",
+            salary="Not specified",
+            link="https://www.jobs.ac.uk/job/DTA266/associate-professor",
+            source="Jobs.ac.uk",
+            date_first_seen="2026-09-23",
+            fit_score=10,
+        )
+        p2 = JobPosting(
+            id="dtu_linkedin",
+            title="DTU Tenure Track Assistant Professor in Sustainable Travel Behaviour",
+            institution="DTU - Technical University of Denmark",
+            field="DTU Management",
+            location="Kongens Lyngby",
+            deadline="2026-11-01",
+            salary="Not specified",
+            link="https://dk.linkedin.com/jobs/view/4468634703",
+            source="LinkedIn",
+            date_first_seen="2026-09-27",
+            fit_score=10,
+        )
+        p3 = JobPosting(
+            id="dtu_highered",
+            title="Associate Professor or DTU Tenure Track Assistant Professor in Sustainable Travel Behaviour",
+            institution="DTU Management",
+            field="DTU Management",
+            location="Kongens Lyngby, Denmark",
+            deadline="2026-11-01",
+            salary="Not specified",
+            link="https://www.higheredjobs.com/search/details.cfm?JobCode=179567818",
+            source="HigherEdJobs",
+            date_first_seen="2026-09-28",
+            fit_score=10,
+        )
+
+        self.assertTrue(dedup.is_same_position(p1, p2))
+        self.assertTrue(dedup.is_same_position(p1, p3))
+        self.assertTrue(dedup.is_same_position(p2, p3))
+
+        active, dupes = dedup.deduplicate_by_institution_department([p1, p2, p3])
+        self.assertEqual(len(active), 1)
+        self.assertEqual(len(dupes), 2)
+        winner = active[0]
+        self.assertEqual(winner.institution, "Technical University of Denmark")
+        self.assertEqual(winner.field, "DTU Management")
+        self.assertEqual(winner.fit_score, 10)
+
 
 if __name__ == "__main__":
     unittest.main()

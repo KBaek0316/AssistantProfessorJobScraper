@@ -37,6 +37,13 @@ class UniversityGeocoder:
         "ohio state university": (40.0067, -83.0305),
         "penn state university": (40.7982, -77.8599),
         "arizona state university": (33.4242, -111.9281),
+        "university of south carolina": (33.9929, -81.0269),
+        "uofsc": (33.9929, -81.0269),
+        "usc columbia": (33.9929, -81.0269),
+        "brown university": (41.8268, -71.4025),
+        "university of notre dame": (41.7046, -86.2382),
+        "notre dame": (41.7046, -86.2382),
+        "columbia university": (40.8078, -73.9625),
         # Canadian universities
         "university of toronto": (43.6629, -79.3957),
         "uoft": (43.6629, -79.3957),
@@ -165,14 +172,36 @@ class UniversityGeocoder:
     }
 
     def enrich_coordinates(self, postings: List[JobPosting]):
-        """Populate latitude and longitude on postings where missing."""
+        """Populate latitude and longitude on postings where missing, and heal stale/mis-geocoded coordinates."""
         for p in postings:
+            clean_inst = (p.institution or "").strip().lower()
+
+            # Self-healing: if coordinates already exist, check if they grossly conflict with a canonical campus fallback
             if p.latitude is not None and p.longitude is not None:
+                for known_name, canonical_coords in self.FALLBACK_COORDINATES.items():
+                    if len(known_name) > 3 and (known_name == clean_inst or (clean_inst and known_name in clean_inst)):
+                        from math import radians, sin, cos, sqrt, atan2
+                        R = 6371.0
+                        dlat = radians(canonical_coords[0] - p.latitude)
+                        dlon = radians(canonical_coords[1] - p.longitude)
+                        a = sin(dlat / 2)**2 + cos(radians(p.latitude)) * cos(radians(canonical_coords[0])) * sin(dlon / 2)**2
+                        dist = R * 2 * atan2(sqrt(a), sqrt(1 - a))
+                        if dist > 80:  # >80km discrepancy with known campus
+                            self.logger.info(
+                                f"Healed coordinates for '{p.institution}': replaced ({p.latitude}, {p.longitude}) "
+                                f"with canonical ({canonical_coords[0]}, {canonical_coords[1]}) - was {dist:.1f}km off."
+                            )
+                            p.latitude, p.longitude = canonical_coords
+                        break
                 continue
 
             coords = None
-            clean_inst = (p.institution or "").strip().lower()
-            is_valid_inst = bool(clean_inst and clean_inst not in self.GENERIC_INSTITUTIONS)
+            is_valid_inst = bool(
+                clean_inst
+                and clean_inst not in self.GENERIC_INSTITUTIONS
+                and not clean_inst.startswith("state of ")
+                and not clean_inst.startswith("commonwealth of ")
+            )
             has_specific_loc = bool(
                 p.location
                 and p.location.strip().lower() not in ("united states", "unspecified", "see full listing", "")
