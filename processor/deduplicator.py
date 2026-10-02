@@ -252,6 +252,7 @@ class JobDeduplicator:
         s = (inst or "").lower().strip()
         for pat, repl in cls.INSTITUTION_ALIASES:
             s = re.sub(pat, repl, s)
+        s = re.sub(r"^the\s+", "", s)
         return re.sub(r"[\s,\-/]+", " ", s).strip()
 
     @classmethod
@@ -333,15 +334,15 @@ class JobDeduplicator:
                 kept_jobs.append(cluster[0])
             else:
                 # Rank: latest update first
-                # 1. date_first_seen (descending)
-                # 2. date_last_verified (descending)
+                # 1. date_last_verified or date_first_seen (descending)
+                # 2. date_first_seen (descending)
                 # 3. fit_score (descending)
                 # 4. id (deterministic)
                 sorted_cluster = sorted(
                     cluster,
                     key=lambda x: (
+                        x.date_last_verified or x.date_first_seen or "",
                         x.date_first_seen or "",
-                        x.date_last_verified or "",
                         x.fit_score or 0,
                         x.id or "",
                     ),
@@ -358,11 +359,27 @@ class JobDeduplicator:
                         winner.deadline_date = loser.deadline_date
                     if len(loser.raw_description or "") > len(winner.raw_description or ""):
                         winner.raw_description = loser.raw_description
+                    if (loser.date_last_verified or "") > (winner.date_last_verified or ""):
+                        winner.date_last_verified = loser.date_last_verified
+                    if loser.date_first_seen and (not winner.date_first_seen or loser.date_first_seen < winner.date_first_seen):
+                        winner.date_first_seen = loser.date_first_seen
+                    if winner.fit_score is None and loser.fit_score is not None:
+                        winner.fit_score = loser.fit_score
+                        winner.fit_reason = loser.fit_reason
+                    if not winner.research_topics and loser.research_topics:
+                        winner.research_topics = loser.research_topics
+                    if not winner.summary or ("..." in winner.summary and len(loser.summary or "") > len(winner.summary)):
+                        if loser.summary:
+                            winner.summary = loser.summary
+                    if winner.latitude is None and loser.latitude is not None and loser.longitude is not None:
+                        winner.latitude = loser.latitude
+                        winner.longitude = loser.longitude
+
                     loser.status = f"Filtered (Duplicate of {winner.id[:8]} - {winner.title[:30]})"
                     duplicates.append(loser)
                     self.logger.info(
-                        f"Deduplicated: Kept '{winner.title}' ({winner.date_first_seen}), "
-                        f"filtered duplicate '{loser.title}' ({loser.date_first_seen}) at {winner.institution}"
+                        f"Deduplicated: Kept '{winner.title}' ({winner.date_last_verified or winner.date_first_seen}), "
+                        f"filtered duplicate '{loser.title}' ({loser.date_last_verified or loser.date_first_seen}) at {winner.institution}"
                     )
 
         if duplicates:

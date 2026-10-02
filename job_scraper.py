@@ -120,6 +120,18 @@ def parse_args():
         help="Re-evaluation mode (only applicable when --re-evaluate is fed): 'update' (default: keeps existing jobs, updates scores/summaries, only deduplicates, and creates timestamped backups in Excel and/or a new Google Sheet tab) or 'fresh' (completely starts evaluation anew and filters out low-scoring jobs).",
     )
     parser.add_argument(
+        "--re-evaluate-missing",
+        action="store_true",
+        default=True,
+        help="Trigger re-evaluation of existing entries missing a fit score during daily update (default: True)",
+    )
+    parser.add_argument(
+        "--no-re-evaluate-missing",
+        dest="re_evaluate_missing",
+        action="store_false",
+        help="Disable automatic re-evaluation of existing entries missing a fit score",
+    )
+    parser.add_argument(
         "--include-filtered",
         action="store_true",
         help="Include filtered/screened-out jobs in outputs (default: False)",
@@ -213,9 +225,19 @@ def main():
     print(f"[DEDUPLICATION] Brand new postings discovered today: {len(new_jobs)}")
     print(f"[DEDUPLICATION] Total active and tracked postings:   {len(all_jobs)}")
 
-    # 4. Handle Pre-Evaluation Backups (if --re-evaluate in 'update' mode)
-    if args.re_evaluate and args.re_evaluate_mode == "update" and all_jobs:
-        print("\n[BACKUP] Initiating automated backup of existing listings prior to re-evaluation...")
+    # 4. Handle Pre-Evaluation Backups (if --re-evaluate in 'update' mode or existing entries missing fit score need evaluation)
+    unscored_existing = [j for j in all_jobs if j.fit_score is None and j not in new_jobs]
+    should_backup = (
+        (args.re_evaluate and args.re_evaluate_mode == "update" and all_jobs)
+        or (args.re_evaluate_missing and unscored_existing and all_jobs)
+    )
+    if should_backup:
+        backup_reason = (
+            "prior to full re-evaluation"
+            if args.re_evaluate
+            else f"prior to re-evaluating {len(unscored_existing)} existing listings missing fit scores"
+        )
+        print(f"\n[BACKUP] Initiating automated backup of existing listings {backup_reason}...")
         exporter = JobExporter(csv_filepath=args.csv_out, excel_filepath=args.excel_out)
         backup_xlsx = exporter.create_backup(all_jobs)
         backup_sheet = exporter.add_backup_sheet(all_jobs)
@@ -247,6 +269,9 @@ def main():
                 mode_desc = "updating scores while preserving listings" if args.re_evaluate_mode == "update" else "fresh evaluation"
                 print(f"[RE-EVALUATION] Re-evaluating all {len(existing_to_reval)} existing jobs ({mode_desc})...")
                 jobs_to_enrich.extend(existing_to_reval)
+        elif args.re_evaluate_missing and unscored_existing:
+            print(f"\n[DAILY-UPDATE] Triggering re-evaluation of {len(unscored_existing)} existing entries missing fit score...")
+            jobs_to_enrich.extend(unscored_existing)
 
         if jobs_to_enrich:
             print(f"\n[GEMINI] Evaluating candidate fit (1-10) with {args.model} for {len(jobs_to_enrich)} postings...")

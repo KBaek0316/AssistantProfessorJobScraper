@@ -442,6 +442,42 @@ class TestComponents(unittest.TestCase):
         self.assertEqual(winner.fit_score, 8)
         self.assertEqual(winner.deadline, "2026-10-18")
 
+    def test_clean_institution_the_prefix(self):
+        """Ensure clean_institution handles 'the ' prefix symmetrically."""
+        clean = JobDeduplicator.clean_institution
+        self.assertEqual(
+            clean("The Hong Kong Polytechnic University"),
+            clean("Hong Kong Polytechnic University"),
+        )
+        self.assertEqual(
+            clean("The Ohio State University"),
+            clean("Ohio State University"),
+        )
+
+    def test_re_evaluate_missing_cli_flags(self):
+        """Verify CLI argument defaults and flags for re-evaluating missing fit scores."""
+        from job_scraper import parse_args
+        import sys
+
+        orig_argv = sys.argv
+        try:
+            # Default run (e.g. daily scrape) should have re_evaluate_missing = True
+            sys.argv = ["job_scraper.py"]
+            args = parse_args()
+            self.assertTrue(args.re_evaluate_missing)
+
+            # Explicit disable flag
+            sys.argv = ["job_scraper.py", "--no-re-evaluate-missing"]
+            args = parse_args()
+            self.assertFalse(args.re_evaluate_missing)
+
+            # Explicit enable flag
+            sys.argv = ["job_scraper.py", "--re-evaluate-missing"]
+            args = parse_args()
+            self.assertTrue(args.re_evaluate_missing)
+        finally:
+            sys.argv = orig_argv
+
 
 if __name__ == "__main__":
     unittest.main()

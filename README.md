@@ -205,7 +205,7 @@ You can trigger an update in two ways: **locally on your computer** or **in the 
 
 > [!IMPORTANT]
 > **Why use the `--re-evaluate` flag?**
-> By default, the scraper only calls Gemini for newly discovered jobs to conserve API quota. Adding `--re-evaluate` forces Gemini to re-evaluate and re-score **all existing jobs** in the database against *your* new CV and prompt instead of keeping previous scores.
+> By default, the scraper only calls Gemini for newly discovered jobs to conserve API quota, but automatically triggers a re-evaluation for any existing entries that are missing a fit score (self-healing daily update). Adding `--re-evaluate` forces Gemini to re-evaluate and re-score **all existing jobs** in the database against *your* new CV and prompt instead of keeping previous scores.
 
 ---
 

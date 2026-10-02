@@ -226,6 +226,8 @@ service_account.json
 scraping/
 jobs_backup_*.xlsx
 *_backup_*.xlsx
+jobs_backup_*.csv
+*_backup_*.csv
 
 
 

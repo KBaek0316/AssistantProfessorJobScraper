@@ -89,33 +89,248 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
         self.logger.info(f"Enriching {len(postings)} job postings with Gemini ({self.model_name})...")
         import time
 
-        for idx, posting in enumerate(postings):
-            max_retries = 4
-            backoff_delays = [5, 15, 30, 60]
-            for attempt in range(max_retries):
-                try:
-                    self._enrich_single(posting)
-                    score_str = f"Fit: {posting.fit_score}/10" if posting.fit_score else "Fit: N/A"
-                    self.logger.info(f"[{idx+1}/{len(postings)}] Enriched: {posting.title} @ {posting.institution} ({score_str})")
-                    break
-                except Exception as e:
-                    err_str = str(e).upper()
-                    is_transient = any(x in err_str for x in ("429", "RESOURCE_EXHAUSTED", "503", "UNAVAILABLE", "OVERLOADED"))
-                    if is_transient and attempt < max_retries - 1:
-                        delay = backoff_delays[attempt]
-                        self.logger.warning(f"Rate limit / transient error on '{posting.title}' (attempt {attempt+1}/{max_retries}). Backing off {delay}s...")
-                        time.sleep(delay)
-                    else:
-                        self.logger.error(f"Failed to enrich job '{posting.title}': {e}")
-                        break
-            if not posting.summary:
-                posting.summary = posting.raw_description[:200] if posting.raw_description else (posting.field or posting.title)
+        # Pre-filter obvious non-faculty and out-of-scope locations
+        to_call_llm = []
+        for p in postings:
+            if not JobPosting.is_valid_faculty_posting(p.title, p.raw_description or p.summary):
+                p.status = "Filtered (Non-Faculty / Seniority / Adjunct)"
+                p.fit_score = 1
+                p.fit_reason = f"Screened out: Position title '{p.title}' is senior-only, adjunct, continuing education, or non-faculty."
+            elif p.location and not JobPosting.is_allowed_location(p.location):
+                p.status = "Filtered (Location Outside Scope)"
+                p.fit_score = 1
+                p.fit_reason = f"Screened out: Location '{p.location}' is outside target geographic scope."
+            else:
+                to_call_llm.append(p)
 
-            # Polite delay between API calls to respect free tier rate limits (15 RPM -> >= 4.0s)
-            if idx < len(postings) - 1:
-                time.sleep(4.0)
+        if to_call_llm:
+            if len(to_call_llm) > 1:
+                batch_size = 5
+                for i in range(0, len(to_call_llm), batch_size):
+                    chunk = to_call_llm[i:i + batch_size]
+                    success = self._enrich_batch(chunk)
+                    if not success:
+                        for p in chunk:
+                            self._enrich_single(p)
+                    if i + batch_size < len(to_call_llm):
+                        time.sleep(1.5)
+            else:
+                self._enrich_single(to_call_llm[0])
+
+        for p in postings:
+            if not p.summary:
+                p.summary = p.raw_description[:200] if p.raw_description else (p.field or p.title)
 
         return postings
+
+    def _enrich_batch(self, batch: List[JobPosting]) -> bool:
+        """Enrich a batch of JobPosting objects in a single structured Gemini call."""
+        if not batch:
+            return True
+
+        candidate_profile_text = self.cv_matcher.get_prompt_context()
+
+        batch_input = []
+        desc_cache = self._load_description_cache()
+        for p in batch:
+            if not p.raw_description or len(p.raw_description.strip()) < 300:
+                cached = desc_cache.get(p.id) or desc_cache.get(p.link)
+                if cached and len(cached.strip()) >= 300:
+                    p.raw_description = cached
+                else:
+                    fetched = self._fetch_description_fallback(p)
+                    if fetched and len(fetched.strip()) > len(p.raw_description or ""):
+                        p.raw_description = fetched
+                        desc_cache[p.id] = fetched
+                        desc_cache[p.link] = fetched
+                    elif not p.raw_description:
+                        p.raw_description = (
+                            f"Position Title: {p.title}. "
+                            f"Institution: {p.institution}. "
+                            f"Department: {p.field or 'Academic Department'}. "
+                            f"Location: {p.location or 'Not specified'}. "
+                            f"Summary Context: {p.summary or 'Tenure-track academic faculty position'}. "
+                            f"Link: {p.link}"
+                        )
+            desc = p.raw_description or p.summary or ""
+            batch_input.append({
+                "id": p.id,
+                "title": p.title,
+                "institution": p.institution,
+                "location": p.location,
+                "source": p.source,
+                "raw_description": desc[:3000],
+            })
+        self._save_description_cache(desc_cache)
+
+        prompt = f"""You are an academic hiring specialist and faculty search advisor.
+Analyze the following academic job postings and evaluate their relevance against the candidate's research profile.
+
+=== CANDIDATE PROFILE ===
+{candidate_profile_text}
+Target Positions: Tenure-track Assistant Professor, Open Rank Faculty searches inclusive of Assistant Professor, or career-track university teaching faculty appointments.
+
+=== EVALUATION INSTRUCTIONS ===
+1. Determine Position Eligibility & Seniority:
+   - Target positions: Tenure-track Assistant Professor, Open Rank Faculty searches that explicitly include Assistant Professor, and career-track university faculty appointments.
+   - EXCLUDE (set "is_faculty" to false or assign fit_score: 1 with explanatory fit_reason):
+     * Seniority-only roles: Pure Associate Professor (without Assistant), Full Professor, Department Chair, Division Chair, Dean.
+     * Contingent / part-time / non-degree roles: Adjunct Faculty/Professor, Lecturer in Continuing Education, Adult Education, Extension.
+     * Trainees and non-faculty staff: Postdocs, research fellows, technicians, staff.
+2. Evaluate Geographic Scope:
+   - Target Regions: US, Canada, Europe, Hong Kong, Singapore, Japan, South Korea, Taiwan.
+   - EXCLUDE: Non-target countries (e.g. Mainland China, Middle East, Latin America, South Asia, Africa). Set fit_score: 1 with fit_reason explaining location.
+3. Candidate Fit Score (1 to 10 scale):
+   - 9-10 (Core Match): Dedicated Assistant Professor position directly matching candidate's primary field (Transportation Engineering / Mobility / Transit Systems / Traffic Operations).
+   - 7-8 (Strong Interdisciplinary Match): Assistant Professor in related disciplines (Civil, Urban Planning/Analytics, Industrial/Systems Engineering) seeking mobility/transportation/smart cities expertise.
+   - 5-6 (Broad Fit): Broad department search where transportation/mobility/analytics is an acceptable focus area.
+   - 3-4 (Low Fit): General department faculty searches with peripheral overlap.
+   - 1-2 (Screened Out / Irrelevant): Completely unrelated fields (Nursing, Pharmacy, Law, Sports Media, First-Year general teaching, etc.).
+4. Department & Focus Extraction:
+   - Extract official Department, School, or Division name from the posting body.
+5. Provide a concise, 1-sentence "fit_reason".
+
+=== POSTINGS TO EVALUATE ===
+{json.dumps(batch_input, indent=2)}
+
+=== OUTPUT FORMAT ===
+Return strictly a JSON array of objects (one per evaluated job) with fields:
+- "id": string matching the provided job id
+- "is_faculty": boolean
+- "fit_score": integer 1-10
+- "fit_reason": 1 concise sentence explaining the match or mismatch
+- "clean_title": official position title
+- "institution": official university name
+- "department": official department / school name
+- "tenure_track": "Tenure-Track", "Tenured", "Non-Tenure Track", or "Unspecified"
+- "deadline": application deadline string (or "Open until filled")
+- "salary": salary range or "Not specified"
+- "city_state": city, state/country
+- "country": country name
+- "research_topics": list of 2-4 research topics
+- "concise_summary": 1 concise sentence summarizing role focus and minimum degree qualification
+"""
+        candidate_models = [
+            self.model_name,
+            "gemini-3.5-flash-lite",
+            "gemini-3.1-flash-lite",
+            "gemini-3.1-flash-lite-preview",
+            "gemini-3-flash-preview",
+            "gemini-3.7-flash",
+            "gemini-3.6-flash",
+            "gemini-3.8-flash",
+            "gemini-3.5-flash",
+        ]
+        candidate_models = list(dict.fromkeys(candidate_models))
+
+        gen_config = None
+        try:
+            from google.genai import types
+            gen_config = types.GenerateContentConfig(
+                response_mime_type="application/json",
+                automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+            )
+        except Exception:
+            pass
+
+        response_text = ""
+        for m in candidate_models:
+            try:
+                if hasattr(self.client, "models"):
+                    kwargs = {"model": m, "contents": prompt}
+                    if gen_config:
+                        kwargs["config"] = gen_config
+                    resp = self.client.models.generate_content(**kwargs)
+                    response_text = resp.text
+                else:
+                    model_obj = self.client.GenerativeModel(m)
+                    resp = model_obj.generate_content(prompt)
+                    response_text = resp.text
+                if response_text:
+                    break
+            except Exception as err:
+                self.logger.warning(f"Batch call failed on '{m}': {err}. Trying next model...")
+                continue
+
+        if not response_text:
+            return False
+
+        try:
+            raw_data = self._parse_llm_json(response_text)
+            if isinstance(raw_data, dict) and "jobs" in raw_data:
+                raw_data = raw_data["jobs"]
+            if not isinstance(raw_data, list):
+                return False
+
+            results_by_id = {item["id"]: item for item in raw_data if isinstance(item, dict) and "id" in item}
+
+            for posting in batch:
+                data = results_by_id.get(posting.id)
+                if not data:
+                    continue
+
+                if data.get("is_faculty") is False:
+                    posting.status = "Filtered (Non-Faculty / Seniority)"
+                    posting.fit_score = 1
+                    if data.get("fit_reason"):
+                        posting.fit_reason = str(data["fit_reason"]).strip()
+                else:
+                    fit_score_raw = data.get("fit_score")
+                    if fit_score_raw is not None:
+                        try:
+                            posting.fit_score = max(1, min(10, int(fit_score_raw)))
+                        except (ValueError, TypeError):
+                            posting.fit_score = None
+                    if data.get("fit_reason"):
+                        posting.fit_reason = str(data["fit_reason"]).strip()
+
+                    if posting.fit_score is not None and posting.fit_score < self.min_fit_score:
+                        posting.status = "Filtered (Low Relevance)"
+
+                if data.get("clean_title"):
+                    clean_t = data["clean_title"].strip()
+                    if JobPosting.is_valid_faculty_posting(clean_t, posting.raw_description):
+                        posting.title = clean_t
+                if data.get("institution"):
+                    posting.institution = data["institution"].strip()
+                if data.get("department"):
+                    posting.field = data["department"].strip()
+                if data.get("tenure_track"):
+                    posting.tenure_track = data["tenure_track"].strip()
+                if data.get("deadline"):
+                    posting.deadline = data["deadline"].strip()
+                    posting.deadline_date = JobPosting.extract_latest_deadline_date(posting.deadline)
+                if data.get("salary") and data["salary"] != "Not specified":
+                    posting.salary = data["salary"].strip()
+                if data.get("city_state"):
+                    posting.location = data["city_state"].strip()
+
+                country = str(data.get("country", "")).strip()
+                if not JobPosting.is_allowed_location(posting.location, country):
+                    posting.status = "Filtered (Location Outside Scope)"
+                    posting.fit_score = 1
+                    posting.fit_reason = f"Screened out: Location '{posting.location}' is outside target geographic scope."
+
+                topics_data = data.get("research_topics", [])
+                if isinstance(topics_data, list):
+                    posting.research_topics = ", ".join(str(t).strip() for t in topics_data if t)
+                elif isinstance(topics_data, str):
+                    posting.research_topics = topics_data.strip()
+
+                concise = data.get("concise_summary", "").strip() or data.get("summary", "").strip()
+                if concise:
+                    if posting.research_topics:
+                        posting.summary = f"{concise} | Research Topics: {posting.research_topics}"
+                    else:
+                        posting.summary = concise
+
+                score_str = f"Fit: {posting.fit_score}/10" if posting.fit_score else "Fit: N/A"
+                self.logger.info(f"Enriched (Batch): {posting.title} @ {posting.institution} ({score_str})")
+
+            return True
+        except Exception as parse_err:
+            self.logger.warning(f"Failed parsing batch JSON response: {parse_err}. Falling back to single enrichment.")
+            return False
 
     CACHE_DIR = ".cache"
     DESCRIPTIONS_CACHE = os.path.join(CACHE_DIR, "job_descriptions.json")
@@ -292,9 +507,13 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
         response_text = ""
         candidate_models = [
             self.model_name,
-            "gemini-3.8-flash",
+            "gemini-3.5-flash-lite",
+            "gemini-3.1-flash-lite",
+            "gemini-3.1-flash-lite-preview",
+            "gemini-3-flash-preview",
             "gemini-3.7-flash",
             "gemini-3.6-flash",
+            "gemini-3.8-flash",
             "gemini-3.5-flash",
         ]
         candidate_models = list(dict.fromkeys(candidate_models))
