@@ -2,6 +2,8 @@ import csv
 import json
 import logging
 import os
+import re
+import unicodedata
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Set, Tuple
 from scrapers.base import JobPosting
@@ -18,8 +20,9 @@ class JobDeduplicator:
 
     def cleanup_mistakenly_filtered_cache(self) -> int:
         """
-        Removes mistakenly cached 'Filtered (Non-Faculty)' entries whose titles
-        are actually valid faculty positions. Returns number of repaired entries.
+        Removes mistakenly cached entries from filtered_jobs.json:
+        1. 'Filtered (Non-Faculty)' entries whose titles are actually valid faculty positions.
+        2. 'Filtered (Duplicate...)' entries (so faculty jobs are never permanently blacklisted).
         """
         if not os.path.exists(self.FILTERED_CACHE_FILE):
             return 0
@@ -35,11 +38,14 @@ class JobDeduplicator:
                     if "Non-Faculty" in status and JobPosting.is_valid_faculty_posting(title):
                         removed_count += 1
                         continue
+                    if "Duplicate" in status:
+                        removed_count += 1
+                        continue
                     repaired.append(item)
             if removed_count > 0:
                 with open(self.FILTERED_CACHE_FILE, "w", encoding="utf-8") as f:
                     json.dump(repaired, f, indent=2)
-                self.logger.info(f"Repaired filtered cache: unblocked {removed_count} valid faculty positions.")
+                self.logger.info(f"Repaired filtered cache: unblocked {removed_count} entries.")
             return removed_count
         except Exception as e:
             self.logger.warning(f"Could not clean filtered cache: {e}")
@@ -57,7 +63,9 @@ class JobDeduplicator:
                         if isinstance(item, dict):
                             status = item.get("status", "")
                             title = item.get("title", "")
-                            # Self-healing: do not block if title is a valid faculty position
+                            # Self-healing: do not block duplicates or valid faculty positions
+                            if "Duplicate" in status:
+                                continue
                             if "Non-Faculty" in status and JobPosting.is_valid_faculty_posting(title):
                                 continue
                             if item.get("id"):
@@ -69,8 +77,10 @@ class JobDeduplicator:
         return filtered_identifiers
 
     def save_filtered_jobs(self, filtered_jobs: List[JobPosting]):
-        """Append filtered jobs to persistent cache so they aren't re-scraped or re-evaluated."""
-        if not filtered_jobs:
+        """Append screened-out non-faculty or low relevance jobs to persistent cache. Duplicates are never cached."""
+        # Never cache duplicates into persistent blacklist
+        jobs_to_cache = [j for j in filtered_jobs if not ("Duplicate" in (j.status or ""))]
+        if not jobs_to_cache:
             return
         os.makedirs(os.path.dirname(self.FILTERED_CACHE_FILE), exist_ok=True)
         existing_list = []
@@ -85,7 +95,7 @@ class JobDeduplicator:
             except Exception:
                 existing_list = []
 
-        for j in filtered_jobs:
+        for j in jobs_to_cache:
             if j.id not in seen_ids:
                 existing_list.append({
                     "id": j.id,
@@ -102,7 +112,7 @@ class JobDeduplicator:
         try:
             with open(self.FILTERED_CACHE_FILE, "w", encoding="utf-8") as f:
                 json.dump(existing_list, f, indent=2)
-            self.logger.info(f"Recorded {len(filtered_jobs)} filtered jobs to {self.FILTERED_CACHE_FILE}")
+            self.logger.info(f"Recorded {len(jobs_to_cache)} filtered jobs to {self.FILTERED_CACHE_FILE}")
         except Exception as e:
             self.logger.warning(f"Failed writing to {self.FILTERED_CACHE_FILE}: {e}")
 
@@ -239,23 +249,46 @@ class JobDeduplicator:
         (r"\bvirginia tech\b(?:\s+university)?", "virginia polytechnic institute"),
         (r"\buoft\b", "university of toronto"),
         (r"\bubc\b", "university of british columbia"),
-        (r"\bpolyu\b", "the hong kong polytechnic university"),
+        (r"\bpolyu\b|\bthe hong kong polytechnic university\b", "hong kong polytechnic university"),
         (r"\bntu\b|\bnanyang technological university(?:\s+singapore)?\b", "nanyang technological university"),
         (r"\bnus\b", "national university of singapore"),
         (r"\bkaist\b", "korea advanced institute of science and technology"),
         (r"\bsnu\b", "seoul national university"),
         (r"\bdtu\b(?:\s*-\s*technical university of denmark)?|\bdenmark technological university\b|\btechnical university of denmark\b", "technical university of denmark"),
-        (r"\buniversity of missouri(?:\s*-\s*columbia)?\b", "university of missouri columbia"),
+        (r"\buniversity of missouri(?:\s+columbia)?\b", "university of missouri columbia"),
+        (r"\bcal poly pomona\b|\bcalifornia state polytechnic university pomona\b", "cal poly pomona"),
+        (r"\bcal poly san luis obispo\b|\bcal poly slo\b|\bcalifornia polytechnic state university san luis obispo\b|\bcalifornia polytechnic state university\b", "cal poly san luis obispo"),
+        (r"\bcal poly\b", "cal poly"),
+        (r"\but arlington\b|\buniversity of texas at arlington\b", "university of texas at arlington"),
+        (r"\bunc chapel hill\b|\buniversity of north carolina at chapel hill\b", "university of north carolina at chapel hill"),
+        (r"\buw madison\b|\buniversity of wisconsin madison\b", "university of wisconsin madison"),
+        (r"\buic\b|\buniversity of illinois at chicago\b|\buniversity of illinois chicago\b", "university of illinois chicago"),
+    ]
+
+    SPECIALIZATION_TRACKS = [
+        ("water", {"water", "hydrology", "hydraulic", "hydroinformatics", "flooding", "flood"}),
+        ("transportation", {"transportation", "transit", "mobility", "traffic", "travel behaviour", "sustainable travel"}),
+        ("structures", {"structural", "structures", "seismic"}),
+        ("geotech", {"geotechnical", "geomechanics"}),
+        ("mechanical", {"mechanical", "robotics", "mechatronics"}),
+        ("aerospace", {"aerospace", "aviation", "aeronautical", "flight"}),
+        ("real_estate", {"real estate"}),
+        ("urban_tech", {"urban technology"}),
+        ("urban_design", {"urban design"}),
+        ("public_affairs", {"public affairs", "public policy", "public administration"}),
+        ("economics", {"economics", "economic"}),
+        ("computer_science", {"computer science", "software"}),
     ]
 
     @classmethod
     def clean_institution(cls, inst: str) -> str:
-        import re
-        s = (inst or "").lower().strip()
+        raw = unicodedata.normalize("NFKD", inst or "").encode("ascii", "ignore").decode("utf-8")
+        s = raw.lower().strip()
+        s = re.sub(r"[\s,\-/]+", " ", s).strip()
+        s = re.sub(r"^the\s+", "", s)
         for pat, repl in cls.INSTITUTION_ALIASES:
             s = re.sub(pat, repl, s)
-        s = re.sub(r"^the\s+", "", s)
-        return re.sub(r"[\s,\-/]+", " ", s).strip()
+        return re.sub(r"\s+", " ", s).strip()
 
     @classmethod
     def is_same_institution(cls, j1: JobPosting, j2: JobPosting) -> bool:
@@ -283,6 +316,27 @@ class JobDeduplicator:
             if not any(k in c1 or k in c2 for k in conflicting):
                 return True
 
+        # Check system vs campus matching (e.g. California State University posting for San José State University)
+        systems = (
+            "california state university",
+            "university of colorado system",
+            "city university of new york",
+            "state university of new york",
+        )
+        loc1 = unicodedata.normalize("NFKD", j1.location or "").encode("ascii", "ignore").decode("utf-8").lower()
+        loc2 = unicodedata.normalize("NFKD", j2.location or "").encode("ascii", "ignore").decode("utf-8").lower()
+        campus_keywords = ("san jose", "pomona", "long beach", "denver", "boulder", "colorado springs")
+
+        for s in systems:
+            if s in c1:
+                for kw in campus_keywords:
+                    if kw in loc1 and kw in c2:
+                        return True
+            if s in c2:
+                for kw in campus_keywords:
+                    if kw in loc2 and kw in c1:
+                        return True
+
         # Substring / containment check with allowed suffixes
         if c1 in c2 or c2 in c1:
             longer, shorter = (c1, c2) if len(c1) > len(c2) else (c2, c1)
@@ -293,15 +347,35 @@ class JobDeduplicator:
         return False
 
     @classmethod
+    def get_tracks(cls, text: str) -> Set[str]:
+        t = (text or "").lower()
+        matched = set()
+        for track_name, kws in cls.SPECIALIZATION_TRACKS:
+            for kw in kws:
+                if re.search(r"\b" + re.escape(kw) + r"\b", t):
+                    matched.add(track_name)
+                    break
+        return matched
+
+    @classmethod
+    def has_conflicting_specializations(cls, j1: JobPosting, j2: JobPosting) -> bool:
+        """Checks if two postings at the same department specify mutually exclusive subfields."""
+        text1 = f"{j1.title} {j1.field} {j1.research_topics}"
+        text2 = f"{j2.title} {j2.field} {j2.research_topics}"
+        tracks1 = cls.get_tracks(text1)
+        tracks2 = cls.get_tracks(text2)
+        if tracks1 and tracks2 and not (tracks1 & tracks2):
+            return True
+        return False
+
+    @classmethod
     def get_dept_tokens(cls, dept: str) -> Set[str]:
-        import re
         if not dept:
             return set()
         return set(re.findall(r"[a-z0-9\.\']+", dept.lower())) - cls.DEPARTMENT_STOPWORDS
 
     @classmethod
     def get_title_tokens(cls, title: str) -> Set[str]:
-        import re
         if not title:
             return set()
         return set(re.findall(r"[a-z0-9]+", title.lower())) - cls.TITLE_STOPWORDS
@@ -316,6 +390,10 @@ class JobDeduplicator:
         if j1.link and j2.link and j1.link.strip().rstrip("/") == j2.link.strip().rstrip("/"):
             return True
 
+        # Conflicting subfields within same department are distinct positions
+        if cls.has_conflicting_specializations(j1, j2):
+            return False
+
         d1 = cls.get_dept_tokens(j1.field)
         d2 = cls.get_dept_tokens(j2.field)
         t1 = cls.get_title_tokens(j1.title)
@@ -324,8 +402,15 @@ class JobDeduplicator:
         dept_ov = len(d1 & d2) / min(len(d1), len(d2)) if (d1 and d2) else 0.0
         title_ov = len(t1 & t2) / min(len(t1), len(t2)) if (t1 and t2) else 0.0
 
-        # 1. Exact or near-identical title at same institution (e.g. Wisconsin Madison, DTU)
-        if title_ov >= 0.7:
+        raw_t1 = re.sub(r"[^a-z0-9]", "", (j1.title or "").lower())
+        raw_t2 = re.sub(r"[^a-z0-9]", "", (j2.title or "").lower())
+        exact_title = bool(raw_t1 and raw_t1 == raw_t2)
+
+        # 1. Exact title or high title overlap (>= 0.7)
+        if exact_title or title_ov >= 0.7:
+            if not t1 and not t2:
+                # Generic title like "Assistant Professor" requires matching department
+                return (dept_ov >= 0.4) or (not d1 or not d2)
             return True
 
         # 2. Same or similar department at same institution (User rule: university same and department same or similar)
@@ -333,7 +418,7 @@ class JobDeduplicator:
             return True
 
         # 3. Moderate department and title overlap (e.g. UIC Operations Management / IDS)
-        if title_ov >= 0.4 and dept_ov >= 0.4:
+        if title_ov >= 0.35 and (dept_ov >= 0.35 or not d1 or not d2):
             return True
 
         return False
@@ -343,7 +428,7 @@ class JobDeduplicator:
     ) -> Tuple[List[JobPosting], List[JobPosting]]:
         """
         Groups jobs representing the same position/department at an institution.
-        Keeps only the single latest update per position group.
+        Keeps only the single highest-quality update per position group.
         The superseded duplicates are marked as 'Filtered (Duplicate)' and returned.
 
         Returns:
@@ -370,25 +455,28 @@ class JobDeduplicator:
             if len(cluster) == 1:
                 kept_jobs.append(cluster[0])
             else:
-                # Rank: latest update first
-                # 1. date_last_verified or date_first_seen (descending)
-                # 2. date_first_seen (descending)
-                # 3. fit_score (descending)
-                # 4. id (deterministic)
-                sorted_cluster = sorted(
-                    cluster,
-                    key=lambda x: (
-                        x.date_last_verified or x.date_first_seen or "",
-                        x.date_first_seen or "",
-                        x.fit_score or 0,
-                        x.id or "",
-                    ),
-                    reverse=True,
-                )
+                # Rank: Highest quality / fit score first, then most recent verification and discovery dates
+                def sort_key(x: JobPosting):
+                    is_active = 1 if x.status == "Active" else 0
+                    score = x.fit_score if x.fit_score is not None else -1
+                    verif_date = x.date_last_verified or x.date_first_seen or ""
+                    first_date = x.date_first_seen or ""
+                    content_len = len(x.raw_description or "") + len(x.summary or "")
+                    return (is_active, score, verif_date, first_date, content_len, x.id or "")
+
+                sorted_cluster = sorted(cluster, key=sort_key, reverse=True)
                 winner = sorted_cluster[0]
                 kept_jobs.append(winner)
 
                 for loser in sorted_cluster[1:]:
+                    # Preserve highest fit score & reason
+                    if winner.fit_score is None and loser.fit_score is not None:
+                        winner.fit_score = loser.fit_score
+                        winner.fit_reason = loser.fit_reason
+                    elif loser.fit_score is not None and (winner.fit_score or 0) < loser.fit_score:
+                        winner.fit_score = loser.fit_score
+                        winner.fit_reason = loser.fit_reason
+
                     if (not winner.salary or winner.salary == "Not specified") and loser.salary and loser.salary != "Not specified":
                         winner.salary = loser.salary
                     if (not winner.deadline or "open" in winner.deadline.lower()) and loser.deadline and "open" not in loser.deadline.lower():
@@ -400,9 +488,6 @@ class JobDeduplicator:
                         winner.date_last_verified = loser.date_last_verified
                     if loser.date_first_seen and (not winner.date_first_seen or loser.date_first_seen < winner.date_first_seen):
                         winner.date_first_seen = loser.date_first_seen
-                    if winner.fit_score is None and loser.fit_score is not None:
-                        winner.fit_score = loser.fit_score
-                        winner.fit_reason = loser.fit_reason
                     if not winner.research_topics and loser.research_topics:
                         winner.research_topics = loser.research_topics
                     if not winner.summary or ("..." in winner.summary and len(loser.summary or "") > len(winner.summary)):
@@ -411,20 +496,25 @@ class JobDeduplicator:
                     if winner.latitude is None and loser.latitude is not None and loser.longitude is not None:
                         winner.latitude = loser.latitude
                         winner.longitude = loser.longitude
+                    if (not winner.tenure_track or winner.tenure_track == "Unspecified") and loser.tenure_track and loser.tenure_track != "Unspecified":
+                        winner.tenure_track = loser.tenure_track
                     if "management" in (winner.institution or "").lower() and "technical university of denmark" in (loser.institution or "").lower():
                         winner.institution = loser.institution
                     elif (winner.institution or "").lower() == "dtu - technical university of denmark":
                         winner.institution = "Technical University of Denmark"
+                    systems = ("california state university", "university of colorado system", "city university of new york", "state university of new york")
+                    if any(s in (winner.institution or "").lower() for s in systems) and not any(s in (loser.institution or "").lower() for s in systems):
+                        winner.institution = loser.institution
+                        if loser.latitude is not None and loser.longitude is not None:
+                            winner.latitude = loser.latitude
+                            winner.longitude = loser.longitude
 
                     loser.status = f"Filtered (Duplicate of {winner.id[:8]} - {winner.title[:30]})"
                     duplicates.append(loser)
                     self.logger.info(
-                        f"Deduplicated: Kept '{winner.title}' ({winner.date_last_verified or winner.date_first_seen}), "
-                        f"filtered duplicate '{loser.title}' ({loser.date_last_verified or loser.date_first_seen}) at {winner.institution}"
+                        f"Deduplicated: Kept '{winner.title}' (Score {winner.fit_score}), "
+                        f"filtered duplicate '{loser.title}' (Score {loser.fit_score}) at {winner.institution}"
                     )
-
-        if duplicates:
-            self.save_filtered_jobs(duplicates)
 
         return kept_jobs, duplicates
 
