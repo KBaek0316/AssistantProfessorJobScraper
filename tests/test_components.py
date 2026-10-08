@@ -454,6 +454,80 @@ class TestComponents(unittest.TestCase):
             clean("Ohio State University"),
         )
 
+    def test_deduplicate_generic_open_position_polyu(self):
+        """Ensure generic 'Open position' / unspecified faculty titles deduplicate against specific positions."""
+        dedup = JobDeduplicator()
+
+        generic_posting = JobPosting(
+            id="polyu_generic",
+            title="Professor / Associate Professor / Assistant Professor",
+            institution="THE HONG KONG POLYTECHNIC UNIVERSITY",
+            field="Unspecified Department",
+            location="Hong Kong",
+            deadline="Open until filled",
+            salary="Competitive",
+            link="https://jobs.chronicle.com/job/38028368/professor-associate-professor-assistant-professor/",
+            source="Chronicle",
+            summary="Open rank faculty position at a polytechnic university requiring a Ph.D. in a relevant engineering or technology discipline.",
+            research_topics="Polytechnic Education, Engineering, Technology",
+            fit_score=5,
+            date_first_seen="2026-09-28",
+            date_last_verified="2026-10-01",
+        )
+
+        specific_posting = JobPosting(
+            id="polyu_specific",
+            title="Professor / Associate Professor / Assistant Professor in AI/Robotics for Aircraft Maintenance / Low-Altitude Economy / Satellite and Space Engineering",
+            institution="The Hong Kong Polytechnic University",
+            field="Department of Aeronautical and Aviation Engineering",
+            location="Hong Kong",
+            deadline="Open until filled",
+            salary="Not specified",
+            link="https://www.jobs.ac.uk/job/DSR599/professor-associate-professor-assistant-professor-in-ai-robotics-for-aircraft-maintenance-low-altitude-economy-satellite-and-space-engineering-under-strategic-hiring-scheme",
+            source="Jobs.ac.uk",
+            summary="Open rank faculty position focusing on AI and robotics for aviation and low-altitude economy applications requiring a Ph.D.",
+            research_topics="Low-Altitude Economy, AI and Robotics, Aviation Systems",
+            fit_score=5,
+            date_first_seen="2026-09-28",
+            date_last_verified="2026-10-08",
+        )
+
+        # Symmetrical match check
+        self.assertTrue(dedup.is_same_position(generic_posting, specific_posting))
+        self.assertTrue(dedup.is_same_position(specific_posting, generic_posting))
+
+        active, dupes = dedup.deduplicate_by_institution_department([generic_posting, specific_posting])
+        self.assertEqual(len(active), 1)
+        self.assertEqual(len(dupes), 1)
+
+        winner = active[0]
+        # Specific title and department must be retained
+        self.assertEqual(winner.id, "polyu_specific")
+        self.assertEqual(
+            winner.title,
+            "Professor / Associate Professor / Assistant Professor in AI/Robotics for Aircraft Maintenance / Low-Altitude Economy / Satellite and Space Engineering",
+        )
+        self.assertEqual(winner.field, "Department of Aeronautical and Aviation Engineering")
+        # Winner inherits competitive salary from generic posting
+        self.assertEqual(winner.salary, "Competitive")
+
+    def test_generic_title_and_unspecified_department_helpers(self):
+        """Verify helper methods for generic titles and unspecified departments."""
+        self.assertTrue(JobDeduplicator.is_generic_title("Professor / Associate Professor / Assistant Professor"))
+        self.assertTrue(JobDeduplicator.is_generic_title("Assistant Professor"))
+        self.assertTrue(JobDeduplicator.is_generic_title("Open Position"))
+        self.assertTrue(JobDeduplicator.is_generic_title("Faculty Openings"))
+        self.assertTrue(JobDeduplicator.is_generic_title("Open Rank Faculty"))
+        self.assertFalse(JobDeduplicator.is_generic_title("Assistant Professor of Transportation Engineering"))
+        self.assertFalse(JobDeduplicator.is_generic_title("Tenure-Track Assistant Professor in Urban Analytics"))
+
+        self.assertTrue(JobDeduplicator.is_unspecified_department("Unspecified Department"))
+        self.assertTrue(JobDeduplicator.is_unspecified_department("Not specified"))
+        self.assertTrue(JobDeduplicator.is_unspecified_department(""))
+        self.assertTrue(JobDeduplicator.is_unspecified_department(None))
+        self.assertFalse(JobDeduplicator.is_unspecified_department("Department of Civil and Environmental Engineering"))
+        self.assertFalse(JobDeduplicator.is_unspecified_department("School of Urban Planning"))
+
     def test_re_evaluate_missing_cli_flags(self):
         """Verify CLI argument defaults and flags for re-evaluating missing fit scores."""
         from job_scraper import parse_args

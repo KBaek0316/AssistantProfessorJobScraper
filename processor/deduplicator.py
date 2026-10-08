@@ -227,12 +227,15 @@ class JobDeduplicator:
         "department", "dept", "school", "college", "division", "faculty", "program",
         "of", "and", "the", "in", "for", "at", "to", "&", "/", ",", "-", "ids",
         "engineering", "sciences", "science", "studies", "center", "institute",
+        "unspecified", "not", "specified", "unknown", "none", "n/a", "na", "various", "multiple",
     }
 
     TITLE_STOPWORDS = {
         "assistant", "associate", "full", "tenure", "track", "tenured", "tenure-track",
         "professor", "professorship", "faculty", "open", "rank", "in", "of", "for", "at",
         "and", "the", "to", "&", "/", "-", "position", "positions",
+        "opening", "openings", "search", "hire", "hiring", "recruit", "recruitment",
+        "multiple", "all", "areas", "various", "posts", "post", "under", "scheme",
     }
 
     INSTITUTION_ALIASES = [
@@ -381,6 +384,38 @@ class JobDeduplicator:
         return set(re.findall(r"[a-z0-9]+", title.lower())) - cls.TITLE_STOPWORDS
 
     @classmethod
+    def is_generic_title(cls, title: str) -> bool:
+        """
+        Determines if a title consists purely of generic faculty/rank terms without a specific specialization.
+        E.g., 'Professor / Associate Professor / Assistant Professor', 'Open position', 'Faculty Openings'.
+        """
+        if not title:
+            return True
+        tokens = cls.get_title_tokens(title)
+        return len(tokens) == 0
+
+    @classmethod
+    def is_unspecified_department(cls, dept: str) -> bool:
+        """Determines if department is missing or generic/unspecified (e.g. 'Unspecified Department', 'Not specified')."""
+        if not dept:
+            return True
+        tokens = cls.get_dept_tokens(dept)
+        return len(tokens) == 0
+
+    @classmethod
+    def extract_job_references(cls, *texts: str) -> Set[str]:
+        """Extracts job reference or requisition codes from text/links (e.g., Ref. 260821001, Job Ref: DSR599)."""
+        refs = set()
+        for t in texts:
+            if not t:
+                continue
+            for m in re.finditer(r"\b(?:ref(?:erence)?|req(?:uisition)?|job\s*ref|job\s*id|advert\s*id|ref\s*no)[\s.:#-]+([a-z0-9\-_]{4,20})\b", t, re.IGNORECASE):
+                ref = m.group(1).strip().lower()
+                if not ref.isdigit() or len(ref) >= 4:
+                    refs.add(ref)
+        return refs
+
+    @classmethod
     def is_same_position(cls, j1: JobPosting, j2: JobPosting) -> bool:
         """Determines if two postings represent the same position at the same institution."""
         if not cls.is_same_institution(j1, j2):
@@ -393,6 +428,12 @@ class JobDeduplicator:
         # Conflicting subfields within same department are distinct positions
         if cls.has_conflicting_specializations(j1, j2):
             return False
+
+        # Shared job reference code check (e.g. Ref. 260821001)
+        refs1 = cls.extract_job_references(j1.title, j1.raw_description, j1.link)
+        refs2 = cls.extract_job_references(j2.title, j2.raw_description, j2.link)
+        if refs1 and refs2 and (refs1 & refs2):
+            return True
 
         d1 = cls.get_dept_tokens(j1.field)
         d2 = cls.get_dept_tokens(j2.field)
@@ -420,6 +461,36 @@ class JobDeduplicator:
         # 3. Moderate department and title overlap (e.g. UIC Operations Management / IDS)
         if title_ov >= 0.35 and (dept_ov >= 0.35 or not d1 or not d2):
             return True
+
+        # 4. Generic/Open Title subsumption / prefix matching
+        # When one title is a generic prefix of the other (e.g. 'Professor / Associate Professor / Assistant Professor'
+        # vs 'Professor / Associate Professor / Assistant Professor in AI/Robotics...')
+        # and the generic posting's department is either unspecified or matching:
+        gen1 = cls.is_generic_title(j1.title)
+        gen2 = cls.is_generic_title(j2.title)
+        unspec1 = cls.is_unspecified_department(j1.field)
+        unspec2 = cls.is_unspecified_department(j2.field)
+
+        if gen1 and (unspec1 or dept_ov >= 0.4 or not d2):
+            if raw_t2.startswith(raw_t1) and len(raw_t1) >= 10:
+                return True
+        if gen2 and (unspec2 or dept_ov >= 0.4 or not d1):
+            if raw_t1.startswith(raw_t2) and len(raw_t2) >= 10:
+                return True
+
+        # 5. Generic title + unspecified department matching specific posting when description/topics overlap
+        if gen1 and unspec1 and (d2 or t2):
+            text1 = f"{j1.raw_description} {j1.summary} {j1.research_topics}".lower()
+            tokens2 = d2 | t2
+            matched = [tok for tok in tokens2 if len(tok) >= 4 and tok in text1]
+            if len(matched) >= 2 or (d2 and any(tok in text1 for tok in d2)):
+                return True
+        if gen2 and unspec2 and (d1 or t1):
+            text2 = f"{j2.raw_description} {j2.summary} {j2.research_topics}".lower()
+            tokens1 = d1 | t1
+            matched = [tok for tok in tokens1 if len(tok) >= 4 and tok in text2]
+            if len(matched) >= 2 or (d1 and any(tok in text2 for tok in d1)):
+                return True
 
         return False
 
@@ -458,17 +529,24 @@ class JobDeduplicator:
                 # Rank: Highest quality / fit score first, then most recent verification and discovery dates
                 def sort_key(x: JobPosting):
                     is_active = 1 if x.status == "Active" else 0
+                    has_specifics = 1 if (not self.is_generic_title(x.title) and not self.is_unspecified_department(x.field)) else 0
                     score = x.fit_score if x.fit_score is not None else -1
                     verif_date = x.date_last_verified or x.date_first_seen or ""
                     first_date = x.date_first_seen or ""
                     content_len = len(x.raw_description or "") + len(x.summary or "")
-                    return (is_active, score, verif_date, first_date, content_len, x.id or "")
+                    return (is_active, has_specifics, score, verif_date, first_date, content_len, x.id or "")
 
                 sorted_cluster = sorted(cluster, key=sort_key, reverse=True)
                 winner = sorted_cluster[0]
                 kept_jobs.append(winner)
 
                 for loser in sorted_cluster[1:]:
+                    # Preserve specific title and department if winner had generic ones
+                    if self.is_generic_title(winner.title) and not self.is_generic_title(loser.title):
+                        winner.title = loser.title
+                    if self.is_unspecified_department(winner.field) and not self.is_unspecified_department(loser.field):
+                        winner.field = loser.field
+
                     # Preserve highest fit score & reason
                     if winner.fit_score is None and loser.fit_score is not None:
                         winner.fit_score = loser.fit_score

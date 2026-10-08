@@ -52,6 +52,11 @@ class ChronicleScraper(BaseScraper):
                                         if isinstance(addr, dict):
                                             parts = [addr.get("addressLocality"), addr.get("addressRegion"), addr.get("addressCountry")]
                                             location = ", ".join(p for p in parts if p)
+                                if data.get("description"):
+                                    desc_soup = BeautifulSoup(str(data["description"]), "html.parser")
+                                    ld_desc = desc_soup.get_text(" ", strip=True)
+                                    if len(ld_desc) > len(raw_text):
+                                        raw_text = ld_desc
                         except Exception:
                             pass
 

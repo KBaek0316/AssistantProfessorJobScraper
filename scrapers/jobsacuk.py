@@ -19,6 +19,18 @@ class JobsAcUkScraper(BaseScraper):
             resp = self.session.get(full_url, timeout=12)
             if resp.status_code == 200:
                 soup = BeautifulSoup(resp.text, "html.parser")
+                for s in soup.find_all("script", type="application/ld+json"):
+                    if s.string:
+                        try:
+                            import json
+                            data = json.loads(s.string)
+                            if isinstance(data, dict) and data.get("description"):
+                                desc_soup = BeautifulSoup(str(data["description"]), "html.parser")
+                                text = desc_soup.get_text(" ", strip=True)
+                                if len(text) > 100:
+                                    return text[:5000]
+                        except Exception:
+                            pass
                 content_div = (
                     soup.find("div", class_="enhanced-content")
                     or soup.find("div", class_=re.compile(r"job-description|j-job-details|content"))
