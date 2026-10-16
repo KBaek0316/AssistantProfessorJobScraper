@@ -74,7 +74,45 @@ Description: {raw_description}
 Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (str), clean_title, institution, department, tenure_track, deadline, salary, city_state, research_topics (list), concise_summary (str).
 """
 
-    def enrich_postings(self, postings: List[JobPosting]) -> List[JobPosting]:
+    def _get_evaluation_instructions(self) -> str:
+        """Extract the evaluation instructions section from the prompt template (eval_prompt.txt).
+
+        Allows custom user instructions in eval_prompt.txt to govern both batch and single evaluations.
+        """
+        template = self._get_prompt_template()
+        if "=== EVALUATION INSTRUCTIONS ===" in template:
+            parts = template.split("=== EVALUATION INSTRUCTIONS ===")
+            after = parts[1]
+            if "=== REQUIRED JSON OUTPUT FORMAT ===" in after:
+                instructions = after.split("=== REQUIRED JSON OUTPUT FORMAT ===")[0].strip()
+            elif "=== OUTPUT FORMAT ===" in after:
+                instructions = after.split("=== OUTPUT FORMAT ===")[0].strip()
+            else:
+                instructions = after.strip()
+            if instructions:
+                return instructions
+
+        return """1. Determine Position Eligibility & Seniority:
+   - Target positions: Tenure-track Assistant Professor, Open Rank Faculty searches that explicitly include Assistant Professor, and career-track university faculty appointments.
+   - EXCLUDE (set "is_faculty" to false or assign fit_score: 1 with explanatory fit_reason):
+     * Seniority-only roles: Pure Associate Professor (without Assistant), Full Professor, Department Chair, Division Chair, Dean.
+     * Contingent / part-time / non-degree roles: Adjunct Faculty/Professor, Lecturer in Continuing Education, Adult Education, Extension.
+     * Trainees and non-faculty staff: Postdocs, research fellows, technicians, staff.
+2. Evaluate Geographic Scope:
+   - Target Regions: US, Canada, Europe, Hong Kong, Singapore, Japan, South Korea, Taiwan.
+   - EXCLUDE: Non-target countries (e.g. Mainland China, Middle East, Latin America, South Asia, Africa). Set fit_score: 1 with fit_reason explaining location.
+3. Candidate Fit Score (1 to 10 scale):
+   Evaluate the posting against candidate's Core Field, Target Departments, and Research Specialties in the CANDIDATE PROFILE:
+   - 9-10 (Core Match): Dedicated Assistant Professor position directly matching candidate's primary field and core research specialties.
+   - 7-8 (Strong Interdisciplinary Match): Assistant Professor in related disciplines or target departments seeking candidate's core expertise.
+   - 5-6 (Broad Fit): Broad department search where candidate's subfield is an acceptable focus area.
+   - 3-4 (Low Fit): General department faculty searches with peripheral overlap.
+   - 1-2 (Screened Out / Irrelevant): Completely unrelated fields or non-matching subfields.
+4. Department & Focus Extraction:
+   - Extract official Department, School, or Division name from the posting body.
+5. Provide a concise, 1-sentence "fit_reason"."""
+
+    def enrich_postings(self, postings: List[JobPosting], is_update_mode: bool = False) -> List[JobPosting]:
         """Enrich a list of job postings with Gemini structured data and fit scores."""
         if not postings:
             return postings
@@ -86,17 +124,17 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
                     p.summary = p.raw_description[:200] + "..." if len(p.raw_description) > 200 else p.raw_description
             return postings
 
-        self.logger.info(f"Enriching {len(postings)} job postings with Gemini ({self.model_name})...")
+        self.logger.info(f"Enriching {len(postings)} job postings with Gemini ({self.model_name}) [update_mode={is_update_mode}]...")
         import time
 
-        # Pre-filter obvious non-faculty and out-of-scope locations
+        # Pre-filter obvious non-faculty and out-of-scope locations (only for fresh evaluation, preserve existing jobs in update mode)
         to_call_llm = []
         for p in postings:
-            if not JobPosting.is_valid_faculty_posting(p.title, p.raw_description or p.summary):
+            if not is_update_mode and not JobPosting.is_valid_faculty_posting(p.title, p.raw_description or p.summary):
                 p.status = "Filtered (Non-Faculty / Seniority / Adjunct)"
                 p.fit_score = 1
                 p.fit_reason = f"Screened out: Position title '{p.title}' is senior-only, adjunct, continuing education, or non-faculty."
-            elif p.location and not JobPosting.is_allowed_location(p.location):
+            elif not is_update_mode and p.location and not JobPosting.is_allowed_location(p.location):
                 p.status = "Filtered (Location Outside Scope)"
                 p.fit_score = 1
                 p.fit_reason = f"Screened out: Location '{p.location}' is outside target geographic scope."
@@ -108,14 +146,14 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
                 batch_size = 5
                 for i in range(0, len(to_call_llm), batch_size):
                     chunk = to_call_llm[i:i + batch_size]
-                    success = self._enrich_batch(chunk)
+                    success = self._enrich_batch(chunk, is_update_mode=is_update_mode)
                     if not success:
                         for p in chunk:
-                            self._enrich_single(p)
+                            self._enrich_single(p, is_update_mode=is_update_mode)
                     if i + batch_size < len(to_call_llm):
                         time.sleep(1.5)
             else:
-                self._enrich_single(to_call_llm[0])
+                self._enrich_single(to_call_llm[0], is_update_mode=is_update_mode)
 
         for p in postings:
             if not p.summary:
@@ -123,7 +161,7 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
 
         return postings
 
-    def _enrich_batch(self, batch: List[JobPosting]) -> bool:
+    def _enrich_batch(self, batch: List[JobPosting], is_update_mode: bool = False) -> bool:
         """Enrich a batch of JobPosting objects in a single structured Gemini call."""
         if not batch:
             return True
@@ -157,12 +195,15 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
                 "id": p.id,
                 "title": p.title,
                 "institution": p.institution,
+                "department": p.field or "Academic Department",
                 "location": p.location,
                 "source": p.source,
+                "existing_topics": p.research_topics or "",
                 "raw_description": desc[:3000],
             })
         self._save_description_cache(desc_cache)
 
+        instructions = self._get_evaluation_instructions()
         prompt = f"""You are an academic hiring specialist and faculty search advisor.
 Analyze the following academic job postings and evaluate their relevance against the candidate's research profile.
 
@@ -171,24 +212,7 @@ Analyze the following academic job postings and evaluate their relevance against
 Target Positions: Tenure-track Assistant Professor, Open Rank Faculty searches inclusive of Assistant Professor, or career-track university teaching faculty appointments.
 
 === EVALUATION INSTRUCTIONS ===
-1. Determine Position Eligibility & Seniority:
-   - Target positions: Tenure-track Assistant Professor, Open Rank Faculty searches that explicitly include Assistant Professor, and career-track university faculty appointments.
-   - EXCLUDE (set "is_faculty" to false or assign fit_score: 1 with explanatory fit_reason):
-     * Seniority-only roles: Pure Associate Professor (without Assistant), Full Professor, Department Chair, Division Chair, Dean.
-     * Contingent / part-time / non-degree roles: Adjunct Faculty/Professor, Lecturer in Continuing Education, Adult Education, Extension.
-     * Trainees and non-faculty staff: Postdocs, research fellows, technicians, staff.
-2. Evaluate Geographic Scope:
-   - Target Regions: US, Canada, Europe, Hong Kong, Singapore, Japan, South Korea, Taiwan.
-   - EXCLUDE: Non-target countries (e.g. Mainland China, Middle East, Latin America, South Asia, Africa). Set fit_score: 1 with fit_reason explaining location.
-3. Candidate Fit Score (1 to 10 scale):
-   - 9-10 (Core Match): Dedicated Assistant Professor position directly matching candidate's primary field (Transportation Engineering / Mobility / Transit Systems / Traffic Operations).
-   - 7-8 (Strong Interdisciplinary Match): Assistant Professor in related disciplines (Civil, Urban Planning/Analytics, Industrial/Systems Engineering) seeking mobility/transportation/smart cities expertise.
-   - 5-6 (Broad Fit): Broad department search where transportation/mobility/analytics is an acceptable focus area.
-   - 3-4 (Low Fit): General department faculty searches with peripheral overlap.
-   - 1-2 (Screened Out / Irrelevant): Completely unrelated fields (Nursing, Pharmacy, Law, Sports Media, First-Year general teaching, etc.).
-4. Department & Focus Extraction:
-   - Extract official Department, School, or Division name from the posting body.
-5. Provide a concise, 1-sentence "fit_reason".
+{instructions}
 
 === POSTINGS TO EVALUATE ===
 {json.dumps(batch_input, indent=2)}
@@ -249,7 +273,13 @@ Return strictly a JSON array of objects (one per evaluated job) with fields:
                 if response_text:
                     break
             except Exception as err:
-                self.logger.warning(f"Batch call failed on '{m}': {err}. Trying next model...")
+                err_msg = str(err)
+                if any(x in err_msg for x in ("503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "high demand", "quota")):
+                    self.logger.warning(f"Batch call on '{m}' hit rate limit/service spike ({err}). Sleeping 10s before retry...")
+                    import time
+                    time.sleep(10)
+                else:
+                    self.logger.warning(f"Batch call failed on '{m}': {err}. Trying next model...")
                 continue
 
         if not response_text:
@@ -270,7 +300,8 @@ Return strictly a JSON array of objects (one per evaluated job) with fields:
                     continue
 
                 if data.get("is_faculty") is False:
-                    posting.status = "Filtered (Non-Faculty / Seniority)"
+                    if not is_update_mode:
+                        posting.status = "Filtered (Non-Faculty / Seniority)"
                     posting.fit_score = 1
                     if data.get("fit_reason"):
                         posting.fit_reason = str(data["fit_reason"]).strip()
@@ -284,17 +315,23 @@ Return strictly a JSON array of objects (one per evaluated job) with fields:
                     if data.get("fit_reason"):
                         posting.fit_reason = str(data["fit_reason"]).strip()
 
-                    if posting.fit_score is not None and posting.fit_score < self.min_fit_score:
-                        posting.status = "Filtered (Low Relevance)"
+                    if not is_update_mode:
+                        if posting.fit_score is not None and posting.fit_score < self.min_fit_score:
+                            posting.status = "Filtered (Low Relevance)"
 
                 if data.get("clean_title"):
                     clean_t = data["clean_title"].strip()
                     if JobPosting.is_valid_faculty_posting(clean_t, posting.raw_description):
-                        posting.title = clean_t
+                        if not is_update_mode or not posting.title or posting.title.strip().lower() in ("faculty openings", "faculty position", "open rank", "professor"):
+                            posting.title = clean_t
                 if data.get("institution"):
-                    posting.institution = data["institution"].strip()
+                    inst = data["institution"].strip()
+                    if not posting.institution or not is_update_mode:
+                        posting.institution = inst
                 if data.get("department"):
-                    posting.field = data["department"].strip()
+                    dept = data["department"].strip()
+                    if not posting.field or not is_update_mode:
+                        posting.field = dept
                 if data.get("tenure_track"):
                     posting.tenure_track = data["tenure_track"].strip()
                 if data.get("deadline"):
@@ -305,11 +342,12 @@ Return strictly a JSON array of objects (one per evaluated job) with fields:
                 if data.get("city_state"):
                     posting.location = data["city_state"].strip()
 
-                country = str(data.get("country", "")).strip()
-                if not JobPosting.is_allowed_location(posting.location, country):
-                    posting.status = "Filtered (Location Outside Scope)"
-                    posting.fit_score = 1
-                    posting.fit_reason = f"Screened out: Location '{posting.location}' is outside target geographic scope."
+                if not is_update_mode:
+                    country = str(data.get("country", "")).strip()
+                    if not JobPosting.is_allowed_location(posting.location, country):
+                        posting.status = "Filtered (Location Outside Scope)"
+                        posting.fit_score = 1
+                        posting.fit_reason = f"Screened out: Location '{posting.location}' is outside target geographic scope."
 
                 topics_data = data.get("research_topics", [])
                 if isinstance(topics_data, list):
@@ -440,9 +478,9 @@ Return strictly a JSON array of objects (one per evaluated job) with fields:
 
         raise ValueError(f"Could not parse valid JSON from LLM response: {text[:200]}...")
 
-    def _enrich_single(self, posting: JobPosting):
-        # 0. Immediate Title-Level Seniority, Adjunct & Continuing Ed Pre-Filter
-        if not JobPosting.is_valid_faculty_posting(posting.title, posting.raw_description or posting.summary):
+    def _enrich_single(self, posting: JobPosting, is_update_mode: bool = False):
+        # 0. Immediate Title-Level Seniority, Adjunct & Continuing Ed Pre-Filter (only in fresh evaluation)
+        if not is_update_mode and not JobPosting.is_valid_faculty_posting(posting.title, posting.raw_description or posting.summary):
             posting.status = "Filtered (Non-Faculty / Seniority / Adjunct)"
             posting.fit_score = 1
             posting.fit_reason = f"Screened out: Position title '{posting.title}' is senior-only, adjunct, continuing education, or non-faculty."
@@ -536,7 +574,13 @@ Return strictly a JSON array of objects (one per evaluated job) with fields:
                     break
             except Exception as err:
                 last_error = err
-                self.logger.warning(f"Model '{m}' call failed: {err}. Trying next candidate model...")
+                err_msg = str(err)
+                if any(x in err_msg for x in ("503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "high demand", "quota")):
+                    self.logger.warning(f"Single enrichment call on '{m}' hit rate limit/service spike ({err}). Sleeping 10s before retry...")
+                    import time
+                    time.sleep(10)
+                else:
+                    self.logger.warning(f"Model '{m}' call failed: {err}. Trying next candidate model...")
                 continue
 
         if not response_text:
@@ -548,7 +592,8 @@ Return strictly a JSON array of objects (one per evaluated job) with fields:
 
         # 1. Non-faculty / senior role check from LLM
         if data.get("is_faculty") is False:
-            posting.status = "Filtered (Non-Faculty / Seniority)"
+            if not is_update_mode:
+                posting.status = "Filtered (Non-Faculty / Seniority)"
             posting.fit_score = 1
             if data.get("fit_reason"):
                 posting.fit_reason = str(data["fit_reason"]).strip()
@@ -566,19 +611,24 @@ Return strictly a JSON array of objects (one per evaluated job) with fields:
         if data.get("fit_reason"):
             posting.fit_reason = str(data["fit_reason"]).strip()
 
-        # Weak screening filter: flag jobs with fit score below threshold
-        if posting.fit_score is not None and posting.fit_score < self.min_fit_score:
+        # Weak screening filter: flag jobs with fit score below threshold (only in fresh evaluation)
+        if not is_update_mode and posting.fit_score is not None and posting.fit_score < self.min_fit_score:
             posting.status = "Filtered (Low Relevance)"
 
         # 3. Update posting attributes
         if data.get("clean_title"):
             clean_t = data["clean_title"].strip()
             if JobPosting.is_valid_faculty_posting(clean_t, posting.raw_description):
-                posting.title = clean_t
+                if not is_update_mode or not posting.title or posting.title.strip().lower() in ("faculty openings", "faculty position", "open rank", "professor"):
+                    posting.title = clean_t
         if data.get("institution"):
-            posting.institution = data["institution"].strip()
+            inst = data["institution"].strip()
+            if not posting.institution or not is_update_mode:
+                posting.institution = inst
         if data.get("department"):
-            posting.field = data["department"].strip()
+            dept = data["department"].strip()
+            if not posting.field or not is_update_mode:
+                posting.field = dept
         if data.get("tenure_track"):
             posting.tenure_track = data["tenure_track"].strip()
         if data.get("deadline"):
@@ -599,11 +649,12 @@ Return strictly a JSON array of objects (one per evaluated job) with fields:
             posting.location = data["city_state"].strip()
 
         # 4. Geographic scope validation
-        country = str(data.get("country", "")).strip()
-        if not JobPosting.is_allowed_location(posting.location, country):
-            posting.status = "Filtered (Location Outside Scope)"
-            posting.fit_score = 1
-            posting.fit_reason = f"Screened out: Location '{posting.location}' is outside target geographic scope (US, Europe, HK, Singapore, Japan, Korea, Taiwan; excluding Mainland China)."
+        if not is_update_mode:
+            country = str(data.get("country", "")).strip()
+            if not JobPosting.is_allowed_location(posting.location, country):
+                posting.status = "Filtered (Location Outside Scope)"
+                posting.fit_score = 1
+                posting.fit_reason = f"Screened out: Location '{posting.location}' is outside target geographic scope (US, Europe, HK, Singapore, Japan, Korea, Taiwan; excluding Mainland China)."
 
         # Handle research topics
         topics_data = data.get("research_topics", [])

@@ -564,25 +564,25 @@ class MapGenerator:
                             <input type="checkbox" class="score-filter-cb" value="tier_9_10" checked onchange="applyFilters()" style="cursor: pointer;">
                             <span style="width: 10px; height: 10px; border-radius: 50%; background: #2d6a4f; display: inline-block;"></span>
                             <span style="flex-grow: 1;"><b>9–10:</b> Outstanding Match</span>
-                            <span style="color: #64748b; font-size: 11px; font-weight: 600;">({score_tiers_def['tier_9_10']['count']})</span>
+                            <span id="count-score-tier_9_10" style="color: #64748b; font-size: 11px; font-weight: 600;">({score_tiers_def['tier_9_10']['count']})</span>
                         </label>
                         <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
                             <input type="checkbox" class="score-filter-cb" value="tier_7_8" checked onchange="applyFilters()" style="cursor: pointer;">
                             <span style="width: 10px; height: 10px; border-radius: 50%; background: #52b788; display: inline-block;"></span>
                             <span style="flex-grow: 1;"><b>7–8:</b> Strong Match</span>
-                            <span style="color: #64748b; font-size: 11px; font-weight: 600;">({score_tiers_def['tier_7_8']['count']})</span>
+                            <span id="count-score-tier_7_8" style="color: #64748b; font-size: 11px; font-weight: 600;">({score_tiers_def['tier_7_8']['count']})</span>
                         </label>
                         <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
                             <input type="checkbox" class="score-filter-cb" value="tier_5_6" checked onchange="applyFilters()" style="cursor: pointer;">
                             <span style="width: 10px; height: 10px; border-radius: 50%; background: #f77f00; display: inline-block;"></span>
                             <span style="flex-grow: 1;"><b>5–6:</b> Moderate Match</span>
-                            <span style="color: #64748b; font-size: 11px; font-weight: 600;">({score_tiers_def['tier_5_6']['count']})</span>
+                            <span id="count-score-tier_5_6" style="color: #64748b; font-size: 11px; font-weight: 600;">({score_tiers_def['tier_5_6']['count']})</span>
                         </label>
                         <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
                             <input type="checkbox" class="score-filter-cb" value="tier_3_4" checked onchange="applyFilters()" style="cursor: pointer;">
                             <span style="width: 10px; height: 10px; border-radius: 50%; background: #fb6f92; display: inline-block;"></span>
                             <span style="flex-grow: 1;"><b>3–4:</b> Low Match</span>
-                            <span style="color: #64748b; font-size: 11px; font-weight: 600;">({score_tiers_def['tier_3_4']['count']})</span>
+                            <span id="count-score-tier_3_4" style="color: #64748b; font-size: 11px; font-weight: 600;">({score_tiers_def['tier_3_4']['count']})</span>
                         </label>
                     </div>
                 </div>
@@ -601,27 +601,27 @@ class MapGenerator:
                         <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
                             <input type="checkbox" class="dl-filter-cb" value="urgent" checked onchange="applyFilters()" style="cursor: pointer;">
                             <span style="flex-grow: 1;">🔥 Deadline ≤ 7 Days</span>
-                            <span style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['urgent']['count']})</span>
+                            <span id="count-dl-urgent" style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['urgent']['count']})</span>
                         </label>
                         <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
                             <input type="checkbox" class="dl-filter-cb" value="closing_soon" checked onchange="applyFilters()" style="cursor: pointer;">
                             <span style="flex-grow: 1;">⚡ Deadline in 8–30 Days</span>
-                            <span style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['closing_soon']['count']})</span>
+                            <span id="count-dl-closing_soon" style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['closing_soon']['count']})</span>
                         </label>
                         <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
                             <input type="checkbox" class="dl-filter-cb" value="future" checked onchange="applyFilters()" style="cursor: pointer;">
                             <span style="flex-grow: 1;">📅 Deadline > 30 Days</span>
-                            <span style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['future']['count']})</span>
+                            <span id="count-dl-future" style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['future']['count']})</span>
                         </label>
                         <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
                             <input type="checkbox" class="dl-filter-cb" value="open" checked onchange="applyFilters()" style="cursor: pointer;">
                             <span style="flex-grow: 1;">🟢 Open Until Filled / Rolling</span>
-                            <span style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['open']['count']})</span>
+                            <span id="count-dl-open" style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['open']['count']})</span>
                         </label>
                         <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
                             <input type="checkbox" class="dl-filter-cb" value="passed" checked onchange="applyFilters()" style="cursor: pointer;">
                             <span style="flex-grow: 1;">⏳ Passed (≤ 30d ago)</span>
-                            <span style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['passed']['count']})</span>
+                            <span id="count-dl-passed" style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['passed']['count']})</span>
                         </label>
                     </div>
                 </div>
@@ -675,6 +675,7 @@ class MapGenerator:
                         {js_items_str}
                     ];
                     initPanelState();
+                    applyFilters();
                 }}
 
                 window.toggleFilterPanel = function(show) {{
@@ -714,10 +715,36 @@ class MapGenerator:
                     var dlCheckboxes = document.querySelectorAll('.dl-filter-cb:checked');
                     var activeDeadlines = Array.from(dlCheckboxes).map(function(cb) {{ return cb.value; }});
 
+                    // Dynamic count tallies conditioned on the complementary filter axis
+                    var dlCounts = {{
+                        urgent: 0,
+                        closing_soon: 0,
+                        future: 0,
+                        open: 0,
+                        passed: 0
+                    }};
+
+                    var scoreCounts = {{
+                        tier_9_10: 0,
+                        tier_7_8: 0,
+                        tier_5_6: 0,
+                        tier_3_4: 0
+                    }};
+
                     var visibleCount = 0;
                     allMarkers.forEach(function(item) {{
                         var matchScore = activeScores.indexOf(item.scoreTier) !== -1;
                         var matchDeadline = activeDeadlines.indexOf(item.deadlineCat) !== -1;
+
+                        // Deadline urgency counts reflect currently active Fit Scores
+                        if (matchScore && dlCounts.hasOwnProperty(item.deadlineCat)) {{
+                            dlCounts[item.deadlineCat]++;
+                        }}
+
+                        // Fit Score tier counts reflect currently active Deadline Urgencies
+                        if (matchDeadline && scoreCounts.hasOwnProperty(item.scoreTier)) {{
+                            scoreCounts[item.scoreTier]++;
+                        }}
 
                         if (matchScore && matchDeadline) {{
                             if (!clusterGroup.hasLayer(item.marker)) {{
@@ -730,6 +757,22 @@ class MapGenerator:
                             }}
                         }}
                     }});
+
+                    // Update deadline category badges in the DOM
+                    for (var dlKey in dlCounts) {{
+                        var dlElem = document.getElementById('count-dl-' + dlKey);
+                        if (dlElem) {{
+                            dlElem.innerText = '(' + dlCounts[dlKey] + ')';
+                        }}
+                    }}
+
+                    // Update fit score tier badges in the DOM
+                    for (var sKey in scoreCounts) {{
+                        var scoreElem = document.getElementById('count-score-' + sKey);
+                        if (scoreElem) {{
+                            scoreElem.innerText = '(' + scoreCounts[sKey] + ')';
+                        }}
+                    }}
 
                     var counterElem = document.getElementById('visible-job-count');
                     if (counterElem) {{
@@ -773,6 +816,9 @@ class MapGenerator:
 
             # 7. Add LayerControl for base layers (placed bottom-left to avoid colliding with upper-right filter)
             folium.LayerControl(collapsed=True, position='bottomleft').add_to(job_map)
+            map_dir = os.path.dirname(os.path.abspath(self.output_filepath))
+            if map_dir:
+                os.makedirs(map_dir, exist_ok=True)
             job_map.save(self.output_filepath)
             self.logger.info(f"Generated interactive map with {plotted_count} locations across 2-way filters at {self.output_filepath}")
 

@@ -43,15 +43,25 @@ Job Description / Text Snippet:
 
 3. Calibrated Candidate Fit Score (1 to 10 scale):
    Evaluate the posting against the candidate's Core Field, Target Departments, and Research Specialties in the CANDIDATE PROFILE:
-   - 9-10 (Core Match): Dedicated Assistant Professor position directly matching the candidate's primary field and core research specialties (e.g., searches specifically seeking expertise in the candidate's primary subdiscipline or core research topics).
-   - 7-8 (Strong Interdisciplinary Match): Assistant Professor or career-track faculty in related disciplines or departments (listed under Target Departments) that explicitly seek applications to the candidate's core domain, research methods, or interdisciplinary specialties.
-   - 6-7 (Multi-Track / Broad Fit): Broad or open-subdiscipline searches within the candidate's primary department where the candidate's subfield is explicitly listed as one of several acceptable focus areas.
+   - 9-10 (Core Match): Dedicated Assistant Professor position directly matching the candidate's primary field and core research specialties (e.g., searches specifically seeking expertise in Transportation Engineering, Transit Planning, Mobility Systems, Travel Behavior, or Intelligent Transportation Systems).
+   - 7-8 (Strong Match / Core Department Faculty Searches):
+     * Faculty searches in primary target departments — specifically Civil & Environmental Engineering (CEE) or Urban & Regional Planning / Public Affairs — seeking candidates in transportation engineering, systems, urban mobility, infrastructure systems, or broad/open-discipline CEE searches where transportation/infrastructure is an eligible track (e.g. Georgia Tech CEE, UT Arlington Civil Engineering, Northeastern CEE).
+     * Assistant Professor or career-track faculty in related disciplines (e.g., Urban Informatics, Spatial Data Science, Applied Geography) that explicitly seek transportation, transit, or mobility analytics applications.
+   - 5-6 (Moderate Fit / Peripheral Interdisciplinary):
+     * Broad interdisciplinary department searches (e.g. general Computer Science, general Environmental Studies, Systems Engineering) with general data science or network modeling overlap, but lacking a dedicated transportation or mobility focus.
    - 3-4 (Low / Poor Fit):
-     * General department faculty searches that do NOT explicitly mention or prioritize the candidate's subfield or research specialties.
-     * Peripheral departments or business/policy schools with only incidental overlap.
+     * General engineering or social science faculty searches that do NOT explicitly mention or prioritize transportation, passenger transit, or travel behavior.
+     * Peripheral business or public policy departments with only incidental overlap.
    - 1-2 (Screened Out / Irrelevant):
-     * Non-matching subdisciplines listed under 'Irrelevant / Non-Matching Subfields' that have NO component of the candidate's core expertise — even if incidental external agencies, partners, or data sources are mentioned.
-     * Positions seeking senior-only appointments, adjuncts, continuing education, or completely unrelated fields (Nursing, Film, Pharmacy, K-12, etc.).
+     * Non-matching subdisciplines listed under 'Irrelevant / Non-Matching Subfields' that have NO component of the candidate's core expertise.
+     * Positions seeking senior-only appointments, adjuncts, continuing education, or completely unrelated fields.
+
+   *** MANDATORY SCORE CEILINGS (MAXIMUM 5 POINTS / NEVER IN TOP TIERS 7+) ***
+   The following areas MUST NOT receive more than 5 points under any circumstances (assign 2-4 points; never assign 7 or above):
+   a. "Heavy" Industrial Engineering Focus: Positions in Industrial Engineering, Systems Engineering, Operations Research, or Engineering Management focused on manufacturing, production systems, human factors/ergonomics, facility logistics, or general supply optimization without a primary, explicit focus on public transit networks or passenger travel behavior. (CAP: maximum 5, typically 2-4).
+   b. Robotics, Mechatronics, & Embodied Systems: Positions in Mechanical Engineering, Electrical Engineering, or Computer Science focused on robotics, physical robotic hardware, autonomous vehicle mechanical actuators/sensors, mechatronics, embodied AI, humanoid robots, or physical control theory. (CAP: maximum 5, typically 2-4).
+   c. Supply Chain Management & Freight Logistics: Positions in Business Schools, Management Schools, or Supply Chain departments focused on commercial supply chains, freight operations, inventory management, warehousing logistics, or procurement analytics. (CAP: maximum 5, typically 2-4).
+   d. Non-Transportation Civil Engineering Subdisciplines: Positions in Civil Engineering specifically dedicated to Water Resources/Hydrology, Structural Engineering, Geotechnical Engineering, Environmental Chemistry, or Pavement/Materials. (CAP: maximum 3, typically 1-2).
 
 4. Department & Focus Extraction:
    - Diligently extract the official Department, School, or Division name from the posting body (e.g., "Department of Civil and Environmental Engineering", "Department of Industrial Engineering", etc.). NEVER leave department as "Not specified" if any department, school, college, or subject focus is mentioned in the text.

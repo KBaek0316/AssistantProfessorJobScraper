@@ -18,12 +18,14 @@ It collects postings from **5 major academic job platforms** ([AcademicKeys](htt
   - Dynamically extracts your research profile, target departments, and subdiscipline boundaries directly from **`CV.pdf`**.
   - Assigns a calibrated **1 to 10 Fit Score** and a concise **Fit Reason** explaining why each job is a match or mismatch.
   - Highly portable: simply replace `CV.pdf` with your own CV to evaluate positions in any field (e.g. Computer Science, Economics, Mechanical Engineering).
+- **User-Editable Search Queries (`search_queries.txt`)**:
+  - Customize search keywords across all 5 job boards simply by editing [search_queries.txt](search_queries.txt) (one query per line). No Python coding or CLI flags required.
 - **Weak Relevance Screening Filter**:
-  - Automatically screens out non-faculty positions (senior-only, adjuncts, postdocs) and irrelevant subfields (e.g. positions without transportation/mobility focus, water resources, structures, or non-engineering disciplines).
+  - Automatically screens out non-faculty positions (senior-only, adjuncts, postdocs) and irrelevant subfields.
   - Screened-out postings are excluded from active outputs and cached in `.cache/filtered_jobs.json` to avoid redundant LLM calls.
   - Configurable sensitivity via `--min-fit-score` (default: `3`).
 - **User-Editable Evaluation Prompt (`eval_prompt.txt`)**:
-  - Fine-tune Gemini's evaluation criteria, target geographic scope, or degree requirements simply by editing [eval_prompt.txt](eval_prompt.txt).
+  - Fine-tune Gemini's evaluation criteria, target geographic scope, or degree requirements simply by editing [eval_prompt.txt](eval_prompt.txt). Governs both batch and single evaluations dynamically.
 - **Interactive Map & GitHub Pages Dashboard (`map.html` & `index.html`)**:
   - Built with Folium, Leaflet, and high-reliability Esri basemaps.
   - University markers clustered and color-coded by fit score (dark green for 9–10, green for 7–8, orange for 5–6, red for 3–4).
@@ -167,16 +169,20 @@ To allow the daily GitHub Action to run automatically in the cloud:
 If you downloaded or forked this repository and want to run it for your own academic faculty job search, follow this simple walkthrough. **No advanced programming knowledge required.**
 
 ### Step 1: Prepare Your Personal Files
-1. **Your CV**: Replace `CV.pdf` in the project root folder with your own academic CV (keep the filename as `CV.pdf`, or use `--cv-path path/to/your_cv.pdf`).
-2. **Your Free Gemini API Key**:
+1. **Your CV**: Replace `CV.pdf` in the project root folder with your own academic CV (keep the filename as `CV.pdf`, or specify `--cv-path path/to/your_cv.pdf`). The system automatically detects file changes via content hashing and re-extracts your research profile.
+2. **Your Search Queries**:
+   - Open [search_queries.txt](search_queries.txt) in any text editor.
+   - Replace or add keywords for your specific discipline (e.g. `Assistant Professor Computer Science`, `Assistant Professor Machine Learning`, `Assistant Professor Economics`).
+   - All active job boards will automatically search for these terms during both local and GitHub Actions daily runs.
+3. **Your Evaluation Criteria (Optional)**:
+   - Open [eval_prompt.txt](eval_prompt.txt) in any text editor.
+   - The prompt dynamically reads `{candidate_profile}` directly from your `CV.pdf`. You can customize the geographic scope, target positions, or degree requirements if desired.
+4. **Your Free Gemini API Key**:
    - Get a free key in 30 seconds at [Google AI Studio](https://aistudio.google.com/) (click **Get API key** &rarr; **Create API key**). No credit card required.
    - In the project folder, create or open your `.env` file (copy `.env.example` and rename it to `.env`), and paste your key:
      ```env
      GEMINI_API_KEY=your_actual_key_here
      ```
-3. **Your Evaluation Criteria (Optional)**:
-   - Open [eval_prompt.txt](eval_prompt.txt) in any text editor (Notepad, TextEdit, VS Code).
-   - The prompt dynamically reads `{candidate_profile}` directly from your `CV.pdf`. You can customize the geographic regions, target positions, or departmental boundaries if desired.
 
 ---
 
@@ -216,7 +222,7 @@ If you forked this repository to your personal GitHub account:
 1. **Add Your Gemini API Key to GitHub**:
    - In your GitHub fork, navigate to **Settings > Secrets and variables > Actions**.
    - Click **New repository secret**, name it `GEMINI_API_KEY`, and paste your key.
-2. **Commit your `CV.pdf` and `eval_prompt.txt`** to your repository's `main` branch.
+2. **Commit your `CV.pdf`, `search_queries.txt`, and `eval_prompt.txt`** to your repository's `main` branch.
 3. **Trigger an Immediate Run**:
    - Go to the **Actions** tab at the top of your GitHub repository.
    - In the left sidebar, click **Daily Academic Job Scraper**.
@@ -238,7 +244,7 @@ Once the update completes, explore your personalized faculty openings:
 ## Command-Line Options & Advanced Usage
 
 ### Basic CLI Run
-Run with default settings (scrapes Transportation and Mobility queries across all 5 platforms):
+Run with default settings (automatically reads queries from `search_queries.txt` across all 5 platforms):
 ```bash
 python job_scraper.py
 ```
@@ -246,8 +252,11 @@ python job_scraper.py
 ### Advanced Options
 
 ```bash
-# Custom search query (comma-separated)
-python job_scraper.py --query "Assistant Professor Transportation Engineering, Assistant Professor Mobility"
+# Specify a custom search queries file (default: search_queries.txt)
+python job_scraper.py --queries-file search_queries.txt
+
+# Override search queries directly via command line (comma-separated)
+python job_scraper.py --query "Assistant Professor Computer Science, Assistant Professor Machine Learning"
 
 # Adjust max listings fetched per source (default: 20)
 python job_scraper.py --max-per-source 30
@@ -302,6 +311,22 @@ python job_scraper.py --skip-sheets
 
 ---
 
+## Built-in Fallbacks & Multi-Disciplinary Customization
+
+This aggregator is architected with defensive fallbacks to ensure automated runs (e.g. daily GitHub Actions) complete safely even if external services, APIs, or files are temporarily missing:
+
+1. **Safe Offline Fallbacks**:
+   - If `CV.pdf` is not uploaded or unreadable, the system defaults to a built-in profile rather than crashing.
+   - If `search_queries.txt` is missing, the scraper defaults to safe built-in search terms.
+   - When running with `--skip-gemini` (or without a Gemini API key), raw scraper fields and placeholder department names are preserved safely.
+2. **AcademicKeys Discipline Subdomain**:
+   - By default, [`AcademicKeysScraper`](scrapers/academickeys.py) queries `https://engineering.academickeys.com/seeker_search.php`.
+   - If your field is outside engineering, you can edit `SEARCH_URL` in [`scrapers/academickeys.py`](scrapers/academickeys.py) to point to your respective AcademicKeys portal (e.g., `sciences.academickeys.com`, `socsci.academickeys.com`, `med.academickeys.com`, or `univ.academickeys.com`).
+3. **Pre-Screening Filters**:
+   - [`JobPosting.is_valid_faculty_posting`](scrapers/base.py) screens out postdocs, technicians, research fellows, adjuncts, continuing education, and senior-only positions (pure Associate or Full Professor, Department Chair, Dean) to preserve tenure-track Assistant Professor listings.
+
+---
+
 ## Output Files
 
 Once the script completes, the following files are updated in the project directory:
@@ -348,6 +373,7 @@ AssistantProfessorJobScraper/
 ├── .env.example                    # Template for environment variables & API keys
 ├── .gitignore                      # Protects secrets (.env, credentials.json, .cache/)
 ├── requirements.txt                # Python package dependencies
+├── search_queries.txt              # User-editable search queries (one per line)
 ├── eval_prompt.txt                 # User-editable Gemini evaluation prompt template
 ├── CV.pdf                          # Candidate CV for automated profile matching
 ├── job_scraper.py                  # Main CLI entrypoint

@@ -607,6 +607,91 @@ class TestComponents(unittest.TestCase):
         self.assertEqual(winner.field, "DTU Management")
         self.assertEqual(winner.fit_score, 10)
 
+    def test_load_search_queries(self):
+        """Verify load_search_queries behavior with CLI args, custom files, and defaults."""
+        from job_scraper import load_search_queries, DEFAULT_QUERIES
+        import tempfile
+
+        # 1. CLI query takes highest precedence
+        res = load_search_queries(cli_query="Assistant Professor AI, Assistant Professor Robotics")
+        self.assertEqual(res, ["Assistant Professor AI", "Assistant Professor Robotics"])
+
+        # 2. File parsing with comments and whitespace
+        with tempfile.NamedTemporaryFile("w", delete=False, suffix=".txt", encoding="utf-8") as tf:
+            tf.write("# Comment line\n")
+            tf.write("Assistant Professor Economics\n")
+            tf.write("\n")
+            tf.write("Assistant Professor Finance, Assistant Professor Econometrics\n")
+            tf.flush()
+            temp_path = tf.name
+
+        try:
+            res_file = load_search_queries(cli_query=None, queries_file=temp_path)
+            self.assertEqual(res_file, [
+                "Assistant Professor Economics",
+                "Assistant Professor Finance",
+                "Assistant Professor Econometrics",
+            ])
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+
+        # 3. Fallback when file doesn't exist
+        res_default = load_search_queries(cli_query=None, queries_file="non_existent_queries_file.xyz")
+        self.assertEqual(res_default, DEFAULT_QUERIES)
+
+    def test_gemini_extractor_dynamic_instructions(self):
+        """Verify GeminiExtractor extracts dynamic evaluation instructions from prompt template."""
+        from processor.gemini_extractor import GeminiExtractor
+        import tempfile
+
+        custom_prompt = """Analyze posting:
+{candidate_profile}
+{raw_description}
+
+=== EVALUATION INSTRUCTIONS ===
+1. Custom Instruction for Computer Science
+2. Geographic Scope: United States only
+3. Fit Score Rubric for Algorithms & Systems
+
+=== REQUIRED JSON OUTPUT FORMAT ===
+{"fit_score": 8}
+"""
+        with tempfile.NamedTemporaryFile("w", delete=False, suffix=".txt", encoding="utf-8") as tf:
+            tf.write(custom_prompt)
+            tf.flush()
+            temp_prompt_path = tf.name
+
+        try:
+            extractor = GeminiExtractor(prompt_file=temp_prompt_path)
+            instructions = extractor._get_evaluation_instructions()
+            self.assertIn("Custom Instruction for Computer Science", instructions)
+            self.assertIn("Fit Score Rubric for Algorithms & Systems", instructions)
+            self.assertNotIn("Transportation", instructions)
+        finally:
+            if os.path.exists(temp_prompt_path):
+                os.remove(temp_prompt_path)
+
+    def test_cv_profile_hash_computation(self):
+        """Verify CVProfileManager computes deterministic SHA-256 hash."""
+        from processor.cv_matcher import CVProfileManager
+        import tempfile
+
+        with tempfile.NamedTemporaryFile("wb", delete=False, suffix=".pdf") as tf:
+            tf.write(b"Dummy CV content for testing")
+            tf.flush()
+            temp_cv_path = tf.name
+
+        try:
+            h1 = CVProfileManager._compute_cv_hash(temp_cv_path)
+            h2 = CVProfileManager._compute_cv_hash(temp_cv_path)
+            self.assertTrue(len(h1) == 64)
+            self.assertEqual(h1, h2)
+            self.assertEqual(CVProfileManager._compute_cv_hash("non_existent_file.pdf"), "")
+        finally:
+            if os.path.exists(temp_cv_path):
+                os.remove(temp_cv_path)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,19 @@
+# ==============================================================================
+# Academic Faculty Job Scraper - Search Queries
+# ==============================================================================
+# Customize your faculty job search queries below.
+# Each line represents a separate query that will be submitted to active job boards
+# (AcademicKeys, HigherEdJobs, Chronicle of Higher Education, LinkedIn, Jobs.ac.uk).
+#
+# Rules:
+# - One query per line (or comma-separated).
+# - Lines starting with '#' are comments and will be ignored.
+# - Blank lines are ignored.
+# ==============================================================================
+
+Assistant Professor Transportation
+Assistant Professor Mobility
+Assistant Professor Public Transportation
+Assistant Professor Urban Analytics
+Assistant Professor Urban Planning
+Assistant Professor Transportation Planning

@@ -10,6 +10,7 @@ import argparse
 import logging
 import os
 import sys
+from typing import List, Optional
 from dotenv import load_dotenv
 
 # Ensure UTF-8 output encoding across Windows consoles
@@ -46,15 +47,67 @@ logging.basicConfig(
 logger = logging.getLogger("main")
 
 
+DEFAULT_QUERIES = [
+    "Assistant Professor Transportation",
+    "Assistant Professor Mobility",
+    "Assistant Professor Public Transportation",
+    "Assistant Professor Urban Analytics",
+    "Assistant Professor Urban Planning",
+    "Assistant Professor Transportation Planning",
+]
+
+
+def load_search_queries(
+    cli_query: Optional[str] = None,
+    queries_file: str = "search_queries.txt",
+) -> List[str]:
+    """Load search queries from CLI argument, search_queries.txt file, or built-in fallback.
+
+    Order of precedence:
+      1. Explicit CLI argument (--query) if provided.
+      2. Standalone queries file (search_queries.txt) if present and non-empty.
+      3. Built-in default queries list.
+    """
+    if cli_query:
+        parsed = [q.strip() for q in cli_query.split(",") if q.strip()]
+        if parsed:
+            return parsed
+
+    if queries_file and os.path.exists(queries_file):
+        try:
+            loaded: List[str] = []
+            with open(queries_file, "r", encoding="utf-8") as f:
+                for line in f:
+                    stripped = line.strip()
+                    if not stripped or stripped.startswith("#"):
+                        continue
+                    for item in stripped.split(","):
+                        clean_item = item.strip()
+                        if clean_item and clean_item not in loaded:
+                            loaded.append(clean_item)
+            if loaded:
+                return loaded
+        except Exception as e:
+            logger.warning(f"Could not load search queries from '{queries_file}': {e}")
+
+    return list(DEFAULT_QUERIES)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Aggregate and summarize Assistant Professor jobs in Transportation Engineering."
+        description="Aggregate and summarize Assistant Professor jobs across academic job boards."
     )
     parser.add_argument(
         "--query",
         type=str,
-        default="Assistant Professor Transportation, Assistant Professor Mobility, Assistant Professor Public Transportation, Assistant Professor Urban Analytics, Assistant Professor Urban Planning, Assistant Professor Transportation Planning",
-        help="Comma-separated search queries for job boards (default: Transportation, Mobility, Public Transportation, Urban Analytics, Urban Planning, Transportation Planning)",
+        default=None,
+        help="Comma-separated search queries for job boards (overrides search_queries.txt)",
+    )
+    parser.add_argument(
+        "--queries-file",
+        type=str,
+        default="search_queries.txt",
+        help="Path to user-editable search queries file (default: search_queries.txt)",
     )
     parser.add_argument(
         "--max-per-source",
@@ -137,6 +190,12 @@ def parse_args():
         help="Include filtered/screened-out jobs in outputs (default: False)",
     )
     parser.add_argument(
+        "--csv-in",
+        type=str,
+        default=None,
+        help="Input CSV file path for loading existing database records (default: same as --csv-out)",
+    )
+    parser.add_argument(
         "--csv-out",
         type=str,
         default="jobs.csv",
@@ -167,9 +226,17 @@ def parse_args():
 def main():
     args = parse_args()
 
+    # Load search queries with hierarchy: --query CLI > search_queries.txt > default fallback
+    queries = load_search_queries(args.query, args.queries_file)
+    query_source = (
+        f"--query CLI ({len(queries)} terms)"
+        if args.query
+        else (f"'{args.queries_file}' ({len(queries)} terms)" if os.path.exists(args.queries_file) else f"Built-in Fallback ({len(queries)} terms)")
+    )
+
     print("=" * 70)
     print("  Assistant Professor Job Aggregator & Summarizer")
-    print(f"  Search Query:       '{args.query}'")
+    print(f"  Search Queries:     {query_source}")
     print(f"  Gemini Model:       '{args.model}'")
     print(f"  Min Fit Threshold:  {args.min_fit_score}/10")
     print(f"  Prompt Template:    '{args.eval_prompt}'")
@@ -194,7 +261,6 @@ def main():
             scrapers.append(JobsAcUkScraper())
 
     # 2. Scrape Job Postings
-    queries = [q.strip() for q in args.query.split(",") if q.strip()]
     scraped_postings = []
     seen_urls_overall = set()
 
@@ -220,7 +286,8 @@ def main():
         print("\n[SCRAPING] Web scraping skipped via --skip-scrape flag. Operating on existing database.")
 
     # 3. Deduplicate and Track Historical Records
-    deduplicator = JobDeduplicator(csv_filepath=args.csv_out)
+    input_csv = args.csv_in or args.csv_out
+    deduplicator = JobDeduplicator(csv_filepath=input_csv)
     new_jobs, all_jobs = deduplicator.process_incoming(scraped_postings)
     print(f"[DEDUPLICATION] Brand new postings discovered today: {len(new_jobs)}")
     print(f"[DEDUPLICATION] Total active and tracked postings:   {len(all_jobs)}")
@@ -275,7 +342,8 @@ def main():
 
         if jobs_to_enrich:
             print(f"\n[GEMINI] Evaluating candidate fit (1-10) with {args.model} for {len(jobs_to_enrich)} postings...")
-            extractor.enrich_postings(jobs_to_enrich)
+            is_update_mode = bool(args.re_evaluate and args.re_evaluate_mode == "update")
+            extractor.enrich_postings(jobs_to_enrich, is_update_mode=is_update_mode)
 
             if args.re_evaluate and args.re_evaluate_mode == "update":
                 # UPDATE MODE:

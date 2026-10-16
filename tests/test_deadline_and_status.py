@@ -410,6 +410,52 @@ class TestDeadlineAndStatus(unittest.TestCase):
         gs_dl_date_idx = gs_cols.index("Deadline Date")
         self.assertEqual(gs_dl_date_idx, gs_dl_idx + 1)
 
+    def test_map_dynamic_legend_counts(self):
+        """Verify map contains DOM count badge IDs and JavaScript dynamic recounting logic."""
+        test_map_path = "test_map_dynamic.html"
+        postings = [
+            JobPosting(
+                id="job_high_urgent",
+                title="Professor in Civil Engineering",
+                institution="Test University",
+                field="Civil Engineering",
+                location="Minneapolis, MN",
+                deadline="2026-10-18",
+                salary="$110,000",
+                link="https://example.com/job1",
+                source="Chronicle",
+                fit_score=9,
+                latitude=44.97,
+                longitude=-93.26,
+                status="Active",
+            )
+        ]
+        mg = MapGenerator(test_map_path)
+        mg.generate_map(postings)
+
+        try:
+            self.assertTrue(os.path.exists(test_map_path))
+            with open(test_map_path, "r", encoding="utf-8") as f:
+                html = f.read()
+
+            # Score tier count badge IDs
+            for s_tier in ["tier_9_10", "tier_7_8", "tier_5_6", "tier_3_4"]:
+                self.assertIn(f'id="count-score-{s_tier}"', html)
+
+            # Deadline urgency count badge IDs
+            for dl_cat in ["urgent", "closing_soon", "future", "open", "passed"]:
+                self.assertIn(f'id="count-dl-{dl_cat}"', html)
+
+            # Dynamic tally logic in JavaScript
+            self.assertIn("dlCounts", html)
+            self.assertIn("scoreCounts", html)
+            self.assertIn("dlElem.innerText = '(' + dlCounts[dlKey] + ')'", html)
+            self.assertIn("scoreElem.innerText = '(' + scoreCounts[sKey] + ')'", html)
+            self.assertIn("applyFilters();", html)
+        finally:
+            if os.path.exists(test_map_path):
+                os.remove(test_map_path)
+
 
 if __name__ == "__main__":
     unittest.main()

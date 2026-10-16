@@ -24,13 +24,15 @@ class CVProfileManager:
             "Shared Mobility & Intelligent Transportation Systems",
         ],
         "target_departments": [
-            "Civil and Environmental Engineering (Transportation Engineering track)",
-            "Transportation Engineering",
-            "Urban Planning and Policy (Transportation / Mobility track)",
-            "Industrial and Systems Engineering (Mobility systems)",
-            "Interdisciplinary Computing / Data Science for Mobility",
+            "Civil and Environmental Engineering (Transportation Engineering / Systems track, or open/multi-track CEE searches)",
+            "Transportation Engineering / Planning",
+            "Urban and Regional Planning / Public Affairs (Transportation / Mobility track)",
+            "Spatial Data Science / Urban Informatics for Mobility",
         ],
         "irrelevant_subfields": [
+            "Heavy Industrial Engineering (Manufacturing, Production Systems, Ergonomics, Human Factors)",
+            "Robotics & Mechanical Systems (Mechatronics, physical robotics, embodied AI, vehicle hardware)",
+            "Supply Chain Management & Freight Logistics (Business school operations, inventory, warehousing)",
             "Water Resources and Hydrology",
             "Structural Engineering",
             "Geotechnical Engineering",
@@ -40,19 +42,42 @@ class CVProfileManager:
         ],
     }
 
+    @staticmethod
+    def _compute_cv_hash(filepath: Optional[str]) -> str:
+        """Compute SHA-256 hash of CV file to detect content modifications."""
+        if not filepath or not os.path.exists(filepath):
+            return ""
+        import hashlib
+        try:
+            with open(filepath, "rb") as f:
+                return hashlib.sha256(f.read()).hexdigest()
+        except Exception:
+            return ""
+
     def __init__(self, cv_path: Optional[str] = None):
         self.logger = logging.getLogger("processor.cv_matcher")
         self.cv_path = cv_path or ("CV.pdf" if os.path.exists("CV.pdf") else ("cv.pdf" if os.path.exists("cv.pdf") else None))
         self.profile: Dict[str, Any] = self._load_or_create_profile()
 
     def _load_or_create_profile(self) -> Dict[str, Any]:
+        current_hash = self._compute_cv_hash(self.cv_path) if self.cv_path else ""
+
         # 1. Check existing disk cache
         if os.path.exists(self.CACHE_FILE):
             try:
                 with open(self.CACHE_FILE, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                    # If CV file exists and is newer than cache, re-extract
-                    if self.cv_path and os.path.getmtime(self.cv_path) > os.path.getmtime(self.CACHE_FILE):
+                    cached_hash = data.get("_cv_hash", "")
+
+                    # Re-extract if CV file exists and has changed (different hash or newer mtime)
+                    cv_changed = False
+                    if self.cv_path and os.path.exists(self.cv_path):
+                        if current_hash and cached_hash and current_hash != cached_hash:
+                            cv_changed = True
+                        elif not cached_hash and os.path.getmtime(self.cv_path) > os.path.getmtime(self.CACHE_FILE):
+                            cv_changed = True
+
+                    if cv_changed:
                         self.logger.info("CV file updated since last cache. Re-analyzing...")
                     else:
                         self.logger.info("Loaded candidate research profile from cache.")
@@ -137,8 +162,13 @@ Return strictly valid JSON with this structure:
     def _save_cache(self, profile: Dict[str, Any]):
         try:
             os.makedirs(os.path.dirname(self.CACHE_FILE), exist_ok=True)
+            to_save = dict(profile)
+            if self.cv_path and os.path.exists(self.cv_path):
+                h = self._compute_cv_hash(self.cv_path)
+                if h:
+                    to_save["_cv_hash"] = h
             with open(self.CACHE_FILE, "w", encoding="utf-8") as f:
-                json.dump(profile, f, indent=2)
+                json.dump(to_save, f, indent=2)
         except Exception as e:
             self.logger.warning(f"Failed writing cache to {self.CACHE_FILE}: {e}")
 
@@ -151,7 +181,7 @@ Return strictly valid JSON with this structure:
 
         return f"""Candidate Research Profile:
 - Name: {p.get('candidate_name', 'Candidate')}
-- Core Field: {p.get('primary_field', 'Transportation Engineering')}
+- Core Field: {p.get('primary_field') or 'Academic Research & Teaching'}
 - Target Departments: {departments}
 - Core Research Specialties: {specialties}
 - Irrelevant / Non-Matching Subfields: {irrelevant if irrelevant else 'None specified'}

@@ -48,6 +48,9 @@ class JobExporter:
         header_labels = [label for _, label in self.COLUMNS]
 
         try:
+            csv_dir = os.path.dirname(os.path.abspath(self.csv_filepath))
+            if csv_dir:
+                os.makedirs(csv_dir, exist_ok=True)
             with open(self.csv_filepath, mode="w", newline="", encoding="utf-8-sig") as f:
                 writer = csv.writer(f)
                 writer.writerow(header_labels)
@@ -167,6 +170,10 @@ class JobExporter:
 
             df = pd.DataFrame(rows, columns=header_labels)
             main_sheet = "Assistant Professor Jobs"
+
+            excel_dir = os.path.dirname(os.path.abspath(self.excel_filepath))
+            if excel_dir:
+                os.makedirs(excel_dir, exist_ok=True)
 
             if os.path.exists(self.excel_filepath):
                 with pd.ExcelWriter(self.excel_filepath, engine="openpyxl", mode="a", if_sheet_exists="replace") as writer:
