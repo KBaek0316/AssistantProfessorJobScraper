@@ -154,6 +154,18 @@ class TestComponents(unittest.TestCase):
                 self.assertIn("Fit Score Marker Legend", map_content)
                 self.assertIn("score-filter-cb", map_content)
                 self.assertIn("dl-filter-cb", map_content)
+                # Verify Fit Score 9-10 & 7-8 checked, 5-6 & 3-4 unchecked by default
+                self.assertIn('value="tier_9_10" checked', map_content)
+                self.assertIn('value="tier_7_8" checked', map_content)
+                self.assertNotIn('value="tier_5_6" checked', map_content)
+                self.assertNotIn('value="tier_3_4" checked', map_content)
+                self.assertIn('value="tier_5_6" onchange', map_content)
+                self.assertIn('value="tier_3_4" onchange', map_content)
+                # Verify Deadline Urgency "Passed" unchecked by default
+                self.assertIn('value="urgent" checked', map_content)
+                self.assertIn('value="open" checked', map_content)
+                self.assertNotIn('value="passed" checked', map_content)
+                self.assertIn('value="passed" onchange', map_content)
 
             # Run deduplicator a second time with the same posting -> should have 0 new jobs
             dedup2 = JobDeduplicator(csv_filepath=test_csv)

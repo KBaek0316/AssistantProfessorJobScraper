@@ -18,6 +18,8 @@ Analyze the following academic job posting and evaluate its relevance against th
 
 === CANDIDATE PROFILE ===
 {candidate_profile}
+- Terminal Degree & Disciplinary Core: Ph.D. in Civil Engineering (specializing in Transportation Engineering, Transit Systems, and Travel Behavior).
+- Academic Trajectory & Field Weighting: The candidate's primary faculty qualification and core departmental target is Civil Engineering (specifically Transportation Engineering, Systems, and Mobility Analytics). Urban Planning background is secondary and plays a supportive/complementary role (e.g., travel behavior, transit planning, mobility policy, urban data analytics).
 Target Positions: Tenure-track Assistant Professor, Open Rank Faculty searches inclusive of Assistant Professor, or career-track university teaching faculty appointments.
 
 === JOB POSTING TO EVALUATE ===
@@ -42,26 +44,36 @@ Job Description / Text Snippet:
    - If outside target scope, set "is_faculty" to false or assign fit_score: 1 with fit_reason: "Screened out: Location outside target geographic scope ([Location])".
 
 3. Calibrated Candidate Fit Score (1 to 10 scale):
-   Evaluate the posting against the candidate's Core Field, Target Departments, and Research Specialties in the CANDIDATE PROFILE:
-   - 9-10 (Core Match): Dedicated Assistant Professor position directly matching the candidate's primary field and core research specialties (e.g., searches specifically seeking expertise in Transportation Engineering, Transit Planning, Mobility Systems, Travel Behavior, or Intelligent Transportation Systems).
-   - 7-8 (Strong Match / Core Department Faculty Searches):
-     * Faculty searches in primary target departments — specifically Civil & Environmental Engineering (CEE) or Urban & Regional Planning / Public Affairs — seeking candidates in transportation engineering, systems, urban mobility, infrastructure systems, or broad/open-discipline CEE searches where transportation/infrastructure is an eligible track (e.g. Georgia Tech CEE, UT Arlington Civil Engineering, Northeastern CEE).
-     * Assistant Professor or career-track faculty in related disciplines (e.g., Urban Informatics, Spatial Data Science, Applied Geography) that explicitly seek transportation, transit, or mobility analytics applications.
-   - 5-6 (Moderate Fit / Peripheral Interdisciplinary):
+   Evaluate the posting against the candidate's Core Field, Target Departments, Terminal Degree, and Research Specialties in the CANDIDATE PROFILE:
+   - 9-10 (Core Match):
+     * Dedicated Assistant Professor position directly matching the candidate's terminal degree (Civil Engineering) and primary specialization in Transportation Engineering / Systems.
+     * Searches specifically seeking faculty expertise in Transportation Engineering, Public Transit Systems, Travel Behavior Analysis, Network Modeling, or Intelligent Transportation Systems (ITS) within Civil & Environmental Engineering (CEE) or dedicated Transportation institutes.
+   - 7-8 (Strong Match / Targeted Core Department Searches):
+     * Civil & Environmental Engineering (CEE) faculty searches specifically seeking Transportation Engineering / Systems scholars, or broad/open-discipline CEE searches where transportation / infrastructure systems is an explicit, eligible track (e.g. Georgia Tech CEE, UT Arlington Civil Engineering, Northeastern CEE).
+     * EXCEPTIONAL Urban & Regional Planning or Public Policy faculty searches that EXPLICITLY and DIRECTLY seek a specialist in transportation planning, public transit systems, or urban mobility (e.g. searches specifying transportation planning, transit operations, or travel demand as the primary focus).
+     * Assistant Professor positions in Spatial Data Science or Urban Informatics that explicitly prioritize transportation, transit, or mobility analytics.
+   - 5-6 (Moderate Fit / Peripheral Interdisciplinary / General Planning with Mobility Overlap):
+     * Urban & Regional Planning faculty positions that mention urban infrastructure, spatial modeling, or general urban analytics, but lack a dedicated, direct focus on passenger transportation or public transit planning.
      * Broad interdisciplinary department searches (e.g. general Computer Science, general Environmental Studies, Systems Engineering) with general data science or network modeling overlap, but lacking a dedicated transportation or mobility focus.
    - 3-4 (Low / Poor Fit):
-     * General engineering or social science faculty searches that do NOT explicitly mention or prioritize transportation, passenger transit, or travel behavior.
-     * Peripheral business or public policy departments with only incidental overlap.
+     * Non-Transportation Civil Engineering Subdisciplines: Civil Engineering faculty searches in completely different technical subfields (e.g., Structural Engineering, Water Resources / Hydrology, Geotechnical Engineering, Environmental Engineering / Chemistry, Construction Management, Pavement / Materials). Even though the candidate's terminal degree is in Civil Engineering, these non-transportation subfields are a poor technical match (assign 3-4, or 1-2 if completely distinct).
+     * General Urban Planning / Social Science: Faculty searches in Urban & Regional Planning, City Planning, or Public Affairs focused on non-transportation subfields (e.g., housing, zoning/land use law, historic preservation, community economic development, urban design, real estate, climate adaptation planning) with no direct transportation/transit component.
+     * General engineering or policy searches without transportation or travel behavior focus.
    - 1-2 (Screened Out / Irrelevant):
      * Non-matching subdisciplines listed under 'Irrelevant / Non-Matching Subfields' that have NO component of the candidate's core expertise.
      * Positions seeking senior-only appointments, adjuncts, continuing education, or completely unrelated fields.
 
    *** MANDATORY SCORE CEILINGS (MAXIMUM 5 POINTS / NEVER IN TOP TIERS 7+) ***
    The following areas MUST NOT receive more than 5 points under any circumstances (assign 2-4 points; never assign 7 or above):
-   a. "Heavy" Industrial Engineering Focus: Positions in Industrial Engineering, Systems Engineering, Operations Research, or Engineering Management focused on manufacturing, production systems, human factors/ergonomics, facility logistics, or general supply optimization without a primary, explicit focus on public transit networks or passenger travel behavior. (CAP: maximum 5, typically 2-4).
-   b. Robotics, Mechatronics, & Embodied Systems: Positions in Mechanical Engineering, Electrical Engineering, or Computer Science focused on robotics, physical robotic hardware, autonomous vehicle mechanical actuators/sensors, mechatronics, embodied AI, humanoid robots, or physical control theory. (CAP: maximum 5, typically 2-4).
-   c. Supply Chain Management & Freight Logistics: Positions in Business Schools, Management Schools, or Supply Chain departments focused on commercial supply chains, freight operations, inventory management, warehousing logistics, or procurement analytics. (CAP: maximum 5, typically 2-4).
-   d. Non-Transportation Civil Engineering Subdisciplines: Positions in Civil Engineering specifically dedicated to Water Resources/Hydrology, Structural Engineering, Geotechnical Engineering, Environmental Chemistry, or Pavement/Materials. (CAP: maximum 3, typically 1-2).
+   a. General Urban Planning without Direct Transportation Focus:
+      Positions in Urban & Regional Planning, City Planning, Urban Affairs, or Public Policy that focus on housing, community development, zoning/land use law, urban design, regional economics, environmental planning, or climate hazards WITHOUT an explicit, primary, and direct focus on transportation planning, transit systems, or passenger travel behavior.
+      Urban planning is supportive, NOT the candidate's primary terminal degree field. Unless an Urban Planning job explicitly and centrally seeks a specialist in transportation or transit planning (which can receive 7 or 8), general urban planning searches MUST NOT receive more than 3-5 points (typically 3-4, maximum 5). NEVER assign 7 or above to general urban planning positions.
+   b. Non-Transportation Civil Engineering Subdisciplines:
+      Positions in Civil Engineering specifically dedicated to Structural Engineering, Water Resources / Hydrology, Geotechnical Engineering, Environmental Engineering / Chemistry, Construction Engineering / Management, or Pavement / Materials.
+      Even though the candidate's terminal degree is in Civil Engineering, subdisciplines outside transportation are a poor match. (CAP: strictly 3-4, typically 1-3; NEVER assign 5 or above).
+   c. "Heavy" Industrial Engineering Focus: Positions in Industrial Engineering, Systems Engineering, Operations Research, or Engineering Management focused on manufacturing, production systems, human factors/ergonomics, facility logistics, or general supply optimization without a primary, explicit focus on public transit networks or passenger travel behavior. (CAP: maximum 5, typically 2-4).
+   d. Robotics, Mechatronics, & Embodied Systems: Positions in Mechanical Engineering, Electrical Engineering, or Computer Science focused on robotics, physical robotic hardware, autonomous vehicle mechanical actuators/sensors, mechatronics, embodied AI, humanoid robots, or physical control theory. (CAP: maximum 5, typically 2-4).
+   e. Supply Chain Management & Freight Logistics: Positions in Business Schools, Management Schools, or Supply Chain departments focused on commercial supply chains, freight operations, inventory management, warehousing logistics, or procurement analytics. (CAP: maximum 5, typically 2-4).
 
 4. Department & Focus Extraction:
    - Diligently extract the official Department, School, or Division name from the posting body (e.g., "Department of Civil and Environmental Engineering", "Department of Industrial Engineering", etc.). NEVER leave department as "Not specified" if any department, school, college, or subject focus is mentioned in the text.

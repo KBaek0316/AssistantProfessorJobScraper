@@ -12,8 +12,10 @@
 # ==============================================================================
 
 Assistant Professor Transportation
+Assistant Professor Transportation Engineering
+Assistant Professor Civil Engineering Transportation
 Assistant Professor Mobility
 Assistant Professor Public Transportation
-Assistant Professor Urban Analytics
-Assistant Professor Urban Planning
 Assistant Professor Transportation Planning
+Assistant Professor Urban Planning Transportation
+Assistant Professor Urban Analytics

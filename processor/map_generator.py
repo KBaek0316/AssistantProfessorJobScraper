@@ -387,6 +387,23 @@ class MapGenerator:
             # 5. Build Unified 2-Way Filter & Legend Control HTML
             cluster_var = marker_cluster.get_name()
 
+            # Default active filter items count on initial load:
+            # Fit score: tier_9_10 and tier_7_8 checked (tier_5_6 and tier_3_4 unchecked)
+            # Deadline urgency: urgent, closing_soon, future, open checked (passed unchecked)
+            default_visible_count = sum(
+                1 for item in marker_js_items
+                if item["score_tier"] in ("tier_9_10", "tier_7_8") and item["deadline_cat"] != "passed"
+            )
+
+            # Pre-compute initial counts conditioned on default active filters to avoid layout shift
+            init_dl_counts = {k: 0 for k in deadline_cats_def}
+            init_score_counts = {k: 0 for k in score_tiers_def}
+            for item in marker_js_items:
+                if item["score_tier"] in ("tier_9_10", "tier_7_8") and item["deadline_cat"] in init_dl_counts:
+                    init_dl_counts[item["deadline_cat"]] += 1
+                if item["deadline_cat"] != "passed" and item["score_tier"] in init_score_counts:
+                    init_score_counts[item["score_tier"]] += 1
+
             filter_control_html = f"""
             <style>
             @keyframes filterFadeIn {{
@@ -461,7 +478,7 @@ class MapGenerator:
                 <span style="font-size: 14px;">🎯</span>
                 <span>Filters & Legend</span>
                 <span style="background: #e0f2fe; color: #0369a1; padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 700;">
-                    <span id="min-filter-count">{plotted_count}</span>
+                    <span id="min-filter-count">{default_visible_count}</span>
                 </span>
                 <span style="font-size: 10px; color: #64748b; margin-left: 2px;">▾</span>
             </button>
@@ -564,25 +581,25 @@ class MapGenerator:
                             <input type="checkbox" class="score-filter-cb" value="tier_9_10" checked onchange="applyFilters()" style="cursor: pointer;">
                             <span style="width: 10px; height: 10px; border-radius: 50%; background: #2d6a4f; display: inline-block;"></span>
                             <span style="flex-grow: 1;"><b>9–10:</b> Outstanding Match</span>
-                            <span id="count-score-tier_9_10" style="color: #64748b; font-size: 11px; font-weight: 600;">({score_tiers_def['tier_9_10']['count']})</span>
+                            <span id="count-score-tier_9_10" style="color: #64748b; font-size: 11px; font-weight: 600;">({init_score_counts['tier_9_10']})</span>
                         </label>
                         <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
                             <input type="checkbox" class="score-filter-cb" value="tier_7_8" checked onchange="applyFilters()" style="cursor: pointer;">
                             <span style="width: 10px; height: 10px; border-radius: 50%; background: #52b788; display: inline-block;"></span>
                             <span style="flex-grow: 1;"><b>7–8:</b> Strong Match</span>
-                            <span id="count-score-tier_7_8" style="color: #64748b; font-size: 11px; font-weight: 600;">({score_tiers_def['tier_7_8']['count']})</span>
+                            <span id="count-score-tier_7_8" style="color: #64748b; font-size: 11px; font-weight: 600;">({init_score_counts['tier_7_8']})</span>
                         </label>
                         <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
-                            <input type="checkbox" class="score-filter-cb" value="tier_5_6" checked onchange="applyFilters()" style="cursor: pointer;">
+                            <input type="checkbox" class="score-filter-cb" value="tier_5_6" onchange="applyFilters()" style="cursor: pointer;">
                             <span style="width: 10px; height: 10px; border-radius: 50%; background: #f77f00; display: inline-block;"></span>
                             <span style="flex-grow: 1;"><b>5–6:</b> Moderate Match</span>
-                            <span id="count-score-tier_5_6" style="color: #64748b; font-size: 11px; font-weight: 600;">({score_tiers_def['tier_5_6']['count']})</span>
+                            <span id="count-score-tier_5_6" style="color: #64748b; font-size: 11px; font-weight: 600;">({init_score_counts['tier_5_6']})</span>
                         </label>
                         <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
-                            <input type="checkbox" class="score-filter-cb" value="tier_3_4" checked onchange="applyFilters()" style="cursor: pointer;">
+                            <input type="checkbox" class="score-filter-cb" value="tier_3_4" onchange="applyFilters()" style="cursor: pointer;">
                             <span style="width: 10px; height: 10px; border-radius: 50%; background: #fb6f92; display: inline-block;"></span>
                             <span style="flex-grow: 1;"><b>3–4:</b> Low Match</span>
-                            <span id="count-score-tier_3_4" style="color: #64748b; font-size: 11px; font-weight: 600;">({score_tiers_def['tier_3_4']['count']})</span>
+                            <span id="count-score-tier_3_4" style="color: #64748b; font-size: 11px; font-weight: 600;">({init_score_counts['tier_3_4']})</span>
                         </label>
                     </div>
                 </div>
@@ -601,34 +618,34 @@ class MapGenerator:
                         <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
                             <input type="checkbox" class="dl-filter-cb" value="urgent" checked onchange="applyFilters()" style="cursor: pointer;">
                             <span style="flex-grow: 1;">🔥 Deadline ≤ 7 Days</span>
-                            <span id="count-dl-urgent" style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['urgent']['count']})</span>
+                            <span id="count-dl-urgent" style="color: #64748b; font-size: 11px; font-weight: 600;">({init_dl_counts['urgent']})</span>
                         </label>
                         <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
                             <input type="checkbox" class="dl-filter-cb" value="closing_soon" checked onchange="applyFilters()" style="cursor: pointer;">
                             <span style="flex-grow: 1;">⚡ Deadline in 8–30 Days</span>
-                            <span id="count-dl-closing_soon" style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['closing_soon']['count']})</span>
+                            <span id="count-dl-closing_soon" style="color: #64748b; font-size: 11px; font-weight: 600;">({init_dl_counts['closing_soon']})</span>
                         </label>
                         <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
                             <input type="checkbox" class="dl-filter-cb" value="future" checked onchange="applyFilters()" style="cursor: pointer;">
                             <span style="flex-grow: 1;">📅 Deadline > 30 Days</span>
-                            <span id="count-dl-future" style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['future']['count']})</span>
+                            <span id="count-dl-future" style="color: #64748b; font-size: 11px; font-weight: 600;">({init_dl_counts['future']})</span>
                         </label>
                         <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
                             <input type="checkbox" class="dl-filter-cb" value="open" checked onchange="applyFilters()" style="cursor: pointer;">
                             <span style="flex-grow: 1;">🟢 Open Until Filled / Rolling</span>
-                            <span id="count-dl-open" style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['open']['count']})</span>
+                            <span id="count-dl-open" style="color: #64748b; font-size: 11px; font-weight: 600;">({init_dl_counts['open']})</span>
                         </label>
                         <label style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
-                            <input type="checkbox" class="dl-filter-cb" value="passed" checked onchange="applyFilters()" style="cursor: pointer;">
+                            <input type="checkbox" class="dl-filter-cb" value="passed" onchange="applyFilters()" style="cursor: pointer;">
                             <span style="flex-grow: 1;">⏳ Passed (≤ 30d ago)</span>
-                            <span id="count-dl-passed" style="color: #64748b; font-size: 11px; font-weight: 600;">({deadline_cats_def['passed']['count']})</span>
+                            <span id="count-dl-passed" style="color: #64748b; font-size: 11px; font-weight: 600;">({init_dl_counts['passed']})</span>
                         </label>
                     </div>
                 </div>
 
                 <!-- Footer Summary Counter -->
                 <div style="border-top: 1px solid #f1f5f9; padding-top: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #475569;">
-                    <span>Showing: <b id="visible-job-count" style="color: #0f172a;">{plotted_count}</b> / {plotted_count}</span>
+                    <span>Showing: <b id="visible-job-count" style="color: #0f172a;">{default_visible_count}</b> / {plotted_count}</span>
                     <div style="display: flex; gap: 8px; align-items: center;">
                         <a href="javascript:void(0)" onclick="resetAllFilters()" style="color: #2563eb; text-decoration: none; font-weight: 600;">Reset</a>
                         <button onclick="toggleFilterPanel(false)" type="button" style="
@@ -799,8 +816,12 @@ class MapGenerator:
                 }};
 
                 window.resetAllFilters = function() {{
-                    document.querySelectorAll('.score-filter-cb').forEach(function(cb) {{ cb.checked = true; }});
-                    document.querySelectorAll('.dl-filter-cb').forEach(function(cb) {{ cb.checked = true; }});
+                    document.querySelectorAll('.score-filter-cb').forEach(function(cb) {{
+                        cb.checked = (cb.value === 'tier_9_10' || cb.value === 'tier_7_8');
+                    }});
+                    document.querySelectorAll('.dl-filter-cb').forEach(function(cb) {{
+                        cb.checked = (cb.value !== 'passed');
+                    }});
                     applyFilters();
                 }};
 
