@@ -11,6 +11,7 @@ class GoogleSheetsSync:
     """Syncs job postings to a remote Google Sheet using a Service Account."""
 
     COLUMNS = [
+        "ID",
         "Title",
         "Institution",
         "Field/Division",
@@ -28,7 +29,6 @@ class GoogleSheetsSync:
         "Date Added",
         "Last Verified",
         "Status",
-        "ID",
     ]
 
     def __init__(
@@ -197,6 +197,7 @@ class GoogleSheetsSync:
             rows = [self.COLUMNS]
             for p in sorted_postings:
                 rows.append([
+                    p.id,
                     p.title,
                     p.institution,
                     p.field,
@@ -214,7 +215,6 @@ class GoogleSheetsSync:
                     p.date_first_seen,
                     p.date_last_verified,
                     p.status,
-                    p.id,
                 ])
 
             worksheet.update("A1", rows)
@@ -258,6 +258,7 @@ class GoogleSheetsSync:
             rows = [self.COLUMNS]
             for p in postings:
                 rows.append([
+                    p.id,
                     p.title,
                     p.institution,
                     p.field,
@@ -275,7 +276,6 @@ class GoogleSheetsSync:
                     p.date_first_seen,
                     p.date_last_verified,
                     p.status,
-                    p.id,
                 ])
 
             # Update worksheet in a single API call

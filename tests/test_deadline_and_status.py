@@ -396,6 +396,8 @@ class TestDeadlineAndStatus(unittest.TestCase):
 
         # JobExporter COLUMNS check
         col_keys = [k for k, _ in JobExporter.COLUMNS]
+        self.assertEqual(col_keys[0], "id")
+        self.assertEqual(JobExporter.COLUMNS[0], ("id", "ID"))
         self.assertIn("deadline", col_keys)
         self.assertIn("deadline_date", col_keys)
         dl_idx = col_keys.index("deadline")
@@ -404,6 +406,7 @@ class TestDeadlineAndStatus(unittest.TestCase):
 
         # GoogleSheetsSync COLUMNS check
         gs_cols = GoogleSheetsSync.COLUMNS
+        self.assertEqual(gs_cols[0], "ID")
         self.assertIn("Deadline", gs_cols)
         self.assertIn("Deadline Date", gs_cols)
         gs_dl_idx = gs_cols.index("Deadline")

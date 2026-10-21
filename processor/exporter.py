@@ -9,6 +9,7 @@ class JobExporter:
     """Exports job postings to CSV and formatted Excel (.xlsx) files with Fit Score highlighting."""
 
     COLUMNS = [
+        ("id", "ID"),
         ("title", "Title"),
         ("institution", "Institution"),
         ("field", "Field/Division"),
@@ -28,7 +29,6 @@ class JobExporter:
         ("status", "Status"),
         ("latitude", "Latitude"),
         ("longitude", "Longitude"),
-        ("id", "ID"),
     ]
 
     def __init__(self, csv_filepath: str = "jobs.csv", excel_filepath: str = "jobs.xlsx"):
@@ -104,7 +104,7 @@ class JobExporter:
 
                 if col_name in ("Summary (Gemini)", "Fit Reason"):
                     cell.alignment = wrapped_align
-                elif col_name in ("Fit Score (1-10)", "Tenure Track", "Deadline", "Deadline Date", "Source", "Status"):
+                elif col_name in ("ID", "Fit Score (1-10)", "Tenure Track", "Deadline", "Deadline Date", "Source", "Status"):
                     cell.alignment = center_align
                 else:
                     cell.alignment = data_align
@@ -136,7 +136,9 @@ class JobExporter:
         for col in worksheet.columns:
             col_letter = get_column_letter(col[0].column)
             col_name = col[0].value
-            if col_name == "Summary (Gemini)":
+            if col_name == "ID":
+                worksheet.column_dimensions[col_letter].width = 20
+            elif col_name == "Summary (Gemini)":
                 worksheet.column_dimensions[col_letter].width = 42
             elif col_name == "Fit Reason":
                 worksheet.column_dimensions[col_letter].width = 32

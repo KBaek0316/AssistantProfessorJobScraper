@@ -71,7 +71,8 @@ Location: {location}
 Source: {source}
 Description: {raw_description}
 
-Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (str), clean_title, institution, department, tenure_track, deadline, salary, city_state, research_topics (list), concise_summary (str).
+If multiple positions with distinct research topics are advertised, select the single most relevant track to the candidate (e.g. Transportation Systems Engineering).
+Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (str), clean_title, institution, department, targeted_track (str or null), tenure_track, deadline, salary, city_state, research_topics (list), concise_summary (str, starting with "[<Track Name>] ..." if multiple positions advertised).
 """
 
     def _get_evaluation_instructions(self) -> str:
@@ -108,9 +109,11 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
    - 5-6 (Broad Fit): Broad department search where candidate's subfield is an acceptable focus area.
    - 3-4 (Low Fit): General department faculty searches with peripheral overlap.
    - 1-2 (Screened Out / Irrelevant): Completely unrelated fields or non-matching subfields.
-4. Department & Focus Extraction:
+4. Handling Multiple Positions / Tracks / Research Topics in a Single Posting:
+   - If multiple positions with distinct research topics are advertised, identify the single most relevant position/track (e.g. "Transportation Systems Engineering (TSE)"), evaluate fit_score, fit_reason, and research_topics based on that track, specify "targeted_track", and ensure "concise_summary" starts with "[<Track Name>] ...".
+5. Department & Focus Extraction:
    - Extract official Department, School, or Division name from the posting body.
-5. Provide a concise, 1-sentence "fit_reason"."""
+6. Provide a concise, 1-sentence "fit_reason"."""
 
     def enrich_postings(self, postings: List[JobPosting], is_update_mode: bool = False) -> List[JobPosting]:
         """Enrich a list of job postings with Gemini structured data and fit scores."""
@@ -222,17 +225,18 @@ Return strictly a JSON array of objects (one per evaluated job) with fields:
 - "id": string matching the provided job id
 - "is_faculty": boolean
 - "fit_score": integer 1-10
-- "fit_reason": 1 concise sentence explaining the match or mismatch
+- "fit_reason": 1 concise sentence explaining the match or mismatch (focused on the most relevant track if multiple advertised)
 - "clean_title": official position title
 - "institution": official university name
 - "department": official department / school name
+- "targeted_track": string naming the most relevant position/track if multiple research tracks/topics are advertised (e.g. "Transportation Systems Engineering (TSE)"), otherwise null
 - "tenure_track": "Tenure-Track", "Tenured", "Non-Tenure Track", or "Unspecified"
 - "deadline": application deadline string (or "Open until filled")
 - "salary": salary range or "Not specified"
 - "city_state": city, state/country
 - "country": country name
-- "research_topics": list of 2-4 research topics
-- "concise_summary": 1 concise sentence summarizing role focus and minimum degree qualification
+- "research_topics": list of 2-4 research topics matching the targeted track
+- "concise_summary": 1 concise sentence summarizing role focus and minimum degree qualification. If multiple positions/tracks are advertised, MUST start with the most relevant position in brackets (e.g. "[Transportation Systems Engineering (TSE)] ...")
 """
         candidate_models = [
             self.model_name,
@@ -355,7 +359,13 @@ Return strictly a JSON array of objects (one per evaluated job) with fields:
                 elif isinstance(topics_data, str):
                     posting.research_topics = topics_data.strip()
 
+                targeted_track = str(data.get("targeted_track") or "").strip()
                 concise = data.get("concise_summary", "").strip() or data.get("summary", "").strip()
+                if targeted_track and targeted_track.lower() not in ("null", "none"):
+                    prefix = f"[{targeted_track}]"
+                    if not concise.startswith(prefix) and not concise.lower().startswith(f"[{targeted_track.lower()}]"):
+                        concise = f"{prefix} {concise}" if concise else prefix
+
                 if concise:
                     if posting.research_topics:
                         posting.summary = f"{concise} | Research Topics: {posting.research_topics}"
@@ -664,7 +674,13 @@ Return strictly a JSON array of objects (one per evaluated job) with fields:
             posting.research_topics = topics_data.strip()
 
         # Format concise summary
+        targeted_track = str(data.get("targeted_track") or "").strip()
         concise = data.get("concise_summary", "").strip() or data.get("summary", "").strip()
+        if targeted_track and targeted_track.lower() not in ("null", "none"):
+            prefix = f"[{targeted_track}]"
+            if not concise.startswith(prefix) and not concise.lower().startswith(f"[{targeted_track.lower()}]"):
+                concise = f"{prefix} {concise}" if concise else prefix
+
         if concise:
             if posting.research_topics:
                 posting.summary = f"{concise} | Research Topics: {posting.research_topics}"

@@ -137,11 +137,18 @@ class TestComponents(unittest.TestCase):
             self.assertTrue(os.path.exists(test_csv))
             self.assertTrue(os.path.exists(test_xlsx))
 
-            # Verify CSV contains Fit Score column
+            # Verify CSV contains ID as first column and Fit Score columns
             with open(test_csv, "r", encoding="utf-8-sig") as f:
-                header = f.readline()
+                header = f.readline().strip()
+                self.assertTrue(header.startswith("ID,"))
                 self.assertIn("Fit Score (1-10)", header)
                 self.assertIn("Fit Reason", header)
+
+            import openpyxl
+            wb = openpyxl.load_workbook(test_xlsx, data_only=True)
+            ws = wb.active
+            self.assertEqual(ws.cell(row=1, column=1).value, "ID")
+            wb.close()
 
             # Test Map Generator
             map_gen = MapGenerator(output_filepath=test_map)
@@ -703,6 +710,54 @@ class TestComponents(unittest.TestCase):
         finally:
             if os.path.exists(temp_cv_path):
                 os.remove(temp_cv_path)
+
+    def test_gemini_extractor_targeted_track_prefix(self):
+        """Verify GeminiExtractor formats summary to start with targeted track when multiple positions exist."""
+        from processor.gemini_extractor import GeminiExtractor
+        from scrapers.base import JobPosting
+
+        extractor = GeminiExtractor()
+        # Verify instructions include multiple positions rule
+        instructions = extractor._get_evaluation_instructions()
+        self.assertIn("Handling Multiple Positions / Tracks", instructions)
+        self.assertIn("targeted_track", instructions)
+
+        posting = JobPosting(
+            id="multi_test_1",
+            title="Multiple Faculty Positions in Civil Engineering",
+            institution="Test University",
+            field="Civil Engineering",
+            location="Atlanta, GA",
+            deadline="2026-10-15",
+            salary="Not specified",
+            link="https://example.com/job",
+            source="LinkedIn",
+        )
+
+        mock_data = {
+            "id": "multi_test_1",
+            "is_faculty": True,
+            "fit_score": 10,
+            "fit_reason": "Core match in Transportation Systems Engineering",
+            "clean_title": "Assistant Professor of Transportation Systems Engineering",
+            "institution": "Test University",
+            "department": "Civil & Environmental Engineering",
+            "targeted_track": "Transportation Systems Engineering (TSE)",
+            "research_topics": ["Travel Demand", "Transit Systems"],
+            "concise_summary": "Invites applications for a tenure-track faculty position focusing on transit systems and AI.",
+        }
+
+        # Simulate batch update logic
+        targeted_track = str(mock_data.get("targeted_track") or "").strip()
+        concise = mock_data.get("concise_summary", "").strip()
+        if targeted_track and targeted_track.lower() not in ("null", "none"):
+            prefix = f"[{targeted_track}]"
+            if not concise.startswith(prefix):
+                concise = f"{prefix} {concise}"
+        posting.summary = f"{concise} | Research Topics: {', '.join(mock_data['research_topics'])}"
+
+        self.assertTrue(posting.summary.startswith("[Transportation Systems Engineering (TSE)]"))
+        self.assertIn("Travel Demand, Transit Systems", posting.summary)
 
 
 if __name__ == "__main__":

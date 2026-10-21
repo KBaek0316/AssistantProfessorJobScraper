@@ -47,9 +47,9 @@ Job Description / Text Snippet:
    Evaluate the posting against the candidate's Core Field, Target Departments, Terminal Degree, and Research Specialties in the CANDIDATE PROFILE:
    - 9-10 (Core Match):
      * Dedicated Assistant Professor position directly matching the candidate's terminal degree (Civil Engineering) and primary specialization in Transportation Engineering / Systems.
-     * Searches specifically seeking faculty expertise in Transportation Engineering, Public Transit Systems, Travel Behavior Analysis, Network Modeling, or Intelligent Transportation Systems (ITS) within Civil & Environmental Engineering (CEE) or dedicated Transportation institutes.
+     * Searches specifically seeking faculty expertise in Transportation Engineering, Public Transit Systems, Travel Behavior Analysis, Network Modeling, or Intelligent Transportation Systems (ITS) within Civil & Environmental Engineering (CEE) or dedicated Transportation institutes (including multi-position/track announcements where Transportation Systems Engineering is a dedicated hiring area).
    - 7-8 (Strong Match / Targeted Core Department Searches):
-     * Civil & Environmental Engineering (CEE) faculty searches specifically seeking Transportation Engineering / Systems scholars, or broad/open-discipline CEE searches where transportation / infrastructure systems is an explicit, eligible track (e.g. Georgia Tech CEE, UT Arlington Civil Engineering, Northeastern CEE).
+     * Broad/open-discipline Civil & Environmental Engineering (CEE) faculty searches where transportation / infrastructure systems is an eligible area among general disciplines without a dedicated subprogram description (e.g. UT Arlington Civil Engineering, Northeastern CEE).
      * EXCEPTIONAL Urban & Regional Planning or Public Policy faculty searches that EXPLICITLY and DIRECTLY seek a specialist in transportation planning, public transit systems, or urban mobility (e.g. searches specifying transportation planning, transit operations, or travel demand as the primary focus).
      * Assistant Professor positions in Spatial Data Science or Urban Informatics that explicitly prioritize transportation, transit, or mobility analytics.
    - 5-6 (Moderate Fit / Peripheral Interdisciplinary / General Planning with Mobility Overlap):
@@ -75,10 +75,19 @@ Job Description / Text Snippet:
    d. Robotics, Mechatronics, & Embodied Systems: Positions in Mechanical Engineering, Electrical Engineering, or Computer Science focused on robotics, physical robotic hardware, autonomous vehicle mechanical actuators/sensors, mechatronics, embodied AI, humanoid robots, or physical control theory. (CAP: maximum 5, typically 2-4).
    e. Supply Chain Management & Freight Logistics: Positions in Business Schools, Management Schools, or Supply Chain departments focused on commercial supply chains, freight operations, inventory management, warehousing logistics, or procurement analytics. (CAP: maximum 5, typically 2-4).
 
-4. Department & Focus Extraction:
+4. Handling Multiple Positions / Tracks / Research Topics in a Single Announcement:
+   - When a single announcement advertises multiple positions with distinct research topics or subdisciplinary tracks (for example, "multiple tenure-track positions in Geosystems Engineering and Transportation Systems Engineering", or broad cluster hires across several technical subfields):
+     * DO NOT confuse this with nominal academic ranks (e.g., Assistant vs. Associate Professor). This rule specifically applies when multiple distinct research topics or disciplinary tracks are offered.
+     * Identify and isolate the single MOST RELEVANT position or research track to the candidate's core profile (e.g., Transportation Systems Engineering).
+     * Evaluate the entire posting (fit_score, fit_reason, clean_title, and research_topics) based specifically on that most relevant position/track. Do not penalize or dilute the fit score because other unrelated tracks are also mentioned in the posting.
+     * In the "targeted_track" field, output the name of that most relevant position/track (e.g., "Transportation Systems Engineering (TSE)"). If only a single position/track is advertised, set "targeted_track" to null.
+     * The "concise_summary" MUST explicitly start with which position/track is most relevant in brackets, e.g.:
+       "[Transportation Systems Engineering (TSE)] The School of Civil and Environmental Engineering at Georgia Tech invites applications for a tenure-track faculty position focusing on travel demand, multimodal systems, and AI methods, requiring an earned doctorate."
+
+5. Department & Focus Extraction:
    - Diligently extract the official Department, School, or Division name from the posting body (e.g., "Department of Civil and Environmental Engineering", "Department of Industrial Engineering", etc.). NEVER leave department as "Not specified" if any department, school, college, or subject focus is mentioned in the text.
 
-5. Provide a concise, 1-sentence "fit_reason" explaining the score.
+6. Provide a concise, 1-sentence "fit_reason" explaining the score (focused specifically on the most relevant position/track if multiple are advertised).
 
 === REQUIRED JSON OUTPUT FORMAT ===
 Return strictly valid JSON with no markdown formatting or commentary:
@@ -86,15 +95,16 @@ Return strictly valid JSON with no markdown formatting or commentary:
   "is_faculty": true,
   "fit_score": 8,
   "fit_reason": "One concise sentence explaining the match or mismatch.",
-  "clean_title": "Official position title (e.g. Assistant Professor of Transportation Engineering)",
-  "institution": "Official university or college name (e.g. University of California, Berkeley)",
-  "department": "Department, school, or division name (e.g. Department of Industrial Engineering and Operations Research)",
+  "clean_title": "Official position title (e.g. Assistant Professor of Transportation Systems Engineering)",
+  "institution": "Official university or college name (e.g. Georgia Institute of Technology)",
+  "department": "Department, school, or division name (e.g. School of Civil & Environmental Engineering)",
+  "targeted_track": "If multiple positions/tracks with different research topics are advertised, specify the most relevant one (e.g. 'Transportation Systems Engineering (TSE)'); otherwise null",
   "tenure_track": "Tenure-Track, Tenured, Non-Tenure Track, or Unspecified",
   "deadline": "Application deadline: use YYYY-MM-DD format if a single deadline is given, or 'Priority: YYYY-MM-DD / Final: YYYY-MM-DD' if both review/priority date and final close date are specified, or 'Open until filled'. If the year is omitted in the posting text, infer the current academic cycle year (e.g. 'September 30' -> '2026-09-30', 'November 1' -> '2026-11-01', 'January 15' -> '2027-01-15').",
   "salary": "Salary range if mentioned, otherwise 'Not specified'",
   "city_state": "City and State/Country (e.g. Austin, TX, or London, UK, or Taipei, Taiwan, or Singapore)",
   "country": "Country name (e.g. United States, United Kingdom, Canada, Singapore, Taiwan, Japan, South Korea)",
-  "research_topics": ["List 2 to 4 specific research areas/topics"],
-  "concise_summary": "Strictly 1 concise sentence summarizing the primary focus of the role and minimum degree qualification."
+  "research_topics": ["List 2 to 4 specific research areas/topics matching the targeted track"],
+  "concise_summary": "Strictly 1 concise sentence summarizing the primary focus of the role and minimum degree qualification. If multiple positions/tracks are advertised, MUST start with the most relevant position in brackets (e.g. '[Transportation Systems Engineering (TSE)] ...')."
 }}
 
