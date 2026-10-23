@@ -759,8 +759,141 @@ class TestComponents(unittest.TestCase):
         self.assertTrue(posting.summary.startswith("[Transportation Systems Engineering (TSE)]"))
         self.assertIn("Travel Demand, Transit Systems", posting.summary)
 
+    def test_michigan_and_mit_deduplication(self):
+        """Verify Michigan and MIT duplicates are accurately recognized and deduplicated."""
+        # 1. Michigan postings
+        mich_kept = JobPosting(
+            id="6299f7a0124cf48b",
+            title="Assistant Professor, Associate Professor, or Professor",
+            institution="University of Michigan, Ann Arbor",
+            field="Civil and Environmental Engineering",
+            location="Ann Arbor, MI",
+            deadline="Nov. 30, 2026",
+            salary="Not specified",
+            link="http://engineering.academickeys.com/job/4oehp61f/Assistant-Professor-Associate-Professor-or-Professor",
+            source="AcademicKeys",
+            fit_score=8,
+            fit_reason="Strong match in CEE department with strategic focus on automation and AI in transportation.",
+            summary="Open-rank faculty position in civil and environmental infrastructure systems focusing on automation.",
+        )
+        mich_dupe = JobPosting(
+            id="ebc41356faae3c23",
+            title="Faculty Position in Civil and Environmental Infrastructure Systems",
+            institution="University of Michigan",
+            field="Department of Civil and Environmental Engineering",
+            location="Ann Arbor, MI",
+            deadline="Open until filled",
+            salary="Not specified",
+            link="https://www.higheredjobs.com/search/details.cfm?JobCode=179592284",
+            source="HigherEdJobs",
+            fit_score=8,
+            fit_reason="Strong match for candidate's civil engineering doctorate in CEE department.",
+            summary="Open-rank tenure-track faculty position in Civil and Environmental Engineering targeting AI.",
+        )
+
+        self.assertTrue(JobDeduplicator.is_same_institution(mich_kept, mich_dupe))
+        self.assertTrue(JobDeduplicator.is_same_position(mich_kept, mich_dupe))
+
+        dedup = JobDeduplicator()
+        active, dupes = dedup.deduplicate_by_institution_department([mich_kept, mich_dupe])
+        self.assertEqual(len(active), 1)
+        self.assertEqual(active[0].id, "6299f7a0124cf48b")
+        self.assertEqual(len(dupes), 1)
+        self.assertEqual(dupes[0].id, "ebc41356faae3c23")
+
+        # 2. MIT postings
+        mit_kept = JobPosting(
+            id="44dfdb908222b394",
+            title="Tenure-track Assistant Professor",
+            institution="Massachusetts Institute of Technology",
+            field="Department of Civil and Environmental Engineering",
+            location="Cambridge, MA",
+            deadline="12/01/2026",
+            salary="$143,000 - $147,000 per year",
+            link="https://www.higheredjobs.com/search/details.cfm?JobCode=179589362",
+            source="HigherEdJobs",
+            fit_score=10,
+            fit_reason="Core match in transportation networks.",
+        )
+        mit_dupe = JobPosting(
+            id="88b5edbe66430187",
+            title="Tenure-Track Assistant Professor - Civil and Environmental Engineering",
+            institution="Massachusetts Institute of Technology (MIT)",
+            field="Department of Civil and Environmental Engineering & Institute for Data, Systems, and Society",
+            location="Cambridge, Massachusetts",
+            deadline="Open until filled",
+            salary="Competitive Salary",
+            link="https://jobs.chronicle.com/job/38055016/tenure-track-assistant-professor-civil-and-environmental-engineering/",
+            source="Chronicle",
+            fit_score=8,
+            fit_reason="Strong match in networked infrastructure.",
+        )
+
+        self.assertTrue(JobDeduplicator.is_same_institution(mit_kept, mit_dupe))
+        self.assertTrue(JobDeduplicator.is_same_position(mit_kept, mit_dupe))
+
+        active_mit, dupes_mit = dedup.deduplicate_by_institution_department([mit_kept, mit_dupe])
+        self.assertEqual(len(active_mit), 1)
+        self.assertEqual(active_mit[0].id, "44dfdb908222b394")
+        self.assertEqual(len(dupes_mit), 1)
+        self.assertEqual(dupes_mit[0].id, "88b5edbe66430187")
+
+    def test_branch_campus_distinction_and_geocoding(self):
+        """Verify branch campuses are distinguished from flagship campuses and geocoded accurately."""
+        # 1. Texas A&M College Station vs Texas A&M Corpus Christi
+        tamu_main = JobPosting(
+            id="tamu_main",
+            title="Assistant Professor",
+            institution="Texas A&M University",
+            field="Civil Engineering",
+            location="College Station, TX",
+            deadline="2026-12-01",
+            salary="Not specified",
+            link="https://example.com/1",
+            source="HigherEdJobs",
+        )
+        tamu_cc = JobPosting(
+            id="tamu_cc",
+            title="Assistant Professor of Civil Engineering",
+            institution="Texas A&M University-Corpus Christi",
+            field="Department of Engineering",
+            location="Corpus Christi, TX",
+            deadline="Open until filled",
+            salary="Not specified",
+            link="https://example.com/2",
+            source="LinkedIn",
+        )
+        # Should NOT be treated as same institution / same position
+        self.assertFalse(JobDeduplicator.is_same_institution(tamu_main, tamu_cc))
+        self.assertFalse(JobDeduplicator.is_same_position(tamu_main, tamu_cc))
+
+        # 2. Geocoder lookups for branch campuses
+        geocoder = UniversityGeocoder()
+        coords_cc = geocoder.geocode("Texas A&M University-Corpus Christi")
+        self.assertIsNotNone(coords_cc)
+        self.assertAlmostEqual(coords_cc[0], 27.7128, places=2)
+        self.assertAlmostEqual(coords_cc[1], -97.3234, places=2)
+
+        coords_cornell_nyc = geocoder.geocode("Cornell University, New York, NY")
+        self.assertIsNotNone(coords_cornell_nyc)
+        self.assertAlmostEqual(coords_cornell_nyc[0], 40.7548, places=2)
+        self.assertAlmostEqual(coords_cornell_nyc[1], -73.9564, places=2)
+
+        coords_purdue_indy = geocoder.geocode("Purdue University, Indianapolis, Indiana")
+        self.assertIsNotNone(coords_purdue_indy)
+        self.assertAlmostEqual(coords_purdue_indy[0], 39.7749, places=2)
+        self.assertAlmostEqual(coords_purdue_indy[1], -86.1681, places=2)
+
+        # 3. Verify enrich_coordinates does not overwrite branch campus coords
+        tamu_cc.latitude = 27.7128
+        tamu_cc.longitude = -97.3234
+        geocoder.enrich_coordinates([tamu_cc])
+        self.assertAlmostEqual(tamu_cc.latitude, 27.7128, places=3)
+        self.assertAlmostEqual(tamu_cc.longitude, -97.3234, places=3)
+
 
 if __name__ == "__main__":
     unittest.main()
+
 
 

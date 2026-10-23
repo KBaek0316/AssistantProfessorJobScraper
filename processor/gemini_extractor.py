@@ -111,8 +111,9 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
    - 1-2 (Screened Out / Irrelevant): Completely unrelated fields or non-matching subfields.
 4. Handling Multiple Positions / Tracks / Research Topics in a Single Posting:
    - If multiple positions with distinct research topics are advertised, identify the single most relevant position/track (e.g. "Transportation Systems Engineering (TSE)"), evaluate fit_score, fit_reason, and research_topics based on that track, specify "targeted_track", and ensure "concise_summary" starts with "[<Track Name>] ...".
-5. Department & Focus Extraction:
+5. Department, Campus & Location Extraction:
    - Extract official Department, School, or Division name from the posting body.
+   - For multi-campus systems or satellite institutes (e.g., Texas A&M Corpus Christi, Cornell Tech NYC, Northeastern Seattle, Purdue Indianapolis, Penn State Altoona), ALWAYS retain the specific campus in "institution" and specify the actual physical city/state in "city_state", NEVER collapsing branch campuses into only the flagship name or flagship city.
 6. Provide a concise, 1-sentence "fit_reason"."""
 
     def enrich_postings(self, postings: List[JobPosting], is_update_mode: bool = False) -> List[JobPosting]:
@@ -227,13 +228,13 @@ Return strictly a JSON array of objects (one per evaluated job) with fields:
 - "fit_score": integer 1-10
 - "fit_reason": 1 concise sentence explaining the match or mismatch (focused on the most relevant track if multiple advertised)
 - "clean_title": official position title
-- "institution": official university name
+- "institution": official university name, including specific campus when part of a multi-campus system (e.g. 'University of Michigan, Ann Arbor', 'Texas A&M University-Corpus Christi', 'Cornell Tech', 'Purdue University in Indianapolis', 'University of California, Berkeley')
 - "department": official department / school name
 - "targeted_track": string naming the most relevant position/track if multiple research tracks/topics are advertised (e.g. "Transportation Systems Engineering (TSE)"), otherwise null
 - "tenure_track": "Tenure-Track", "Tenured", "Non-Tenure Track", or "Unspecified"
 - "deadline": application deadline string (or "Open until filled")
 - "salary": salary range or "Not specified"
-- "city_state": city, state/country
+- "city_state": city, state/country of the ACTUAL campus or position work location (e.g. 'Corpus Christi, TX', 'New York, NY', 'Seattle, WA', 'Indianapolis, IN', 'Ann Arbor, MI', 'Austin, TX', or 'London, UK')
 - "country": country name
 - "research_topics": list of 2-4 research topics matching the targeted track
 - "concise_summary": 1 concise sentence summarizing role focus and minimum degree qualification. If multiple positions/tracks are advertised, MUST start with the most relevant position in brackets (e.g. "[Transportation Systems Engineering (TSE)] ...")

@@ -97,6 +97,47 @@ class UniversityGeocoder:
         "university of tokyo": (35.7128, 139.7620),
         "kyoto university": (35.0262, 135.7808),
         "national taiwan university": (25.0174, 121.5405),
+        # Specific branch campuses / satellite locations
+        "texas a&m university-corpus christi": (27.7128, -97.3234),
+        "texas a&m university corpus christi": (27.7128, -97.3234),
+        "texas a&m university at galveston": (29.3160, -94.8180),
+        "cornell tech": (40.7548, -73.9564),
+        "cornell tech, new york, ny": (40.7548, -73.9564),
+        "cornell university, new york, ny": (40.7548, -73.9564),
+        "purdue university in indianapolis": (39.7749, -86.1681),
+        "purdue university, indianapolis, indiana": (39.7749, -86.1681),
+        "purdue university, indianapolis, in": (39.7749, -86.1681),
+        "northeastern university, seattle, washington": (47.6206, -122.3374),
+        "northeastern university, seattle, wa": (47.6206, -122.3374),
+        "cal poly, san luis obispo, vallejo, california": (38.0715, -122.2313),
+        "cal maritime": (38.0715, -122.2313),
+        "california maritime academy": (38.0715, -122.2313),
+        "embry-riddle aeronautical university, prescott, az": (34.6484, -112.4204),
+        "embry-riddle prescott": (34.6484, -112.4204),
+        "penn state altoona": (40.5412, -78.4093),
+        "penn state university, altoona, pa": (40.5412, -78.4093),
+        "universidade de aveiro, viseu, portugal": (40.6575, -7.9139),
+        "the american college of greece": (38.0033, 23.8317),
+        "the american college of greece, athens": (38.0033, 23.8317),
+    }
+
+    # Campus conflict guards: if a query specifies any of these branch campus / city keywords,
+    # the generic flagship fallback coordinates must NOT be used.
+    BRANCH_CAMPUS_GUARDS: Dict[str, Tuple[str, ...]] = {
+        "texas a&m university": ("corpus christi", "galveston", "san antonio", "kingsville", "commerce", "laredo", "central texas", "texarkana"),
+        "cornell university": ("new york", "nyc", "roosevelt island", "cornell tech", "weill"),
+        "purdue university": ("indianapolis", "fort wayne", "northwest"),
+        "northeastern university": ("seattle", "silicon valley", "san francisco", "oakland", "vancouver", "toronto", "london", "charlotte", "portland", "arlington"),
+        "embry-riddle aeronautical university": ("prescott",),
+        "penn state university": ("altoona", "harrisburg", "erie", "behrend", "berks", "abington", "brandywine", "great valley"),
+        "cal poly, san luis obispo": ("vallejo", "maritime"),
+        "cal poly san luis obispo": ("vallejo", "maritime"),
+        "university of california, berkeley": ("davis", "los angeles", "ucla", "san diego", "ucsd", "irvine", "uci", "santa barbara", "ucsb", "merced", "riverside", "santa cruz", "san francisco", "ucsf"),
+        "university of illinois urbana-champaign": ("chicago", "uic", "springfield"),
+        "university of michigan": ("flint", "dearborn"),
+        "university of washington": ("bothell", "tacoma"),
+        "university of colorado system": ("colorado springs", "uccs", "denver"),
+        "universidade de aveiro": ("viseu",),
     }
 
     def __init__(self):
@@ -140,14 +181,27 @@ class UniversityGeocoder:
             coords = self.cache[clean_query]
             return (coords[0], coords[1])
 
-        # Check built-in fallback lookup
-        for known_name, coords in self.FALLBACK_COORDINATES.items():
+        # 1. Exact match in fallback coordinates
+        if clean_query in self.FALLBACK_COORDINATES:
+            coords = self.FALLBACK_COORDINATES[clean_query]
+            self.cache[clean_query] = [coords[0], coords[1]]
+            self._save_cache()
+            return coords
+
+        # 2. Check built-in fallback lookup (sorted by length descending for specificity)
+        for known_name, coords in sorted(self.FALLBACK_COORDINATES.items(), key=lambda x: len(x[0]), reverse=True):
             if known_name in clean_query or clean_query in known_name:
+                # Check branch campus guard: if clean_query contains keywords for a branch campus / city,
+                # do not return the generic flagship coordinates.
+                if known_name in self.BRANCH_CAMPUS_GUARDS:
+                    guard_keywords = self.BRANCH_CAMPUS_GUARDS[known_name]
+                    if any(kw in clean_query for kw in guard_keywords):
+                        continue
                 self.cache[clean_query] = [coords[0], coords[1]]
                 self._save_cache()
                 return coords
 
-        # Query Nominatim
+        # 3. Query Nominatim
         geolocator = self._get_geolocator()
         if geolocator:
             try:
@@ -172,29 +226,13 @@ class UniversityGeocoder:
     }
 
     def enrich_coordinates(self, postings: List[JobPosting]):
-        """Populate latitude and longitude on postings where missing, and heal stale/mis-geocoded coordinates."""
+        """Populate latitude and longitude on postings where missing without overriding valid branch/satellite campuses."""
         for p in postings:
-            clean_inst = (p.institution or "").strip().lower()
-
-            # Self-healing: if coordinates already exist, check if they grossly conflict with a canonical campus fallback
+            # If coordinates already exist and are valid, do not overwrite
             if p.latitude is not None and p.longitude is not None:
-                for known_name, canonical_coords in self.FALLBACK_COORDINATES.items():
-                    if len(known_name) > 3 and (known_name == clean_inst or (clean_inst and known_name in clean_inst)):
-                        from math import radians, sin, cos, sqrt, atan2
-                        R = 6371.0
-                        dlat = radians(canonical_coords[0] - p.latitude)
-                        dlon = radians(canonical_coords[1] - p.longitude)
-                        a = sin(dlat / 2)**2 + cos(radians(p.latitude)) * cos(radians(canonical_coords[0])) * sin(dlon / 2)**2
-                        dist = R * 2 * atan2(sqrt(a), sqrt(1 - a))
-                        if dist > 80:  # >80km discrepancy with known campus
-                            self.logger.info(
-                                f"Healed coordinates for '{p.institution}': replaced ({p.latitude}, {p.longitude}) "
-                                f"with canonical ({canonical_coords[0]}, {canonical_coords[1]}) - was {dist:.1f}km off."
-                            )
-                            p.latitude, p.longitude = canonical_coords
-                        break
                 continue
 
+            clean_inst = (p.institution or "").strip().lower()
             coords = None
             is_valid_inst = bool(
                 clean_inst
@@ -211,7 +249,11 @@ class UniversityGeocoder:
             if is_valid_inst and has_specific_loc:
                 coords = self.geocode(f"{p.institution}, {p.location}")
 
-            # 2. Try institution alone or with USA
+            # 2. Try location alone (ensures correct physical campus city over distant flagship headquarters)
+            if not coords and has_specific_loc:
+                coords = self.geocode(p.location)
+
+            # 3. Try institution alone or with USA
             if not coords and is_valid_inst:
                 coords = self.geocode(f"{p.institution}, USA")
                 if not coords:

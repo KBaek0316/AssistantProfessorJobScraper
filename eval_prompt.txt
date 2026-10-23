@@ -84,8 +84,9 @@ Job Description / Text Snippet:
      * The "concise_summary" MUST explicitly start with which position/track is most relevant in brackets, e.g.:
        "[Transportation Systems Engineering (TSE)] The School of Civil and Environmental Engineering at Georgia Tech invites applications for a tenure-track faculty position focusing on travel demand, multimodal systems, and AI methods, requiring an earned doctorate."
 
-5. Department & Focus Extraction:
+5. Department, Campus & Location Extraction:
    - Diligently extract the official Department, School, or Division name from the posting body (e.g., "Department of Civil and Environmental Engineering", "Department of Industrial Engineering", etc.). NEVER leave department as "Not specified" if any department, school, college, or subject focus is mentioned in the text.
+   - For multi-campus university systems or satellite institutes (e.g., Texas A&M University-Corpus Christi, Cornell Tech in NYC, Northeastern University Seattle, Purdue University in Indianapolis, Penn State Altoona), ALWAYS retain the specific campus name in "institution" and specify the actual physical campus/work location in "city_state" (e.g., "Corpus Christi, TX", "New York, NY", "Seattle, WA"), NEVER collapsing branch campuses into only the flagship name or flagship city.
 
 6. Provide a concise, 1-sentence "fit_reason" explaining the score (focused specifically on the most relevant position/track if multiple are advertised).
 
@@ -96,13 +97,13 @@ Return strictly valid JSON with no markdown formatting or commentary:
   "fit_score": 8,
   "fit_reason": "One concise sentence explaining the match or mismatch.",
   "clean_title": "Official position title (e.g. Assistant Professor of Transportation Systems Engineering)",
-  "institution": "Official university or college name (e.g. Georgia Institute of Technology)",
+  "institution": "Official university or college name, including specific campus when part of a multi-campus system (e.g. 'University of Michigan, Ann Arbor', 'Texas A&M University-Corpus Christi', 'Cornell Tech', 'Purdue University in Indianapolis', 'University of California, Berkeley'). NEVER collapse branch or satellite campuses into just the parent university name.",
   "department": "Department, school, or division name (e.g. School of Civil & Environmental Engineering)",
   "targeted_track": "If multiple positions/tracks with different research topics are advertised, specify the most relevant one (e.g. 'Transportation Systems Engineering (TSE)'); otherwise null",
   "tenure_track": "Tenure-Track, Tenured, Non-Tenure Track, or Unspecified",
   "deadline": "Application deadline: use YYYY-MM-DD format if a single deadline is given, or 'Priority: YYYY-MM-DD / Final: YYYY-MM-DD' if both review/priority date and final close date are specified, or 'Open until filled'. If the year is omitted in the posting text, infer the current academic cycle year (e.g. 'September 30' -> '2026-09-30', 'November 1' -> '2026-11-01', 'January 15' -> '2027-01-15').",
   "salary": "Salary range if mentioned, otherwise 'Not specified'",
-  "city_state": "City and State/Country (e.g. Austin, TX, or London, UK, or Taipei, Taiwan, or Singapore)",
+  "city_state": "City and State/Country of the ACTUAL campus or position work location (e.g. 'Corpus Christi, TX', 'New York, NY', 'Seattle, WA', 'Indianapolis, IN', 'Ann Arbor, MI', 'Austin, TX', or 'London, UK'). Crucial: MUST reflect the actual physical campus/site city, NOT the distant main flagship campus.",
   "country": "Country name (e.g. United States, United Kingdom, Canada, Singapore, Taiwan, Japan, South Korea)",
   "research_topics": ["List 2 to 4 specific research areas/topics matching the targeted track"],
   "concise_summary": "Strictly 1 concise sentence summarizing the primary focus of the role and minimum degree qualification. If multiple positions/tracks are advertised, MUST start with the most relevant position in brackets (e.g. '[Transportation Systems Engineering (TSE)] ...')."

@@ -283,10 +283,19 @@ class JobDeduplicator:
         ("computer_science", {"computer science", "software"}),
     ]
 
+    CAMPUS_QUALIFIERS = {
+        "ann arbor", "columbia", "twin cities", "ithaca", "college station", "west lafayette",
+        "urbana champaign", "bloomington", "chapel hill", "knoxville", "austin", "madison",
+        "athens", "norman", "tuscaloosa", "gainesville", "amherst", "seattle", "boulder",
+        "denver", "campus", "main campus", "flagship", "management", "singapore", "usa", "us", "uk", "ireland"
+    }
+
     @classmethod
     def clean_institution(cls, inst: str) -> str:
         raw = unicodedata.normalize("NFKD", inst or "").encode("ascii", "ignore").decode("utf-8")
         s = raw.lower().strip()
+        # Remove parenthetical acronyms / abbreviations (e.g. '(MIT)', '(IDSS)', '(CEE)') before alias expansion
+        s = re.sub(r"\s*\([a-z0-9\s&,\.\-]+\)\s*", " ", s).strip()
         s = re.sub(r"[\s,\-/]+", " ", s).strip()
         s = re.sub(r"^the\s+", "", s)
         for pat, repl in cls.INSTITUTION_ALIASES:
@@ -340,11 +349,16 @@ class JobDeduplicator:
                     if kw in loc2 and kw in c1:
                         return True
 
-        # Substring / containment check with allowed suffixes
+        # Substring / containment check with allowed suffixes and location verification
         if c1 in c2 or c2 in c1:
             longer, shorter = (c1, c2) if len(c1) > len(c2) else (c2, c1)
             diff = longer.replace(shorter, "").strip()
-            if diff in ("singapore", "columbia", "management", "usa", "us", "uk", "ireland"):
+            if diff in cls.CAMPUS_QUALIFIERS or any(diff == q or diff.startswith(q + " ") or diff.endswith(" " + q) for q in cls.CAMPUS_QUALIFIERS):
+                return True
+            # If both postings share the same physical city
+            l1 = (loc1 or "").split(",")[0].strip()
+            l2 = (loc2 or "").split(",")[0].strip()
+            if l1 and l2 and l1 == l2:
                 return True
 
         return False
@@ -526,15 +540,16 @@ class JobDeduplicator:
             if len(cluster) == 1:
                 kept_jobs.append(cluster[0])
             else:
-                # Rank: Highest quality / fit score first, then most recent verification and discovery dates
+                # Rank: Highest quality / fit score and concrete deadlines first, then most recent verification and discovery dates
                 def sort_key(x: JobPosting):
                     is_active = 1 if x.status == "Active" else 0
-                    has_specifics = 1 if (not self.is_generic_title(x.title) and not self.is_unspecified_department(x.field)) else 0
                     score = x.fit_score if x.fit_score is not None else -1
+                    has_concrete_dl = 1 if (x.deadline_date or (x.deadline and "open" not in x.deadline.lower() and "unspecified" not in x.deadline.lower() and "not" not in x.deadline.lower())) else 0
+                    has_specifics = 1 if (not self.is_generic_title(x.title) and not self.is_unspecified_department(x.field)) else 0
                     verif_date = x.date_last_verified or x.date_first_seen or ""
                     first_date = x.date_first_seen or ""
                     content_len = len(x.raw_description or "") + len(x.summary or "")
-                    return (is_active, has_specifics, score, verif_date, first_date, content_len, x.id or "")
+                    return (is_active, score, has_concrete_dl, has_specifics, verif_date, first_date, content_len, x.id or "")
 
                 sorted_cluster = sorted(cluster, key=sort_key, reverse=True)
                 winner = sorted_cluster[0]
