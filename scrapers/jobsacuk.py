@@ -123,7 +123,7 @@ class JobsAcUkScraper(BaseScraper):
                     deadline = desc_dl
 
                 # Geographic scope filter
-                if not JobPosting.is_allowed_location(location):
+                if not JobPosting.is_allowed_location(location, institution=institution):
                     continue
 
                 job_id_match = re.search(r"/job/([a-zA-Z0-9]+)/", full_url)

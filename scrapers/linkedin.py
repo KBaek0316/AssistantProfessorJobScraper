@@ -116,7 +116,7 @@ class LinkedInScraper(BaseScraper):
                         location = loc_elem.get_text(strip=True) if loc_elem else loc
 
                         # Geographic scope check
-                        if not JobPosting.is_allowed_location(location):
+                        if not JobPosting.is_allowed_location(location, institution=institution):
                             continue
 
                         # Time / Date

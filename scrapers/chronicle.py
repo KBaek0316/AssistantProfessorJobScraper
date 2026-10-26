@@ -114,6 +114,9 @@ class ChronicleScraper(BaseScraper):
                     institution = inst_detail or "Chronicle Listed University"
                     location = loc_detail or "United States"
 
+                    if not JobPosting.is_allowed_location(location, institution=institution):
+                        continue
+
                     postings.append(
                         JobPosting(
                             id=job_id,
@@ -177,6 +180,9 @@ class ChronicleScraper(BaseScraper):
                         institution = inst_detail
                     if loc_detail:
                         location = loc_detail
+
+                    if not JobPosting.is_allowed_location(location, institution=institution):
+                        continue
 
                     id_match = re.search(r"/job/(\d+)", full_url)
                     job_id_key = id_match.group(1) if id_match else full_url

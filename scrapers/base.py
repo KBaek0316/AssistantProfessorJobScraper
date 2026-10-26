@@ -360,13 +360,13 @@ class JobPosting:
         return True
 
     @staticmethod
-    def is_allowed_location(location: str, country: str = "") -> bool:
+    def is_allowed_location(location: str, country: str = "", institution: str = "") -> bool:
         """
-        Validates whether a location or country falls within the target geographic scope:
+        Validates whether a location, country, or institution falls within the target geographic scope:
         Allowed: US, European countries, Hong Kong, Singapore, Japan, South Korea, Taiwan.
         Strictly Excluded: Mainland China (PRC), other non-target countries (Middle East, Latin America, South Asia, Africa).
         """
-        combined = f"{location} {country}".lower().strip()
+        combined = f"{location} {country} {institution}".lower().strip()
         if not combined:
             return True
 
@@ -390,10 +390,13 @@ class JobPosting:
 
         # 3. Exclude other non-target regions if explicitly mentioned
         excluded_regions = [
+            r"\blebanon\b", r"\blebanese\b", r"\bbeirut\b", r"\bbyblos\b",
             r"\buae\b", r"\bunited arab emirates\b", r"\bsaudi arabia\b", r"\bqatar\b",
             r"\bkuwait\b", r"\boman\b", r"\bbahrain\b", r"\begypt\b", r"\bisrael\b",
+            r"\bjordan\b", r"\biraq\b", r"\biran\b", r"\bsyria\b", r"\byemen\b",
+            r"\bmiddle east\b",
             r"\bindia\b", r"\bpakistan\b", r"\bbangladesh\b",
-            r"\bbrazil\b", r"\bmexico\b", r"\bchile\b", r"\bcolombia\b", r"\bargentina\b",
+            r"\bbrazil\b", r"(?<!\bnew\s)\bmexico\b", r"\bchile\b", r"\bcolombia\b", r"\bargentina\b",
             r"\bsouth africa\b", r"\bnigeria\b", r"\bkenya\b",
             r"\brussia\b", r"\bbelarus\b", r"\bturkey\b", r"\btürkiye\b"
         ]

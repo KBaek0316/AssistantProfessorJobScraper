@@ -205,6 +205,14 @@ class JobDeduplicator:
                         filtered_to_cache.append(posting)
                         continue
 
+                    # If this posting is outside allowed geographic scope, move to filtered cache
+                    if not JobPosting.is_allowed_location(posting.location, institution=posting.institution):
+                        posting.status = "Filtered (Location Outside Scope)"
+                        posting.fit_score = 1
+                        posting.fit_reason = f"Screened out: Location outside target geographic scope ({posting.location})."
+                        filtered_to_cache.append(posting)
+                        continue
+
                     self.refresh_deadline_status(posting)
                     jobs[job_id] = posting
 
@@ -544,7 +552,7 @@ class JobDeduplicator:
                 def sort_key(x: JobPosting):
                     is_active = 1 if x.status == "Active" else 0
                     score = x.fit_score if x.fit_score is not None else -1
-                    has_concrete_dl = 1 if (x.deadline_date or (x.deadline and "open" not in x.deadline.lower() and "unspecified" not in x.deadline.lower() and "not" not in x.deadline.lower())) else 0
+                    has_concrete_dl = 1 if (x.deadline_date or (x.deadline and "open" not in x.deadline.lower() and "unspecified" not in x.deadline.lower() and "not" not in x.deadline.lower() and "posted" not in x.deadline.lower())) else 0
                     has_specifics = 1 if (not self.is_generic_title(x.title) and not self.is_unspecified_department(x.field)) else 0
                     verif_date = x.date_last_verified or x.date_first_seen or ""
                     first_date = x.date_first_seen or ""
@@ -572,7 +580,7 @@ class JobDeduplicator:
 
                     if (not winner.salary or winner.salary == "Not specified") and loser.salary and loser.salary != "Not specified":
                         winner.salary = loser.salary
-                    if (not winner.deadline or "open" in winner.deadline.lower()) and loser.deadline and "open" not in loser.deadline.lower():
+                    if (not winner.deadline or "open" in winner.deadline.lower() or "posted" in winner.deadline.lower()) and loser.deadline and "open" not in loser.deadline.lower() and "posted" not in loser.deadline.lower():
                         winner.deadline = loser.deadline
                         winner.deadline_date = loser.deadline_date
                     if len(loser.raw_description or "") > len(winner.raw_description or ""):
@@ -643,8 +651,8 @@ class JobDeduplicator:
                 filtered_identifiers.add(normalized_link)
                 continue
 
-            # Location pre-check if location is present in scraped card
-            if job.location and not JobPosting.is_allowed_location(job.location):
+            # Location pre-check if location or institution is present in scraped card
+            if (job.location or job.institution) and not JobPosting.is_allowed_location(job.location, institution=job.institution):
                 job.status = "Filtered (Location Outside Scope)"
                 self.save_filtered_jobs([job])
                 filtered_identifiers.add(job.id)
@@ -663,7 +671,7 @@ class JobDeduplicator:
                     existing.raw_description = job.raw_description
                 if job.salary and job.salary != "Not specified" and (not existing.salary or existing.salary == "Not specified"):
                     existing.salary = job.salary
-                if job.deadline and "open" not in job.deadline.lower() and "open" in (existing.deadline or "").lower():
+                if job.deadline and "open" not in job.deadline.lower() and "posted" not in job.deadline.lower() and ("open" in (existing.deadline or "").lower() or "posted" in (existing.deadline or "").lower()):
                     existing.deadline = job.deadline
                     existing.deadline_date = job.deadline_date
             else:

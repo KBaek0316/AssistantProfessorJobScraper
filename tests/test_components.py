@@ -224,6 +224,11 @@ class TestComponents(unittest.TestCase):
         self.assertFalse(JobPosting.is_allowed_location("Dubai", "UAE"))
         self.assertFalse(JobPosting.is_allowed_location("Riyadh", "Saudi Arabia"))
         self.assertFalse(JobPosting.is_allowed_location("Mumbai", "India"))
+        self.assertFalse(JobPosting.is_allowed_location("Byblos", "Lebanon"))
+        self.assertFalse(JobPosting.is_allowed_location("Byblos", institution="Lebanese American University"))
+        self.assertFalse(JobPosting.is_allowed_location("Beirut", "Lebanon"))
+        self.assertTrue(JobPosting.is_allowed_location("Las Cruces, New Mexico", "United States"))
+        self.assertTrue(JobPosting.is_allowed_location("Albuquerque, NM"))
         self.assertFalse(JobPosting.is_allowed_location("São Paulo", "Brazil"))
 
     def test_institution_department_deduplication(self):
