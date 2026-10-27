@@ -109,6 +109,7 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
    - 5-6 (Broad Fit): Broad department search where candidate's subfield is an acceptable focus area.
    - 3-4 (Low Fit): General department faculty searches with peripheral overlap.
    - 1-2 (Screened Out / Irrelevant): Completely unrelated fields or non-matching subfields.
+   - Generic Titles with Missing / Snippet-Only Descriptions: If a posting only provides a generic faculty title without explicit departmental or research specialization details in the text, DO NOT assume or fabricate a core match. Cap fit_score at 3-5 (typically 3-4) with fit_reason explaining that specific department/specialization details are unavailable.
 4. Handling Multiple Positions / Tracks / Research Topics in a Single Posting:
    - If multiple positions with distinct research topics are advertised, identify the single most relevant position/track (e.g. "Transportation Systems Engineering (TSE)"), evaluate fit_score, fit_reason, and research_topics based on that track, specify "targeted_track", and ensure "concise_summary" starts with "[<Track Name>] ...".
 5. Department, Campus & Location Extraction:
@@ -194,6 +195,9 @@ Extract JSON with fields: is_faculty (bool), fit_score (int 1-10), fit_reason (s
                             f"Summary Context: {p.summary or 'Tenure-track academic faculty position'}. "
                             f"Link: {p.link}"
                         )
+            if p.raw_description and len(p.raw_description.strip()) < 300:
+                if "[Note: Detailed job description" not in p.raw_description:
+                    p.raw_description = f"{p.raw_description.strip()} [Note: Detailed job description could not be retrieved from the source board; evaluate conservatively based only on verified text.]"
             desc = p.raw_description or p.summary or ""
             batch_input.append({
                 "id": p.id,
@@ -523,6 +527,9 @@ Return strictly a JSON array of objects (one per evaluated job) with fields:
                         f"Summary Context: {posting.summary or 'Tenure-track academic faculty position'}. "
                         f"Official Application Link: {posting.link}"
                     )
+            if posting.raw_description and len(posting.raw_description.strip()) < 300:
+                if "[Note: Detailed job description" not in posting.raw_description:
+                    posting.raw_description = f"{posting.raw_description.strip()} [Note: Detailed job description could not be retrieved from the source board; evaluate conservatively based only on verified text.]"
         else:
             # Store in cache
             if posting.id not in desc_cache or len(posting.raw_description) > len(desc_cache.get(posting.id, "")):

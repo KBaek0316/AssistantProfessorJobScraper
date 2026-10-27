@@ -137,7 +137,7 @@ class LinkedInScraper(BaseScraper):
                                 id=job_id,
                                 title=title,
                                 institution=institution,
-                                field="Transportation Engineering",
+                                field="Not specified",
                                 location=location,
                                 deadline=deadline,
                                 salary="Not specified",

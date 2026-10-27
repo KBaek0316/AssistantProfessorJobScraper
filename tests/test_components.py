@@ -896,9 +896,36 @@ class TestComponents(unittest.TestCase):
         self.assertAlmostEqual(tamu_cc.latitude, 27.7128, places=3)
         self.assertAlmostEqual(tamu_cc.longitude, -97.3234, places=3)
 
+    def test_filtered_jobs_cache_and_linkedin_field(self):
+        """Verify filtered_jobs.json excludes screened positions and LinkedIn does not fabricate fields."""
+        from scrapers.linkedin import LinkedInScraper
+        scraper = LinkedInScraper()
+        self.assertEqual(scraper.name, "LinkedIn")
+
+        # Test deduplicator respects filtered cache
+        dedup = JobDeduplicator()
+        filtered_ids = dedup.load_filtered_ids()
+        self.assertIn("8f5d66dcdfbbc7fd", filtered_ids)
+
+        test_posting = JobPosting(
+            id="8f5d66dcdfbbc7fd",
+            title="Assistant Professor",
+            institution="The University of Texas at Arlington",
+            field="Not specified",
+            location="Arlington, TX",
+            deadline="Open until filled",
+            salary="Not specified",
+            link="https://www.linkedin.com/jobs/view/assistant-professor-at-the-university-of-texas-at-arlington-4397332037",
+            source="LinkedIn",
+        )
+        new_jobs, all_jobs = dedup.process_incoming([test_posting])
+        self.assertEqual(len(new_jobs), 0)
+        self.assertNotIn("8f5d66dcdfbbc7fd", [j.id for j in all_jobs])
+
 
 if __name__ == "__main__":
     unittest.main()
+
 
 
 

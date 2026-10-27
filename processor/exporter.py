@@ -192,6 +192,20 @@ class JobExporter:
 
         except ImportError:
             self.logger.warning("pandas or openpyxl not installed. Excel export skipped.")
+        except PermissionError as pe:
+            fallback_path = f"{os.path.splitext(self.excel_filepath)[0]}_updated.xlsx"
+            self.logger.warning(
+                f"Permission denied on '{self.excel_filepath}' (likely open in Microsoft Excel). "
+                f"Attempting to write updated data to fallback '{fallback_path}'..."
+            )
+            try:
+                with pd.ExcelWriter(fallback_path, engine="openpyxl") as writer:
+                    df.to_excel(writer, index=False, sheet_name=main_sheet)
+                    worksheet = writer.sheets[main_sheet]
+                    self._format_worksheet(worksheet, rows, header_labels)
+                self.logger.info(f"Successfully saved updated Excel file to fallback: {fallback_path}")
+            except Exception as fe:
+                self.logger.error(f"Failed writing fallback Excel file: {fe}")
         except Exception as e:
             self.logger.error(f"Error exporting Excel file: {e}", exc_info=True)
 
