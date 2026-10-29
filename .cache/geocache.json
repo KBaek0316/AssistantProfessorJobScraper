@@ -1082,5 +1082,21 @@
   "vrije universiteit amsterdam, amsterdam, north holland": [
     52.3340539,
     4.8651882
+  ],
+  "grove city college, grove city, pa": [
+    41.1553489,
+    -80.0787486
+  ],
+  "city college of new york, new york city, ny": [
+    40.8181098,
+    -73.950886
+  ],
+  "university of north texas, denton, tx": [
+    33.2098922,
+    -97.1514763
+  ],
+  "iowa state university, ames, ia": [
+    42.0279608,
+    -93.6447375
   ]
 }
