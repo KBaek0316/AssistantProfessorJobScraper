@@ -890,26 +890,6 @@
     "date_filtered": "2026-10-31"
   },
   {
-    "id": "a4b5790fcc078fbb",
-    "title": "Transportation Services Assistant Supervisor, Demand Response",
-    "institution": "University of Wyoming",
-    "link": "https://jobs.chronicle.com/job/38058111/hourly-pooled-transportation-services-assistant-supervisor-demand-response/",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Non-faculty administrative and operational campus transit staff position.",
-    "date_filtered": "2026-10-31"
-  },
-  {
-    "id": "b0279b2e86c94bee",
-    "title": "Assistant Director, Parking & Transportation",
-    "institution": "George Mason University",
-    "link": "https://jobs.chronicle.com/job/37982430/assistant-director-parking-and-transportation/",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: University administrative staff position managing parking and transit operations rather than an academic faculty appointment.",
-    "date_filtered": "2026-10-31"
-  },
-  {
     "id": "b3540d0a8f864507",
     "title": "Assistant Professor of Architectural Engineering",
     "institution": "Milwaukee School of Engineering",
@@ -920,16 +900,6 @@
     "date_filtered": "2026-10-31"
   },
   {
-    "id": "ca60ae0547b1c10e",
-    "title": "Teaching Dental Assistant Mobile Clinic",
-    "institution": "University of the Pacific",
-    "link": "https://jobs.chronicle.com/job/38036146/teaching-dental-assistant-mobile-clinic/",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Clinical dental assistant instructional position in dentistry completely unrelated to transportation engineering or urban planning.",
-    "date_filtered": "2026-10-31"
-  },
-  {
     "id": "579476370e2ed209",
     "title": "Assistant Professor of Criminal Justice and Criminology",
     "institution": "Georgia State University",
@@ -937,26 +907,6 @@
     "status": "Filtered (Low Relevance)",
     "fit_score": 1,
     "fit_reason": "Screened out: Role is in criminal justice and criminology, which is completely unrelated to transportation engineering or urban planning.",
-    "date_filtered": "2026-10-31"
-  },
-  {
-    "id": "6eaba38b6bbbb1a2",
-    "title": "Deputy/Assistant Manager, Policy (Private Transport)",
-    "institution": "Land Transport Authority (LTA) Singapore",
-    "link": "https://sg.linkedin.com/jobs/view/lta-p-p-deputy-assistant-manager-policy-private-transport-at-land-transport-authority-lta-singapore-4470432609",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: This is a government policy and administrative staff role (Deputy/Assistant Manager) rather than a university faculty position.",
-    "date_filtered": "2026-10-31"
-  },
-  {
-    "id": "b911fb300640fe86",
-    "title": "Lecturer - Aviation Services",
-    "institution": "Institute of Technical Education, College East",
-    "link": "https://sg.linkedin.com/jobs/view/lecturer-aviation-services-ite-college-east-%E2%80%93-2-year-contract-at-institute-of-technical-education-4481227894",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Non-university vocational teaching appointment requiring operational industry experience rather than an academic research profile.",
     "date_filtered": "2026-10-31"
   },
   {
@@ -980,24 +930,134 @@
     "date_filtered": "2026-10-31"
   },
   {
-    "id": "726bf339b377efe5",
-    "title": "Assistant d'\u00e9tudes \"mobilit\u00e9s et dynamiques spatiales\"",
-    "institution": "Agence d'Urbanisme Besan\u00e7on Centre Franche-Comt\u00e9 (AUDAB)",
-    "link": "https://fr.linkedin.com/jobs/view/assistant-d-%C3%A9tudes-mobilit%C3%A9s-et-dynamiques-spatiales-h-f-4481977069",
-    "status": "Filtered (Non-Faculty / Seniority)",
+    "id": "d83ab4eb72623e00",
+    "title": "Open Rank Faculty Positions in Materials Science and Engineering",
+    "institution": "Florida A&M University - Florida State University College of Engineering",
+    "link": "http://engineering.academickeys.com/job/87gte0d5/Assistant-Professor--Mechanical-Engineering",
+    "status": "Filtered (Low Relevance)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Non-faculty position (study assistant/planner role at an urban planning agency, not a university faculty appointment).",
-    "date_filtered": "2026-10-31"
+    "fit_reason": "Screened out: Position is in Materials Science and Engineering, an irrelevant discipline outside transportation engineering.",
+    "date_filtered": "2026-11-01"
   },
   {
-    "id": "6b1aa32a70088e20",
-    "title": "Research Assistant in Robotics",
-    "institution": "IMDEA Materials Institute",
-    "link": "https://es.linkedin.com/jobs/view/research-assistant-in-robotics-at-imdea-materials-institute-4461970147",
+    "id": "bad0506981330870",
+    "title": "Assistant Teaching Professor, College of Nursing and Health Sciences",
+    "institution": "Seattle University",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179604677&Title=Assistant%20Teaching%20Professor%2C%20College%20of%20Nursing%20and%20Health%20Sciences%2D1",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Faculty teaching position is in Nursing and Health Sciences, completely unrelated to transportation engineering.",
+    "date_filtered": "2026-11-01"
+  },
+  {
+    "id": "7e79437ca65d2366",
+    "title": "Assistant Professor Communication Studies",
+    "institution": "Georgia Southern University",
+    "link": "https://jobs.chronicle.com/job/38054255/assistant-professor-communication-studies/",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Completely unrelated field in Communication Studies.",
+    "date_filtered": "2026-11-01"
+  },
+  {
+    "id": "a4b5790fcc078fbb",
+    "title": "Transportation Services Assistant Supervisor, Demand Response",
+    "institution": "University of Wyoming",
+    "link": "https://jobs.chronicle.com/job/38058111/hourly-pooled-transportation-services-assistant-supervisor-demand-response/",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Non-faculty research assistant position in materials robotics rather than a tenure-track or career-track university professorship.",
-    "date_filtered": "2026-10-31"
+    "fit_reason": "Screened out: Hourly non-faculty transit operations supervisory staff position.",
+    "date_filtered": "2026-11-01"
+  },
+  {
+    "id": "b0279b2e86c94bee",
+    "title": "Assistant Director, Parking & Transportation",
+    "institution": "George Mason University",
+    "link": "https://jobs.chronicle.com/job/37982430/assistant-director-parking-and-transportation/",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: University administrative staff position managing campus parking and transportation operations.",
+    "date_filtered": "2026-11-01"
+  },
+  {
+    "id": "ca60ae0547b1c10e",
+    "title": "Teaching Dental Assistant Mobile Clinic",
+    "institution": "University of the Pacific",
+    "link": "https://jobs.chronicle.com/job/38036146/teaching-dental-assistant-mobile-clinic/",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Non-faculty clinical dental assistant staff position in dentistry.",
+    "date_filtered": "2026-11-01"
+  },
+  {
+    "id": "8df7fe97a4bb0e91",
+    "title": "Assistant Professor in Dynamical Systems",
+    "institution": "Vrije Universiteit Amsterdam",
+    "link": "https://nl.linkedin.com/jobs/view/assistant-professor-in-dynamical-systems-at-vrije-universiteit-amsterdam-vu-amsterdam-4484457250",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 2,
+    "fit_reason": "Low fit: Position is in mathematics focusing on dynamical systems and theoretical modeling rather than transportation engineering.",
+    "date_filtered": "2026-11-01"
+  },
+  {
+    "id": "6eaba38b6bbbb1a2",
+    "title": "Deputy/Assistant Manager, Policy (Private Transport)",
+    "institution": "Land Transport Authority (LTA) Singapore",
+    "link": "https://sg.linkedin.com/jobs/view/lta-p-p-deputy-assistant-manager-policy-private-transport-at-land-transport-authority-lta-singapore-4470432609",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Non-faculty public agency policy and administrative role at the Land Transport Authority of Singapore.",
+    "date_filtered": "2026-11-01"
+  },
+  {
+    "id": "b911fb300640fe86",
+    "title": "Lecturer - Aviation Services",
+    "institution": "Institute of Technical Education",
+    "link": "https://sg.linkedin.com/jobs/view/lecturer-aviation-services-ite-college-east-%E2%80%93-2-year-contract-at-institute-of-technical-education-4481227894",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Role is a teaching staff lecturer position in aviation services requiring operational industry experience rather than a tenure-track faculty appointment.",
+    "date_filtered": "2026-11-01"
+  },
+  {
+    "id": "f17d4c6d749262de",
+    "title": "Research Assistant Professor",
+    "institution": "The Chinese University of Hong Kong",
+    "link": "https://hk.linkedin.com/jobs/view/research-assistant-professor-s-at-the-chinese-university-of-hong-kong-4484426305",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Mechanical and Automation Engineering department position focused on robotics, mechatronics, and manufacturing, lacking transportation systems engineering alignment.",
+    "date_filtered": "2026-11-01"
+  },
+  {
+    "id": "faf9904904ae1e80",
+    "title": "Engineering Assistant I, II, or III",
+    "institution": "Texas Department of Transportation",
+    "link": "https://hk.linkedin.com/jobs/view/engineering-assistant-i-ii-or-iii-abilene-central-design-office-at-texas-department-of-transportation-4483586497",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Position is an entry-level engineering assistant staff role at a state department of transportation, not a faculty appointment.",
+    "date_filtered": "2026-11-01"
+  },
+  {
+    "id": "d0b7efb2fcc6b7e6",
+    "title": "Open-Rank Faculty Position",
+    "institution": "The Hong Kong University of Science and Technology",
+    "link": "https://hk.linkedin.com/jobs/view/open-rank-faculty-positions-assistant-associate-full-professor-at-the-hong-kong-university-of-science-and-technology-4479236683",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Department of Materials focused on materials science, energy, and biomedicine, which is completely outside the candidate's core transportation engineering profile.",
+    "date_filtered": "2026-11-01"
+  },
+  {
+    "id": "a279eb8be40b13ec",
+    "title": "Assistant Director Economic Analysis",
+    "institution": "International Air Transport Association (IATA)",
+    "link": "https://ch.linkedin.com/jobs/view/assistant-director-economic-analysis-at-international-air-transport-association-iata-4484098963",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Non-faculty industry association economic analysis role at the International Air Transport Association.",
+    "date_filtered": "2026-11-01"
   },
   {
     "id": "5f94ca78c1b8c308",
@@ -1006,8 +1066,8 @@
     "link": "https://uk.linkedin.com/jobs/view/transport-modeller-assistant-transport-modeller-at-wsp-in-the-uk-ireland-4468651711",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Non-academic industry consulting role at WSP, not a university faculty appointment.",
-    "date_filtered": "2026-10-31"
+    "fit_reason": "Screened out: Non-faculty private consulting position in transport modelling at WSP.",
+    "date_filtered": "2026-11-01"
   },
   {
     "id": "699310b717b5d28c",
@@ -1016,8 +1076,8 @@
     "link": "https://kr.linkedin.com/jobs/view/warsim-jcats-instructor-controller-at-valiant-integrated-services-4430736441",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Military contractor simulation controller position, completely unrelated to academic faculty appointments.",
-    "date_filtered": "2026-10-31"
+    "fit_reason": "Screened out: Non-faculty military simulation training controller role for defense contractor Valiant Integrated Services.",
+    "date_filtered": "2026-11-01"
   },
   {
     "id": "951e0a12877591f6",
@@ -1026,8 +1086,8 @@
     "link": "https://jp.linkedin.com/jobs/view/logistics-operations-planning-assistant-manager-test-course-operations-at-woven-by-toyota-4441816215",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Industry operational and logistics management position at Woven by Toyota, not an academic faculty appointment.",
-    "date_filtered": "2026-10-31"
+    "fit_reason": "Screened out: Non-faculty corporate logistics operations planning position at Woven by Toyota.",
+    "date_filtered": "2026-11-01"
   },
   {
     "id": "ca48dce1dc7235ab",
@@ -1036,8 +1096,8 @@
     "link": "https://sg.linkedin.com/jobs/view/assistant-director-civil-resource-navy-at-ministry-of-defence-of-singapore-4472120167",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Government defense administrative position with the Singapore Navy, not an academic faculty appointment.",
-    "date_filtered": "2026-10-31"
+    "fit_reason": "Screened out: Non-faculty government administrative/operational role in maritime resource planning.",
+    "date_filtered": "2026-11-01"
   },
   {
     "id": "8778b13b7d957652",
@@ -1046,8 +1106,8 @@
     "link": "https://sg.linkedin.com/jobs/view/lecturer-supply-chain-logistics-management-sch-of-business-management-at-nanyang-polytechnic-4483591429",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Vocational polytechnic diploma teaching role focused on commercial supply chain and warehouse management rather than university faculty research/teaching.",
-    "date_filtered": "2026-10-31"
+    "fit_reason": "Polytechnic diploma teaching appointment focused on general commercial supply chain, warehousing, and logistics rather than university passenger transportation research.",
+    "date_filtered": "2026-11-01"
   },
   {
     "id": "a93f960569be30ee",
@@ -1056,18 +1116,48 @@
     "link": "https://sg.linkedin.com/jobs/view/assistant-director-organisation-development-plans-at-ministry-of-defence-of-singapore-4475679465",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Military organization development and defense logistics role, not an academic faculty appointment.",
-    "date_filtered": "2026-10-31"
+    "fit_reason": "Screened out: Non-faculty military logistics and organizational strategy administrative role.",
+    "date_filtered": "2026-11-01"
   },
   {
     "id": "f4cc03558680f4d1",
     "title": "Senior/Assistant Director, Supply Chain and Economic Resilience Division",
-    "institution": "Ministry of Trade and Industry, Singapore",
+    "institution": "Ministry of Energy, Trade and Industry, Singapore",
     "link": "https://sg.linkedin.com/jobs/view/senior-assistant-director-supply-chain-and-economic-resilience-division-at-ministry-of-energy-trade-and-industry-singapore-4421104096",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Government civil service administrative and policy position, not an academic faculty appointment.",
-    "date_filtered": "2026-10-31"
+    "fit_reason": "Screened out: Non-faculty government public policy and trade resilience position.",
+    "date_filtered": "2026-11-01"
+  },
+  {
+    "id": "c9caba1207e3c5f1",
+    "title": "Research Assistant",
+    "institution": "Okinawa Institute of Science and Technology (OIST)",
+    "link": "https://jp.linkedin.com/jobs/view/research-assistant-%E7%A0%94%E7%A9%B6%E5%8A%A9%E6%89%8B-at-okinawa-institute-of-science-and-technology-oist-4480767805",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Position is a research assistant staff role rather than a faculty appointment.",
+    "date_filtered": "2026-11-01"
+  },
+  {
+    "id": "9ee93e246141ec41",
+    "title": "Research Engineer/Assistant (Urban Analytics & Data Science)",
+    "institution": "National University of Singapore",
+    "link": "https://sg.linkedin.com/jobs/view/research-engineer-assistant-urban-analytics-data-science-nus-cities-at-national-university-of-singapore-4447338170",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Position is a research engineer/assistant staff role rather than a faculty appointment.",
+    "date_filtered": "2026-11-01"
+  },
+  {
+    "id": "a5cb196d719b72e2",
+    "title": "Senior Assistant Director/ Assistant Director, Data Analytics",
+    "institution": "Agency for Integrated Care",
+    "link": "https://sg.linkedin.com/jobs/view/senior-assistant-director-assistant-director-data-analytics-at-agency-for-integrated-care-singapore-4478395852",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Position is an administrative and data analytics staff role in an agency rather than a university faculty appointment.",
+    "date_filtered": "2026-11-01"
   },
   {
     "id": "d262474ccb0a8988",
@@ -1076,7 +1166,7 @@
     "link": "https://www.jobs.ac.uk/job/DTI319/research-assistant-in-cardiovascular-nanomedicine",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is a biomedical research assistant position in cardiovascular nanomedicine, entirely outside the candidate's core field of transportation engineering.",
-    "date_filtered": "2026-10-31"
+    "fit_reason": "Screened out: Research assistant role in biomedical/cardiovascular nanomedicine completely outside the candidate's core field.",
+    "date_filtered": "2026-11-01"
   }
 ]
