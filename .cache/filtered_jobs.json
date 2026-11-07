@@ -1170,36 +1170,6 @@
     "date_filtered": "2026-11-06"
   },
   {
-    "id": "d447a0587b492493",
-    "title": "Research Assistant",
-    "institution": "Haverford College",
-    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179606627&Title=Research%20Assistant",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Position is a staff research assistant role rather than a faculty appointment.",
-    "date_filtered": "2026-11-06"
-  },
-  {
-    "id": "a4b5790fcc078fbb",
-    "title": "Assistant Supervisor, Demand Response",
-    "institution": "University of Wyoming",
-    "link": "https://jobs.chronicle.com/job/38058111/hourly-pooled-transportation-services-assistant-supervisor-demand-response/",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out because this is an administrative staff supervisory role rather than a faculty position.",
-    "date_filtered": "2026-11-06"
-  },
-  {
-    "id": "df9e3a7d7c2ead12",
-    "title": "Assistant Transportation Fleet Coordinator",
-    "institution": "Chatham University",
-    "link": "https://jobs.chronicle.com/job/38059729/assistant-transportation-fleet-coordinator/",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out because this is an administrative staff fleet coordinator position rather than an academic faculty appointment.",
-    "date_filtered": "2026-11-06"
-  },
-  {
     "id": "ca60ae0547b1c10e",
     "title": "Teaching Dental Assistant Mobile Clinic",
     "institution": "University of the Pacific",
@@ -1220,34 +1190,94 @@
     "date_filtered": "2026-11-06"
   },
   {
-    "id": "dc3d64de670c0341",
-    "title": "Instructor, Heavy Equipment Technology",
-    "institution": "Southern Alberta Institute of Technology (SAIT)",
-    "link": "https://ca.linkedin.com/jobs/view/instructor-heavy-equipment-technology-at-southern-alberta-institute-of-technology-sait-4485264348",
-    "status": "Filtered (Non-Faculty / Seniority)",
+    "id": "58be84464539ecef",
+    "title": "Assistant Professor of Aerospace Engineering",
+    "institution": "San Diego State University",
+    "link": "http://engineering.academickeys.com/job/9luafztr/Assistant-Professor-of-Aerospace-Engineering",
+    "status": "Filtered (Low Relevance)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Non-degree hands-on technical trades instructor position in heavy equipment technology.",
-    "date_filtered": "2026-11-06"
+    "fit_reason": "Screened out: The position is for Aerospace Engineering, which is outside the candidate's core research and academic focus in transportation and civil engineering.",
+    "date_filtered": "2026-11-07"
   },
   {
-    "id": "2cf6a6411ac4f8b8",
-    "title": "Civil Engineering Technology Instructor",
-    "institution": "College of New Caledonia",
-    "link": "https://ca.linkedin.com/jobs/view/civil-engineering-technology-instructor-at-college-of-new-caledonia-4488065779",
+    "id": "6f10c010a81a9591",
+    "title": "Assistant Professor of Analytical Chemistry",
+    "institution": "University of Michigan - Dearborn",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179610630&Title=Assistant%20Professor%20of%20Analytical%20Chemistry",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a faculty position in Analytical Chemistry, which is unrelated to the candidate's core field of transportation engineering.",
+    "date_filtered": "2026-11-07"
+  },
+  {
+    "id": "46dc4f9ddd51a1ea",
+    "title": "Assistant Professor of Theatre",
+    "institution": "Hope College",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179610488&Title=Theatre%20%2D%20Assistant%20Professor%20of%20Theatre",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a faculty position in Theatre, which is unrelated to the candidate's research profile.",
+    "date_filtered": "2026-11-07"
+  },
+  {
+    "id": "d447a0587b492493",
+    "title": "Research Assistant",
+    "institution": "Haverford College",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179606627&Title=Research%20Assistant",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Teaching instructor position for civil engineering technology diploma programs with a structural design focus.",
-    "date_filtered": "2026-11-06"
+    "fit_reason": "Screened out because this is a non-faculty staff research assistant position rather than a tenure-track or teaching faculty role.",
+    "date_filtered": "2026-11-07"
+  },
+  {
+    "id": "a4b5790fcc078fbb",
+    "title": "Assistant Supervisor, Demand Response",
+    "institution": "University of Wyoming",
+    "link": "https://jobs.chronicle.com/job/38058111/hourly-pooled-transportation-services-assistant-supervisor-demand-response/",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out because this is a non-faculty administrative/operational support position (Assistant Supervisor, Demand Response).",
+    "date_filtered": "2026-11-07"
+  },
+  {
+    "id": "df9e3a7d7c2ead12",
+    "title": "Assistant Transportation Fleet Coordinator",
+    "institution": "Chatham University",
+    "link": "https://jobs.chronicle.com/job/38059729/assistant-transportation-fleet-coordinator/",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is an administrative support role, not a tenure-track or career-track faculty position.",
+    "date_filtered": "2026-11-07"
+  },
+  {
+    "id": "a2eb339df5ff6d4b",
+    "title": "Assistant Manager, Transportation Planning",
+    "institution": "City of Nanaimo",
+    "link": "https://ca.linkedin.com/jobs/view/assistant-manager-transportation-planning-at-city-of-nanaimo-4488441980",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a municipal staff management role (Assistant Manager, Transportation Planning) rather than a university faculty position.",
+    "date_filtered": "2026-11-07"
   },
   {
     "id": "726bf339b377efe5",
-    "title": "Assistant d'\u00e9tudes \"mobilit\u00e9s et dynamiques spatiales\" (H/F)",
-    "institution": "Agence d'Urbanisme Besancon Centre Franche-Comt\u00e9 (AUDAB)",
+    "title": "Assistant d'\u00e9tudes \"mobilit\u00e9s et spatiales\"",
+    "institution": "AGENCE D'URBANISME BESANCON CENTRE FRANC",
     "link": "https://fr.linkedin.com/jobs/view/assistant-d-%C3%A9tudes-mobilit%C3%A9s-et-dynamiques-spatiales-h-f-4481977069",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Non-faculty planning research assistant / analyst position at an urban planning agency.",
-    "date_filtered": "2026-11-06"
+    "fit_reason": "Screened out: Research/study assistant position rather than a faculty appointment.",
+    "date_filtered": "2026-11-07"
+  },
+  {
+    "id": "408aee246b83fa37",
+    "title": "Assistant Professor/Associate Professor",
+    "institution": "University of Texas at Arlington",
+    "link": "https://www.linkedin.com/jobs/view/assistant-professor-associate-professor-at-excel-campus-activities-4487338664",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 2,
+    "fit_reason": "Poor fit: Faculty position explicitly dedicated to Construction Engineering and Management rather than transportation engineering.",
+    "date_filtered": "2026-11-07"
   },
   {
     "id": "5f94ca78c1b8c308",
@@ -1256,8 +1286,8 @@
     "link": "https://uk.linkedin.com/jobs/view/transport-modeller-assistant-transport-modeller-at-wsp-in-the-uk-ireland-4468651711",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is an industry transport modeling position in the private sector rather than an academic faculty appointment.",
-    "date_filtered": "2026-11-06"
+    "fit_reason": "Screened out: This is an industry commercial transport modeller consulting role rather than a university faculty position.",
+    "date_filtered": "2026-11-07"
   },
   {
     "id": "699310b717b5d28c",
@@ -1266,8 +1296,8 @@
     "link": "https://kr.linkedin.com/jobs/view/warsim-jcats-instructor-controller-at-valiant-integrated-services-4430736441",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is a military simulation instructor/controller position rather than an academic faculty role.",
-    "date_filtered": "2026-11-06"
+    "fit_reason": "Screened out: Military simulation instructor and controller role, unrelated to academic faculty appointments.",
+    "date_filtered": "2026-11-07"
   },
   {
     "id": "951e0a12877591f6",
@@ -1276,8 +1306,8 @@
     "link": "https://jp.linkedin.com/jobs/view/logistics-operations-planning-assistant-manager-test-course-operations-at-woven-by-toyota-4441816215",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is a corporate logistics operations and planning position rather than an academic faculty appointment.",
-    "date_filtered": "2026-11-06"
+    "fit_reason": "Screened out: Corporate logistics and supply chain operations role in industry rather than a faculty position.",
+    "date_filtered": "2026-11-07"
   },
   {
     "id": "ca48dce1dc7235ab",
@@ -1286,8 +1316,8 @@
     "link": "https://sg.linkedin.com/jobs/view/assistant-director-civil-resource-navy-at-ministry-of-defence-of-singapore-4472120167",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is a government/commercial maritime resource planning position rather than an academic faculty appointment.",
-    "date_filtered": "2026-11-06"
+    "fit_reason": "Screened out: Government defense administrative role in commercial maritime resource planning rather than a university faculty position.",
+    "date_filtered": "2026-11-07"
   },
   {
     "id": "a93f960569be30ee",
@@ -1296,8 +1326,8 @@
     "link": "https://sg.linkedin.com/jobs/view/assistant-director-organisation-development-plans-at-ministry-of-defence-of-singapore-4475679465",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is a non-academic administrative and strategic logistics role within the Ministry of Defence, not an academic faculty position.",
-    "date_filtered": "2026-11-06"
+    "fit_reason": "Screened out: Government defense organizational planning and logistics management role rather than an academic faculty position.",
+    "date_filtered": "2026-11-07"
   },
   {
     "id": "6eaba38b6bbbb1a2",
@@ -1306,7 +1336,37 @@
     "link": "https://sg.linkedin.com/jobs/view/lta-p-p-deputy-assistant-manager-policy-private-transport-at-land-transport-authority-lta-singapore-4470432609",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is a government agency policy and administrative role rather than an academic faculty position.",
-    "date_filtered": "2026-11-06"
+    "fit_reason": "Screened out as this is a government policy and administrative staff position rather than an academic faculty appointment.",
+    "date_filtered": "2026-11-07"
+  },
+  {
+    "id": "c3a79ba5c0324e19",
+    "title": "Research Assistant/Research Associate (Fixed Term)",
+    "institution": "University of Cambridge",
+    "link": "https://www.jobs.ac.uk/job/DTN710/research-assistant-research-associate-fixed-term",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out as this is a postdoctoral research associate position in mitochondrial biology rather than a faculty appointment.",
+    "date_filtered": "2026-11-07"
+  },
+  {
+    "id": "56ae71ebf9ca04be",
+    "title": "Full/Associate/Assistant Professor in Electromechanical Engineering",
+    "institution": "University of Macau",
+    "link": "https://www.jobs.ac.uk/job/DTO366/full-associate-assistant-professor-in-electromechanical-engineering",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 2,
+    "fit_reason": "Screened out because the position is dedicated to Electromechanical Engineering and mechanical systems, outside the candidate's core transportation engineering field.",
+    "date_filtered": "2026-11-07"
+  },
+  {
+    "id": "6a90ea79f8ebde97",
+    "title": "Research Assistant",
+    "institution": "University of Warwick",
+    "link": "https://www.jobs.ac.uk/job/DTO413/research-assistant",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out as this is a non-faculty research assistant position in biomedical sciences and cell biology.",
+    "date_filtered": "2026-11-07"
   }
 ]

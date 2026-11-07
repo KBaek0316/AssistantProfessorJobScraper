@@ -1166,5 +1166,29 @@
   "university of cambridge, cambridge": [
     52.2053,
     0.1166
+  ],
+  "milwaukee school of engineering, milwaukee, wi": [
+    43.045766,
+    -87.9079361
+  ],
+  "university of illinois urbana-champaign, urbana, il": [
+    40.102,
+    -88.2272
+  ],
+  "university of calgary, calgary, alberta": [
+    51.0778,
+    -114.1332
+  ],
+  "western university, london, ontario": [
+    43.0096,
+    -81.2737
+  ],
+  "university of nebraska\u2013lincoln, lincoln, ne": [
+    40.8305567,
+    -96.6697373
+  ],
+  "university of nebraska-lincoln, lincoln, ne": [
+    40.8305567,
+    -96.6697373
   ]
 }
