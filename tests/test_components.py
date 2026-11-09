@@ -422,6 +422,7 @@ class TestComponents(unittest.TestCase):
         self.assertEqual(clean("UC Berkeley"), clean("University of California, Berkeley"))
         self.assertEqual(clean("Georgia Tech"), clean("Georgia Institute of Technology"))
         self.assertEqual(clean("UIUC"), clean("University of Illinois Urbana-Champaign"))
+        self.assertEqual(clean("University of Illinois at Urbana-Champaign"), clean("University of Illinois Urbana-Champaign"))
         self.assertEqual(clean("Penn State"), clean("Pennsylvania State University"))
         self.assertEqual(clean("Texas A&M"), clean("Texas A&M University"))
 
@@ -921,6 +922,46 @@ class TestComponents(unittest.TestCase):
         new_jobs, all_jobs = dedup.process_incoming([test_posting])
         self.assertEqual(len(new_jobs), 0)
         self.assertNotIn("8f5d66dcdfbbc7fd", [j.id for j in all_jobs])
+
+    def test_uiuc_duplicate_keeps_8d7fe7f180fbef56(self):
+        """Ensure UIUC duplicate entries 8d7fe7f180fbef56 and 35e457d39b5f45f9 only keep 8d7fe7f180fbef56."""
+        dedup = JobDeduplicator()
+        uiuc_kept = JobPosting(
+            id="8d7fe7f180fbef56",
+            title="Assistant Professor in Rail Systems, Operations, and Safety",
+            institution="University of Illinois Urbana-Champaign",
+            field="Department of Civil and Environmental Engineering",
+            location="Urbana, IL",
+            deadline="Open until filled",
+            salary="Not specified",
+            link="https://www.linkedin.com/jobs/view/grainger-engineering-assistant-professor-civil-and-environmental-engineering-at-university-of-illinois-urbana-champaign-4488408381",
+            source="LinkedIn",
+            fit_score=9,
+            date_first_seen="2026-11-07",
+            date_last_verified="2026-11-08",
+        )
+        uiuc_dupe = JobPosting(
+            id="35e457d39b5f45f9",
+            title="Assistant Professor - Civil and Environmental Engineering",
+            institution="University of Illinois at Urbana-Champaign",
+            field="Department of Civil and Environmental Engineering",
+            location="Urbana, IL",
+            deadline="Not specified",
+            salary="$120,000 - $135,000",
+            link="https://www.higheredjobs.com/search/details.cfm?JobCode=179610157&Title=Grainger%20Engineering%3A%20Assistant%20Professor%20%2D%20Civil%20and%20Environmental%20Engineering",
+            source="HigherEdJobs",
+            fit_score=10,
+            date_first_seen="2026-11-07",
+            date_last_verified="2026-11-08",
+        )
+        self.assertTrue(JobDeduplicator.is_same_institution(uiuc_kept, uiuc_dupe))
+        self.assertTrue(JobDeduplicator.is_same_position(uiuc_kept, uiuc_dupe))
+        active, dupes = dedup.deduplicate_by_institution_department([uiuc_dupe, uiuc_kept])
+        self.assertEqual(len(active), 1)
+        self.assertEqual(active[0].id, "8d7fe7f180fbef56")
+        self.assertEqual(len(dupes), 1)
+        self.assertEqual(dupes[0].id, "35e457d39b5f45f9")
+        self.assertIn("35e457d39b5f45f9", dedup.load_filtered_ids())
 
 
 if __name__ == "__main__":

@@ -13,6 +13,9 @@ class JobDeduplicator:
     """Manages deduplication, historical tracking, and filtered posting caching across daily scraper runs."""
 
     FILTERED_CACHE_FILE = os.path.join(".cache", "filtered_jobs.json")
+    SUPERSEDED_DUPLICATE_IDS = {
+        "35e457d39b5f45f9": "8d7fe7f180fbef56",
+    }
 
     def __init__(self, csv_filepath: str = "jobs.csv"):
         self.csv_filepath = csv_filepath
@@ -74,6 +77,7 @@ class JobDeduplicator:
                                 filtered_identifiers.add(item["link"].strip().rstrip("/"))
             except Exception as e:
                 self.logger.warning(f"Error reading filtered jobs cache {self.FILTERED_CACHE_FILE}: {e}")
+        filtered_identifiers.update(self.SUPERSEDED_DUPLICATE_IDS.keys())
         return filtered_identifiers
 
     def save_filtered_jobs(self, filtered_jobs: List[JobPosting]):
@@ -156,6 +160,8 @@ class JobDeduplicator:
                     job_link = norm_row.get("link", "")
                     job_source = norm_row.get("source", "unknown")
                     job_id = norm_row.get("id") or JobPosting.generate_id(job_source, job_link)
+                    if job_id in self.SUPERSEDED_DUPLICATE_IDS:
+                        continue
 
                     lat_str = norm_row.get("latitude", "")
                     lon_str = norm_row.get("longitude", "")
@@ -249,7 +255,7 @@ class JobDeduplicator:
     INSTITUTION_ALIASES = [
         (r"\bumass\b", "university of massachusetts"),
         (r"\buc\s+", "university of california "),
-        (r"\buiuc\b", "university of illinois urbana champaign"),
+        (r"\buiuc\b|\buniversity of illinois at urbana champaign\b|\buniversity of illinois urbana champaign\b", "university of illinois urbana champaign"),
         (r"\bmit\b", "massachusetts institute of technology"),
         (r"\bcmu\b", "carnegie mellon university"),
         (r"\bgatech\b|\bgeorgia tech\b(?:\s+university)?", "georgia institute of technology"),
@@ -550,6 +556,7 @@ class JobDeduplicator:
             else:
                 # Rank: Highest quality / fit score and concrete deadlines first, then most recent verification and discovery dates
                 def sort_key(x: JobPosting):
+                    not_superseded = 0 if x.id in self.SUPERSEDED_DUPLICATE_IDS else 1
                     is_active = 1 if x.status == "Active" else 0
                     score = x.fit_score if x.fit_score is not None else -1
                     has_concrete_dl = 1 if (x.deadline_date or (x.deadline and "open" not in x.deadline.lower() and "unspecified" not in x.deadline.lower() and "not" not in x.deadline.lower() and "posted" not in x.deadline.lower())) else 0
@@ -557,7 +564,7 @@ class JobDeduplicator:
                     verif_date = x.date_last_verified or x.date_first_seen or ""
                     first_date = x.date_first_seen or ""
                     content_len = len(x.raw_description or "") + len(x.summary or "")
-                    return (is_active, score, has_concrete_dl, has_specifics, verif_date, first_date, content_len, x.id or "")
+                    return (not_superseded, is_active, score, has_concrete_dl, has_specifics, verif_date, first_date, content_len, x.id or "")
 
                 sorted_cluster = sorted(cluster, key=sort_key, reverse=True)
                 winner = sorted_cluster[0]

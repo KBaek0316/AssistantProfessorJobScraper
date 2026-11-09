@@ -41,8 +41,8 @@ class JobExporter:
         if not include_filtered:
             postings = [p for p in postings if not p.status.startswith("Filtered")]
 
-        from scrapers.base import sort_postings_by_deadline
-        postings = sort_postings_by_deadline(postings)
+        from scrapers.base import sort_postings_by_date_added
+        postings = sort_postings_by_date_added(postings)
 
         fieldnames = [key for key, _ in self.COLUMNS]
         header_labels = [label for _, label in self.COLUMNS]
@@ -157,8 +157,8 @@ class JobExporter:
         if not include_filtered:
             postings = [p for p in postings if not p.status.startswith("Filtered")]
 
-        from scrapers.base import sort_postings_by_deadline
-        postings = sort_postings_by_deadline(postings)
+        from scrapers.base import sort_postings_by_date_added
+        postings = sort_postings_by_date_added(postings)
 
         try:
             import pandas as pd
@@ -225,8 +225,8 @@ class JobExporter:
         # Copy or save to backup path
         try:
             import pandas as pd
-            from scrapers.base import sort_postings_by_deadline
-            sorted_postings = sort_postings_by_deadline(postings)
+            from scrapers.base import sort_postings_by_date_added
+            sorted_postings = sort_postings_by_date_added(postings)
             fieldnames = [key for key, _ in self.COLUMNS]
             header_labels = [label for _, label in self.COLUMNS]
 
@@ -262,7 +262,7 @@ class JobExporter:
 
         try:
             import openpyxl
-            from scrapers.base import sort_postings_by_deadline
+            from scrapers.base import sort_postings_by_date_added
             wb = openpyxl.load_workbook(self.excel_filepath)
 
             if target_name in wb.sheetnames:
@@ -273,7 +273,7 @@ class JobExporter:
             fieldnames = [key for key, _ in self.COLUMNS]
             header_labels = [label for _, label in self.COLUMNS]
 
-            sorted_postings = sort_postings_by_deadline(postings)
+            sorted_postings = sort_postings_by_date_added(postings)
             rows = []
             for p in sorted_postings:
                 p_dict = p.to_dict()

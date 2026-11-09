@@ -188,6 +188,25 @@ class JobPosting:
             return (3, 0, fit_score_val, inst_val, title_val)
 
     @staticmethod
+    def get_date_added_sort_key(posting: "JobPosting", ref_date: Optional[date] = None) -> Tuple[Any, ...]:
+        """
+        Computes sorting key ordering postings by 'Date Added' (date_first_seen) in descending order
+        (most recently added first), breaking ties using the 4-tier deadline urgency sort key.
+        """
+        date_added_str = (posting.date_first_seen or "").strip()
+        added_date: Optional[date] = None
+        if date_added_str:
+            try:
+                added_date = datetime.strptime(date_added_str[:10], "%Y-%m-%d").date()
+            except ValueError:
+                added_date = None
+
+        deadline_key = JobPosting.get_deadline_sort_key(posting, ref_date=ref_date)
+        if added_date is not None:
+            return (0, -added_date.toordinal(), deadline_key)
+        return (1, 0, deadline_key)
+
+    @staticmethod
     def extract_deadline_from_text(text: str, ref_date: Optional[date] = None) -> Optional[str]:
         """
         Deterministically extracts application deadline, priority date, or review date
@@ -524,4 +543,13 @@ def sort_postings_by_deadline(postings: List[JobPosting], ref_date: Optional[dat
       4. Entries whose deadline has already passed.
     """
     return sorted(postings, key=lambda p: JobPosting.get_deadline_sort_key(p, ref_date=ref_date))
+
+
+def sort_postings_by_date_added(postings: List[JobPosting], ref_date: Optional[date] = None) -> List[JobPosting]:
+    """
+    Sort a list of job postings by 'Date Added' (date_first_seen) in descending order
+    (most recently added first), using the 4-tier deadline urgency rules as tie-breaker.
+    """
+    return sorted(postings, key=lambda p: JobPosting.get_date_added_sort_key(p, ref_date=ref_date))
+
 

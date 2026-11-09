@@ -356,6 +356,29 @@ class TestDeadlineAndStatus(unittest.TestCase):
         expected_order = [p1, p2, p3, p4, p5]
         self.assertEqual([p.id for p in sorted_postings], [p.id for p in expected_order])
 
+    def test_sort_postings_by_date_added_descending(self):
+        from scrapers.base import sort_postings_by_date_added
+        ref = date(2026, 11, 9)
+
+        j_old = JobPosting(
+            id="old_job", title="Old Added Job", institution="A University", field="CE",
+            location="City, ST", deadline="2026-11-15", salary="", link="https://a.edu",
+            source="Test", fit_score=9, date_first_seen="2026-10-01"
+        )
+        j_mid = JobPosting(
+            id="mid_job", title="Mid Added Job", institution="B University", field="CE",
+            location="City, ST", deadline="Open until filled", salary="", link="https://b.edu",
+            source="Test", fit_score=8, date_first_seen="2026-11-05"
+        )
+        j_new = JobPosting(
+            id="new_job", title="Newest Added Job", institution="C University", field="CE",
+            location="City, ST", deadline="Open until filled", salary="", link="https://c.edu",
+            source="Test", fit_score=7, date_first_seen="2026-11-08"
+        )
+
+        sorted_postings = sort_postings_by_date_added([j_old, j_new, j_mid], ref_date=ref)
+        self.assertEqual([p.id for p in sorted_postings], ["new_job", "mid_job", "old_job"])
+
     def test_map_filter_position_upper_right(self):
         test_map_path = "test_map_ur.html"
         postings = [

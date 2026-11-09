@@ -384,9 +384,9 @@ def main():
     geocoder = UniversityGeocoder()
     geocoder.enrich_coordinates(all_jobs)
 
-    # 7. Sort Postings by 4-Tier Deadline Urgency
-    from scrapers.base import sort_postings_by_deadline
-    all_jobs = sort_postings_by_deadline(all_jobs)
+    # 7. Sort Postings by Date Added (Descending)
+    from scrapers.base import sort_postings_by_date_added
+    all_jobs = sort_postings_by_date_added(all_jobs)
 
     # 8. Export to CSV and Excel (.xlsx)
     print("\n[EXPORT] Exporting results to disk...")

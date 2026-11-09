@@ -181,8 +181,8 @@ class GoogleSheetsSync:
         now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
         target_tab = (tab_name or f"Backup_{now_str}").strip()
 
-        from scrapers.base import sort_postings_by_deadline
-        sorted_postings = sort_postings_by_deadline(postings)
+        from scrapers.base import sort_postings_by_date_added
+        sorted_postings = sort_postings_by_date_added(postings)
 
         try:
             spreadsheet = self.client.open_by_key(self.sheet_id)
@@ -236,8 +236,8 @@ class GoogleSheetsSync:
         if not include_filtered:
             postings = [p for p in postings if not p.status.startswith("Filtered")]
 
-        from scrapers.base import sort_postings_by_deadline
-        postings = sort_postings_by_deadline(postings)
+        from scrapers.base import sort_postings_by_date_added
+        postings = sort_postings_by_date_added(postings)
 
         try:
             spreadsheet = self.client.open_by_key(self.sheet_id)
