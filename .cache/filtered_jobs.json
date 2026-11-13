@@ -1410,36 +1410,6 @@
     "date_filtered": "2026-11-12"
   },
   {
-    "id": "a4b5790fcc078fbb",
-    "title": "Hourly Pooled - Transportation Services Assistant Supervisor, Demand Response",
-    "institution": "University of Wyoming",
-    "link": "https://jobs.chronicle.com/job/38058111/hourly-pooled-transportation-services-assistant-supervisor-demand-response/",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Non-faculty administrative staff role (Hourly Transportation Services Assistant Supervisor).",
-    "date_filtered": "2026-11-12"
-  },
-  {
-    "id": "904d2ea9e6e41c05",
-    "title": "Assistant Director - Parking & Transportation",
-    "institution": "University of Maryland, Baltimore",
-    "link": "https://jobs.chronicle.com/job/38064721/assistant-director-parking-and-transportation/",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Non-faculty administrative staff role (Assistant Director of Parking and Transportation).",
-    "date_filtered": "2026-11-12"
-  },
-  {
-    "id": "df9e3a7d7c2ead12",
-    "title": "Assistant Transportation Fleet Coordinator",
-    "institution": "Chatham University",
-    "link": "https://jobs.chronicle.com/job/38059729/assistant-transportation-fleet-coordinator/",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: This is an administrative support staff position, not a faculty role.",
-    "date_filtered": "2026-11-12"
-  },
-  {
     "id": "bcb527c48304f23c",
     "title": "Canada Impact+ Emerging Leader in Translational Health Technologies, Assistant Professor",
     "institution": "University of Waterloo",
@@ -1460,64 +1430,74 @@
     "date_filtered": "2026-11-12"
   },
   {
-    "id": "a2eb339df5ff6d4b",
-    "title": "Assistant Manager, Transportation Planning",
-    "institution": "City of Nanaimo",
-    "link": "https://ca.linkedin.com/jobs/view/assistant-manager-transportation-planning-at-city-of-nanaimo-4488441980",
+    "id": "6008c9268a094fcd",
+    "title": "Academic Professional Track (Non-Tenure): Open Rank & Title (McAllen Campus)",
+    "institution": "Texas A&M University-McAllen",
+    "link": "http://engineering.academickeys.com/job/oig2485e/Tenuredtenuretrack-AssistantAssociate-Professor-in-Energy-and-Environment-Engineering",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out because this is a municipal government staff position rather than a university faculty appointment.",
-    "date_filtered": "2026-11-12"
+    "fit_reason": "Screened out: The position is for construction science in McAllen, Texas, which does not align with the candidate's core transportation engineering research.",
+    "date_filtered": "2026-11-13"
   },
   {
-    "id": "5f94ca78c1b8c308",
-    "title": "Transport Modeller / Assistant Transport Modeller",
-    "institution": "WSP in the UK & Ireland",
-    "link": "https://uk.linkedin.com/jobs/view/transport-modeller-assistant-transport-modeller-at-wsp-in-the-uk-ireland-4468651711",
+    "id": "6dc4c339b33f175a",
+    "title": "Instructional Assistant Professor or Lecturer",
+    "institution": "Texas A&M University-Galveston",
+    "link": "https://jobs.chronicle.com/job/38046430/tenured-tenure-track-assistant-professor-associate-professor-or-full-professor/",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is a professional industry consulting role, not an academic faculty position.",
-    "date_filtered": "2026-11-12"
+    "fit_reason": "Screened out: This is a non-tenure track position for a dive program instructor in the Maritime Studies Department, unrelated to transportation engineering.",
+    "date_filtered": "2026-11-13"
   },
   {
-    "id": "699310b717b5d28c",
-    "title": "WARSIM/JCATS Instructor Controller",
-    "institution": "Valiant Integrated Services",
-    "link": "https://kr.linkedin.com/jobs/view/warsim-jcats-instructor-controller-at-valiant-integrated-services-4430736441",
+    "id": "a4b5790fcc078fbb",
+    "title": "Assistant Supervisor, Demand Response",
+    "institution": "University of Wyoming",
+    "link": "https://jobs.chronicle.com/job/38058111/hourly-pooled-transportation-services-assistant-supervisor-demand-response/",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is a military simulation instructor/controller role, not an academic faculty position.",
-    "date_filtered": "2026-11-12"
+    "fit_reason": "Screened out: This is an administrative staff/supervisory role in transit operations rather than a faculty position.",
+    "date_filtered": "2026-11-13"
   },
   {
-    "id": "951e0a12877591f6",
-    "title": "Logistics Operations Planning Assistant Manager, Test Course Operations",
-    "institution": "Woven by Toyota",
-    "link": "https://jp.linkedin.com/jobs/view/logistics-operations-planning-assistant-manager-test-course-operations-at-woven-by-toyota-4441816215",
-    "status": "Filtered (Non-Faculty / Seniority)",
+    "id": "0a1178afaff15803",
+    "title": "Associate/Assistant Professor in Intelligent Sensing and Network Communication",
+    "institution": "University of Macau",
+    "link": "https://jobs.chronicle.com/job/38043453/associate-assistant-professor-in-intelligent-sensing-and-network-communication/",
+    "status": "Filtered (Location Outside Scope)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is a corporate logistics operations management role within a private mobility company.",
-    "date_filtered": "2026-11-12"
+    "fit_reason": "Screened out: Location 'Macau' is outside target geographic scope.",
+    "date_filtered": "2026-11-13"
   },
   {
-    "id": "ca48dce1dc7235ab",
-    "title": "Assistant Director (Civil Resource) - Navy",
-    "institution": "Ministry of Defence of Singapore",
-    "link": "https://sg.linkedin.com/jobs/view/assistant-director-civil-resource-navy-at-ministry-of-defence-of-singapore-4472120167",
-    "status": "Filtered (Non-Faculty / Seniority)",
+    "id": "501a6c55f2644b4b",
+    "title": "Assistant Professor - Environmental Physiology",
+    "institution": "University of Toronto",
+    "link": "https://ca.linkedin.com/jobs/view/assistant-professor-environmental-physiology-at-university-of-toronto-4489286461",
+    "status": "Filtered (Low Relevance)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is a government civil service administrative role in the Ministry of Defence.",
-    "date_filtered": "2026-11-12"
+    "fit_reason": "Screened out due to complete mismatch in research discipline (Environmental Physiology and Kinesiology).",
+    "date_filtered": "2026-11-13"
   },
   {
-    "id": "a93f960569be30ee",
-    "title": "Assistant Director (Organisation Development & Plans)",
-    "institution": "Ministry of Defence of Singapore",
-    "link": "https://sg.linkedin.com/jobs/view/assistant-director-organisation-development-plans-at-ministry-of-defence-of-singapore-4475679465",
-    "status": "Filtered (Non-Faculty / Seniority)",
+    "id": "fb67ae76b8421f1d",
+    "title": "DTU Tenure Track Assistant Professor in Fisheries Technology \u2013 Artificial Intelligence and Digital Fisheries Monitoring",
+    "institution": "Technical University of Denmark",
+    "link": "https://dk.linkedin.com/jobs/view/dtu-tenure-track-assistant-professor-in-fisheries-technology-%E2%80%93-artificial-intelligence-and-digital-fisheries-monitoring-dtu-aqua-at-dtu-technical-university-of-denmark-4490362736",
+    "status": "Filtered (Low Relevance)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is a government civil service administrative role in the Ministry of Defence.",
-    "date_filtered": "2026-11-12"
+    "fit_reason": "Screened out due to complete mismatch in research discipline (Fisheries Technology and Marine Monitoring).",
+    "date_filtered": "2026-11-13"
+  },
+  {
+    "id": "a0481efc9c811f43",
+    "title": "DTU Tenure Track Assistant Professor in Microgrids and Converter-Based Grid-Edge Control",
+    "institution": "Technical University of Denmark",
+    "link": "https://dk.linkedin.com/jobs/view/dtu-tenure-track-assistant-professor-in-microgrids-and-converter-based-grid-edge-control-dtu-wind-at-dtu-technical-university-of-denmark-4490368457",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 2,
+    "fit_reason": "The position is focused on power grid microgrids and electrical engineering, which falls outside the candidate's core expertise in transportation engineering.",
+    "date_filtered": "2026-11-13"
   },
   {
     "id": "6eaba38b6bbbb1a2",
@@ -1526,18 +1506,128 @@
     "link": "https://sg.linkedin.com/jobs/view/lta-p-p-deputy-assistant-manager-policy-private-transport-at-land-transport-authority-lta-singapore-4470432609",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is a government policy staff role, not an academic faculty position.",
-    "date_filtered": "2026-11-12"
+    "fit_reason": "Screened out: This is a civil service policy management position at a government authority, not an academic tenure-track faculty role.",
+    "date_filtered": "2026-11-13"
+  },
+  {
+    "id": "a2eb339df5ff6d4b",
+    "title": "Assistant Manager, Transportation Planning",
+    "institution": "City of Nanaimo",
+    "link": "https://ca.linkedin.com/jobs/view/assistant-manager-transportation-planning-at-city-of-nanaimo-4488441980",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a professional municipal administrative/planning role rather than an academic faculty position.",
+    "date_filtered": "2026-11-13"
+  },
+  {
+    "id": "5f94ca78c1b8c308",
+    "title": "Transport Modeller / Assistant Transport Modeller",
+    "institution": "WSP in the UK & Ireland",
+    "link": "https://uk.linkedin.com/jobs/view/transport-modeller-assistant-transport-modeller-at-wsp-in-the-uk-ireland-4468651711",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is an industry role at a private consultancy firm, not an academic faculty position.",
+    "date_filtered": "2026-11-13"
+  },
+  {
+    "id": "699310b717b5d28c",
+    "title": "WARSIM/JCATS Instructor Controller",
+    "institution": "Valiant Integrated Services",
+    "link": "https://kr.linkedin.com/jobs/view/warsim-jcats-instructor-controller-at-valiant-integrated-services-4430736441",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is an instructor/controller position for military simulation training, not a university faculty appointment.",
+    "date_filtered": "2026-11-13"
+  },
+  {
+    "id": "951e0a12877591f6",
+    "title": "Logistics Operations Planning Assistant Manager, Test Course Operations",
+    "institution": "Woven by Toyota",
+    "link": "https://jp.linkedin.com/jobs/view/logistics-operations-planning-assistant-manager-test-course-operations-at-woven-by-toyota-4441816215",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is an administrative/management role at a corporate organization, not a university faculty appointment.",
+    "date_filtered": "2026-11-13"
+  },
+  {
+    "id": "ca48dce1dc7235ab",
+    "title": "Assistant Director (Civil Resource) - Navy",
+    "institution": "Ministry of Defence of Singapore",
+    "link": "https://sg.linkedin.com/jobs/view/assistant-director-civil-resource-navy-at-ministry-of-defence-of-singapore-4472120167",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a government maritime resource management role, not a tenure-track faculty position.",
+    "date_filtered": "2026-11-13"
+  },
+  {
+    "id": "a93f960569be30ee",
+    "title": "Assistant Director (Organisation Development & Plans)",
+    "institution": "Ministry of Defence of Singapore",
+    "link": "https://sg.linkedin.com/jobs/view/assistant-director-organisation-development-plans-at-ministry-of-defence-of-singapore-4475679465",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is an administrative and strategic management role within the Ministry of Defence, not a faculty position.",
+    "date_filtered": "2026-11-13"
   },
   {
     "id": "c3a79ba5c0324e19",
-    "title": "Research Assistant/Research Associate (Fixed Term)",
+    "title": "Research Assistant/Research Associate",
     "institution": "University of Cambridge",
     "link": "https://www.jobs.ac.uk/job/DTN710/research-assistant-research-associate-fixed-term",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Position is a postdoctoral research associate role in mitochondrial biology, not a faculty appointment.",
-    "date_filtered": "2026-11-12"
+    "fit_reason": "Screened out because this is a postdoctoral research associate position rather than a faculty appointment.",
+    "date_filtered": "2026-11-13"
+  },
+  {
+    "id": "9ee93e246141ec41",
+    "title": "Research Engineer/Assistant (Urban Analytics & Data Science)",
+    "institution": "National University of Singapore",
+    "link": "https://sg.linkedin.com/jobs/view/research-engineer-assistant-urban-analytics-data-science-nus-cities-at-national-university-of-singapore-4447338170",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a research staff/engineering position, not a tenure-track faculty role.",
+    "date_filtered": "2026-11-13"
+  },
+  {
+    "id": "5746c2f7ef78b2f5",
+    "title": "Assistant Director / Lead Analyst",
+    "institution": "Civil Service College",
+    "link": "https://sg.linkedin.com/jobs/view/assistant-director-lead-analyst-at-civil-service-college-4462502057",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a non-faculty civil service analyst role rather than a university faculty position.",
+    "date_filtered": "2026-11-13"
+  },
+  {
+    "id": "c8eabc8925f9ae1d",
+    "title": "Senior Assistant Director/ Assistant Director, Data Analytics",
+    "institution": "Agency for Integrated Care",
+    "link": "https://sg.linkedin.com/jobs/view/senior-assistant-director-assistant-director-data-analytics-at-agency-for-integrated-care-singapore-4489929555",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a non-faculty government data analytics position rather than an academic faculty role.",
+    "date_filtered": "2026-11-13"
+  },
+  {
+    "id": "d68cd44a6480d9a9",
+    "title": "Research Assistant",
+    "institution": "Singapore-ETH Centre",
+    "link": "https://sg.linkedin.com/jobs/view/research-assistant-at-singapore-eth-centre-4486970105",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a pre-doctoral Research Assistant position rather than a faculty appointment.",
+    "date_filtered": "2026-11-13"
+  },
+  {
+    "id": "8672404604934afc",
+    "title": "Assistant Manager/Manager/Senior Manager, Sector Strategy and Planning Branch, FCD/EN",
+    "institution": "Ministry of Social and Family Development",
+    "link": "https://sg.linkedin.com/jobs/view/assistant-manager-manager-senior-manager-sector-strategy-and-planning-branch-fcd-en-at-ministry-of-social-and-family-development-singapore-msf-4485274663",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a government policy and administrative role rather than an academic faculty position.",
+    "date_filtered": "2026-11-13"
   },
   {
     "id": "6a90ea79f8ebde97",
@@ -1546,7 +1636,7 @@
     "link": "https://www.jobs.ac.uk/job/DTO413/research-assistant",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Position is a research technician/assistant role in biomedical sciences, not a faculty appointment.",
-    "date_filtered": "2026-11-12"
+    "fit_reason": "Screened out because this is a research assistant technical support role rather than a faculty appointment.",
+    "date_filtered": "2026-11-13"
   }
 ]
