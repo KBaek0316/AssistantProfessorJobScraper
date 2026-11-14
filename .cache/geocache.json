@@ -1238,5 +1238,17 @@
   "hong kong metropolitan university, kowloon": [
     22.316392,
     114.1802004
+  ],
+  "rice university, houston, tx": [
+    29.7167915,
+    -95.4047811
+  ],
+  "suny polytechnic institute, utica, ny": [
+    43.1421581,
+    -75.2431406
+  ],
+  "university of cincinnati, cincinnati, oh": [
+    39.1314079,
+    -84.5205867
   ]
 }
