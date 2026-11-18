@@ -110,10 +110,12 @@ class CVProfileManager:
             return None
 
         candidate_models = [
-            os.environ.get("GEMINI_MODEL", "gemini-3.8-flash").strip(),
-            "gemini-3.8-flash",
+            os.environ.get("GEMINI_MODEL", "gemini-4-hydrogen").strip(),
             "gemini-4-hydrogen",
+            "gemini-3.8-flash",
             "gemini-3.7-flash",
+            "gemini-3.6-flash",
+            "gemini-3.5-flash",
             "gemini-3.5-flash-lite",
             "gemini-flash-lite-latest",
         ]

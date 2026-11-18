@@ -139,8 +139,8 @@ def parse_args():
     parser.add_argument(
         "--model",
         type=str,
-        default=os.environ.get("GEMINI_MODEL", "gemini-3.8-flash"),
-        help="Gemini model to use (default: gemini-3.8-flash)",
+        default=os.environ.get("GEMINI_MODEL", "gemini-4-hydrogen"),
+        help="Gemini model to use (default: gemini-4-hydrogen)",
     )
     parser.add_argument(
         "--min-fit-score",
