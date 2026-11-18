@@ -100,7 +100,7 @@ class AcademicKeysScraper(BaseScraper):
                 institution = "Academic Institution"
                 location = "United States"
                 deadline = "Open until filled"
-                field_name = "Transportation / Civil Engineering"
+                field_name = "Not specified"
 
                 if tr:
                     strongs = tr.find_all("strong")

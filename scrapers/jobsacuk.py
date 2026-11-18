@@ -84,7 +84,7 @@ class JobsAcUkScraper(BaseScraper):
 
                 # Extract metadata from card
                 dept_elem = res.find(class_=lambda c: c and "department" in c)
-                dept = dept_elem.get_text(strip=True) if dept_elem else "Transportation / Civil Engineering"
+                dept = dept_elem.get_text(strip=True) if dept_elem else "Not specified"
 
                 emp_elem = res.find(class_=lambda c: c and "employer" in c)
                 institution = emp_elem.get_text(strip=True) if emp_elem else "UK/European University"

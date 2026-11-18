@@ -2,8 +2,8 @@ name: Daily Academic Job Scraper
 
 on:
   schedule:
-    # Runs daily at 06:00 UTC (1:00 AM Central / 2:00 AM Eastern)
-    - cron: '0 6 * * *'
+    # Runs daily at 10:00 UTC (4:00 AM Central Standard Time / 5:00 AM Eastern Standard Time)
+    - cron: '0 10 * * *'
   workflow_dispatch: # Allows manual trigger from GitHub Actions tab
 
 jobs:
@@ -31,7 +31,7 @@ jobs:
       - name: Run Job Scraper & Summarizer
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: ${{ vars.GEMINI_MODEL || secrets.GEMINI_MODEL || 'gemini-3.7-flash' }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL || secrets.GEMINI_MODEL || 'gemini-3.8-flash' }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID || vars.GOOGLE_SHEET_ID }}
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS || secrets.GOOGLE_SERVICE_ACCOUNT || secrets.GOOGLE_SERVICE_ACCOUNT_JSON || secrets.GOOGLE_APPLICATION_CREDENTIALS }}
           GOOGLE_SHEET_TAB_NAME: ${{ secrets.GOOGLE_SHEET_TAB_NAME || vars.GOOGLE_SHEET_TAB_NAME || 'Jobs' }}

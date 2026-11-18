@@ -139,8 +139,8 @@ def parse_args():
     parser.add_argument(
         "--model",
         type=str,
-        default=os.environ.get("GEMINI_MODEL", "gemini-3.7-flash"),
-        help="Gemini model to use (default: gemini-3.7-flash)",
+        default=os.environ.get("GEMINI_MODEL", "gemini-3.8-flash"),
+        help="Gemini model to use (default: gemini-3.8-flash)",
     )
     parser.add_argument(
         "--min-fit-score",
@@ -307,8 +307,10 @@ def main():
         print(f"\n[BACKUP] Initiating automated backup of existing listings {backup_reason}...")
         exporter = JobExporter(csv_filepath=args.csv_out, excel_filepath=args.excel_out)
         backup_xlsx = exporter.create_backup(all_jobs)
+        backup_csv = exporter.create_csv_backup(all_jobs)
         backup_sheet = exporter.add_backup_sheet(all_jobs)
         print(f"  -> Local Excel backup saved: {backup_xlsx}")
+        print(f"  -> Local CSV backup saved:   {backup_csv}")
         if backup_sheet:
             print(f"  -> Added backup tab '{backup_sheet}' inside {os.path.abspath(args.excel_out)}")
 

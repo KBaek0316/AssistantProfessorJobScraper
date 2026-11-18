@@ -110,17 +110,23 @@ class CVProfileManager:
             return None
 
         candidate_models = [
-            os.environ.get("GEMINI_MODEL", "gemini-3.7-flash").strip(),
-            "gemini-3.5-flash-lite",
-            "gemini-3.7-flash",
-            "gemini-3.6-flash",
+            os.environ.get("GEMINI_MODEL", "gemini-3.8-flash").strip(),
             "gemini-3.8-flash",
+            "gemini-4-hydrogen",
+            "gemini-3.7-flash",
+            "gemini-3.5-flash-lite",
+            "gemini-flash-lite-latest",
         ]
         candidate_models = list(dict.fromkeys(candidate_models))
 
         try:
             from google import genai
-            client = genai.Client(api_key=api_key)
+            from google.genai import types
+            http_opts = types.HttpOptions(
+                timeout=20000,
+                retry_options=types.HttpRetryOptions(attempts=1),
+            )
+            client = genai.Client(api_key=api_key, http_options=http_opts)
             prompt = f"""
 Analyze this academic CV and extract a concise research profile for matching faculty job openings:
 \"\"\"{cv_text}\"\"\"

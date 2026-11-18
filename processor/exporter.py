@@ -214,15 +214,18 @@ class JobExporter:
         Creates a standalone, timestamped backup Excel file from the provided postings.
         Returns the absolute path to the backup file.
         """
-        import os
         from datetime import datetime
+        import glob
         if not backup_filepath:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            today_str = datetime.now().strftime("%Y%m%d")
             base, ext = os.path.splitext(self.excel_filepath)
+            existing_today = sorted(glob.glob(f"{base}_backup_{today_str}_*{ext or '.xlsx'}"))
+            if existing_today:
+                self.logger.info(f"Today's local Excel backup '{existing_today[0]}' already exists; preserving initial snapshot.")
+                return os.path.abspath(existing_today[0])
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             backup_filepath = f"{base}_backup_{timestamp}{ext or '.xlsx'}"
 
-        self.export_excel(postings, include_filtered=True)
-        # Copy or save to backup path
         try:
             import pandas as pd
             from scrapers.base import sort_postings_by_date_added
@@ -247,6 +250,42 @@ class JobExporter:
 
         return os.path.abspath(backup_filepath)
 
+    def create_csv_backup(self, postings: List[JobPosting], backup_filepath: Optional[str] = None) -> str:
+        """
+        Creates a standalone, timestamped backup CSV file from the provided postings.
+        Returns the absolute path to the backup CSV file.
+        """
+        from datetime import datetime
+        import glob
+        if not backup_filepath:
+            today_str = datetime.now().strftime("%Y%m%d")
+            base, ext = os.path.splitext(self.csv_filepath)
+            existing_today = sorted(glob.glob(f"{base}_backup_{today_str}_*{ext or '.csv'}"))
+            if existing_today:
+                self.logger.info(f"Today's local CSV backup '{existing_today[0]}' already exists; preserving initial snapshot.")
+                return os.path.abspath(existing_today[0])
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            backup_filepath = f"{base}_backup_{timestamp}{ext or '.csv'}"
+
+        try:
+            from scrapers.base import sort_postings_by_date_added
+            sorted_postings = sort_postings_by_date_added(postings)
+            fieldnames = [key for key, _ in self.COLUMNS]
+            header_labels = [label for _, label in self.COLUMNS]
+
+            with open(backup_filepath, mode="w", newline="", encoding="utf-8-sig") as f:
+                writer = csv.writer(f)
+                writer.writerow(header_labels)
+                for p in sorted_postings:
+                    p_dict = p.to_dict()
+                    row = [p_dict.get(key, "") if p_dict.get(key) is not None else "" for key in fieldnames]
+                    writer.writerow(row)
+            self.logger.info(f"Created local CSV backup file at: {os.path.abspath(backup_filepath)}")
+        except Exception as e:
+            self.logger.error(f"Error creating backup CSV file {backup_filepath}: {e}", exc_info=True)
+
+        return os.path.abspath(backup_filepath)
+
     def add_backup_sheet(self, postings: List[JobPosting], sheet_name: Optional[str] = None) -> Optional[str]:
         """
         Adds a backup worksheet tab containing previous postings to the existing jobs.xlsx workbook.
@@ -258,12 +297,20 @@ class JobExporter:
             return None
 
         now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        today_prefix = f"Backup_{datetime.now().strftime('%Y%m%d')}_"
         target_name = (sheet_name or f"Backup_{now_str}")[:31]
 
         try:
             import openpyxl
             from scrapers.base import sort_postings_by_date_added
             wb = openpyxl.load_workbook(self.excel_filepath)
+
+            if sheet_name is None:
+                existing_today = [s for s in wb.sheetnames if s.startswith(today_prefix)]
+                if existing_today:
+                    wb.close()
+                    self.logger.info(f"Today's backup tab '{existing_today[-1]}' already exists in {self.excel_filepath}; preserving initial snapshot.")
+                    return existing_today[-1]
 
             if target_name in wb.sheetnames:
                 target_name = f"Backup_{now_str}"[:31]

@@ -259,9 +259,5 @@ class UniversityGeocoder:
                 if not coords:
                     coords = self.geocode(p.institution)
 
-            # 3. Fallback to location alone
-            if not coords and has_specific_loc:
-                coords = self.geocode(p.location)
-
             if coords:
                 p.latitude, p.longitude = coords

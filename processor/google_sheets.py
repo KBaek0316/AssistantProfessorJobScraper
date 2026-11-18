@@ -177,8 +177,9 @@ class GoogleSheetsSync:
         if not self.client or not self.sheet_id:
             return None
 
-        from datetime import datetime, timezone
+        from datetime import datetime
         now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        today_prefix = f"Backup_{datetime.now().strftime('%Y%m%d')}_"
         target_tab = (tab_name or f"Backup_{now_str}").strip()
 
         from scrapers.base import sort_postings_by_date_added
@@ -187,8 +188,13 @@ class GoogleSheetsSync:
         try:
             spreadsheet = self.client.open_by_key(self.sheet_id)
 
-            # Ensure unique tab name if already exists
+            # Ensure unique tab name if already exists; preserve initial snapshot if one already exists today
             existing_sheet_titles = [s.title for s in spreadsheet.worksheets()]
+            if tab_name is None:
+                existing_today = [t for t in existing_sheet_titles if t.startswith(today_prefix)]
+                if existing_today:
+                    self.logger.info(f"Today's Google Sheets backup tab '{existing_today[-1]}' already exists; preserving initial snapshot.")
+                    return existing_today[-1]
             if target_tab in existing_sheet_titles:
                 target_tab = f"Backup_{now_str}"
 

@@ -272,7 +272,7 @@ class JobDeduplicator:
         (r"\bkaist\b", "korea advanced institute of science and technology"),
         (r"\bsnu\b", "seoul national university"),
         (r"\bdtu\b(?:\s*-\s*technical university of denmark)?|\bdenmark technological university\b|\btechnical university of denmark\b", "technical university of denmark"),
-        (r"\buniversity of missouri(?:\s+columbia)?\b", "university of missouri columbia"),
+        (r"\buniversity of missouri(?:\s+columbia)?\b(?!\s+(?:kansas|st|science))", "university of missouri columbia"),
         (r"\bcal poly pomona\b|\bcalifornia state polytechnic university pomona\b", "cal poly pomona"),
         (r"\bcal poly san luis obispo\b|\bcal poly slo\b|\bcalifornia polytechnic state university san luis obispo\b|\bcalifornia polytechnic state university\b", "cal poly san luis obispo"),
         (r"\bcal poly\b", "cal poly"),
@@ -419,8 +419,24 @@ class JobDeduplicator:
         """
         if not title:
             return True
-        tokens = cls.get_title_tokens(title)
+        tokens = cls.get_title_tokens(title) - {"system", "line", "stream", "regular", "academic"}
         return len(tokens) == 0
+
+    @classmethod
+    def is_department_only_or_generic_title(cls, title: str, dept: str = "") -> bool:
+        """
+        Returns True if a title is generic or only repeats tokens already present in the department name
+        (e.g., 'Assistant Professor - Civil and Environmental Engineering' in 'Department of Civil and Environmental Engineering').
+        """
+        if cls.is_generic_title(title):
+            return True
+        title_tokens = cls.get_title_tokens(title) - {"system", "line", "stream", "regular", "academic"}
+        if not title_tokens:
+            return True
+        raw_dept_words = set(re.findall(r"[a-z0-9]+", (dept or "").lower()))
+        if raw_dept_words and title_tokens.issubset(raw_dept_words):
+            return True
+        return False
 
     @classmethod
     def is_unspecified_department(cls, dept: str) -> bool:
@@ -560,7 +576,7 @@ class JobDeduplicator:
                     is_active = 1 if x.status == "Active" else 0
                     score = x.fit_score if x.fit_score is not None else -1
                     has_concrete_dl = 1 if (x.deadline_date or (x.deadline and "open" not in x.deadline.lower() and "unspecified" not in x.deadline.lower() and "not" not in x.deadline.lower() and "posted" not in x.deadline.lower())) else 0
-                    has_specifics = 1 if (not self.is_generic_title(x.title) and not self.is_unspecified_department(x.field)) else 0
+                    has_specifics = 1 if (not self.is_department_only_or_generic_title(x.title, x.field) and not self.is_unspecified_department(x.field)) else 0
                     verif_date = x.date_last_verified or x.date_first_seen or ""
                     first_date = x.date_first_seen or ""
                     content_len = len(x.raw_description or "") + len(x.summary or "")
@@ -571,8 +587,8 @@ class JobDeduplicator:
                 kept_jobs.append(winner)
 
                 for loser in sorted_cluster[1:]:
-                    # Preserve specific title and department if winner had generic ones
-                    if self.is_generic_title(winner.title) and not self.is_generic_title(loser.title):
+                    # Preserve specific title and department if winner had generic or department-only ones
+                    if self.is_department_only_or_generic_title(winner.title, winner.field) and not self.is_department_only_or_generic_title(loser.title, loser.field):
                         winner.title = loser.title
                     if self.is_unspecified_department(winner.field) and not self.is_unspecified_department(loser.field):
                         winner.field = loser.field

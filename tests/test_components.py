@@ -397,12 +397,15 @@ class TestComponents(unittest.TestCase):
         backup_path = exporter.create_backup([posting], backup_filepath="test_backup_out.xlsx")
         self.assertTrue(os.path.exists(backup_path))
 
+        csv_backup_path = exporter.create_csv_backup([posting], backup_filepath="test_backup_out.csv")
+        self.assertTrue(os.path.exists(csv_backup_path))
+
         # Test adding backup worksheet to existing workbook
         sheet_name = exporter.add_backup_sheet([posting], sheet_name="Backup_TestTab")
         self.assertEqual(sheet_name, "Backup_TestTab")
 
         # Cleanup test artifacts
-        for f in ("test_backup_jobs.csv", "test_backup_jobs.xlsx", "test_backup_out.xlsx"):
+        for f in ("test_backup_jobs.csv", "test_backup_jobs.xlsx", "test_backup_out.xlsx", "test_backup_out.csv"):
             if os.path.exists(f):
                 os.remove(f)
 
@@ -425,6 +428,8 @@ class TestComponents(unittest.TestCase):
         self.assertEqual(clean("University of Illinois at Urbana-Champaign"), clean("University of Illinois Urbana-Champaign"))
         self.assertEqual(clean("Penn State"), clean("Pennsylvania State University"))
         self.assertEqual(clean("Texas A&M"), clean("Texas A&M University"))
+        self.assertNotIn("columbia", clean("University of Missouri - Kansas City"))
+        self.assertEqual(clean("University of Missouri"), clean("University of Missouri - Columbia"))
 
     def test_umass_boston_cross_board_deduplication(self):
         """Ensure UMass Boston posting across HigherEdJobs and LinkedIn resolves as duplicate and merges."""
@@ -962,6 +967,36 @@ class TestComponents(unittest.TestCase):
         self.assertEqual(len(dupes), 1)
         self.assertEqual(dupes[0].id, "35e457d39b5f45f9")
         self.assertIn("35e457d39b5f45f9", dedup.load_filtered_ids())
+
+    def test_keep_unavailable_existing_postings_during_update(self):
+        """Ensure existing postings no longer available online are preserved without overwriting during update re-evaluation."""
+        from processor.gemini_extractor import GeminiExtractor
+        from unittest.mock import patch
+
+        extractor = GeminiExtractor(api_key="dummy_key")
+        unavailable_job = JobPosting(
+            id="unavail_1",
+            title="Assistant Professor in Transportation Systems",
+            institution="Purdue University",
+            field="Lyles School of Civil Engineering",
+            location="West Lafayette, IN",
+            deadline="2026-10-15",
+            salary="Not specified",
+            link="https://engineering.academickeys.com/job/expired123/Assistant-Professor",
+            source="AcademicKeys",
+            fit_score=9,
+            fit_reason="Core match in transportation engineering.",
+            summary="Tenure-track position in transportation systems.",
+        )
+
+        # Simulate expired page returned by live fallback fetch
+        with patch.object(extractor, "_fetch_description_fallback", return_value=""):
+            self.assertFalse(extractor.is_posting_still_available(unavailable_job))
+
+        # Expired boilerplate text must be detected as unavailable
+        self.assertTrue(GeminiExtractor._is_expired_or_unavailable_text("AcademicKeys.com: Job Expired or Deleted"))
+        self.assertTrue(GeminiExtractor._is_expired_or_unavailable_text("This job is no longer available."))
+        self.assertFalse(GeminiExtractor._is_expired_or_unavailable_text("The Department of Civil Engineering invites applications for a tenure-track Assistant Professor position."))
 
 
 if __name__ == "__main__":

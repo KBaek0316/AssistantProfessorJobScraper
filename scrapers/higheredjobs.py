@@ -57,7 +57,7 @@ class HigherEdJobsScraper(BaseScraper):
                 container = a.find_parent("div", class_=re.compile(r"row|item|job", re.I)) or a.find_parent("li")
                 institution = "HigherEdJobs Listed University"
                 location = "United States"
-                field_name = "Civil & Environmental / Transportation Engineering"
+                field_name = "Not specified"
                 raw_text = title
 
                 if container:
