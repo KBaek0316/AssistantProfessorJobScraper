@@ -1590,26 +1590,6 @@
     "date_filtered": "2026-11-18"
   },
   {
-    "id": "a4b5790fcc078fbb",
-    "title": "Hourly Pooled - Transportation Services Assistant Supervisor, Demand Response",
-    "institution": "University of Wyoming",
-    "link": "https://jobs.chronicle.com/job/38058111/hourly-pooled-transportation-services-assistant-supervisor-demand-response/",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Non-faculty hourly administrative and transit operations staff position.",
-    "date_filtered": "2026-11-18"
-  },
-  {
-    "id": "904d2ea9e6e41c05",
-    "title": "Assistant Director-Parking & Transportation",
-    "institution": "University of Maryland, Baltimore",
-    "link": "https://jobs.chronicle.com/job/38064721/assistant-director-parking-and-transportation/",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Non-faculty administrative staff role in campus parking and transportation management.",
-    "date_filtered": "2026-11-18"
-  },
-  {
     "id": "2d9b845484077071",
     "title": "Assistant Professor of Mathematics Education",
     "institution": "University of South Alabama",
@@ -1650,14 +1630,134 @@
     "date_filtered": "2026-11-18"
   },
   {
+    "id": "b49479ebe2a8c4a0",
+    "title": "Academic Professional Track (Non-Tenure): Open Rank & Title (College Station Campus)",
+    "institution": "Texas A&M University - College Station",
+    "link": "http://engineering.academickeys.com/job/gh0ixstw/AssistantAssociate-Professor-in-Automotive-Engineering--Transportation--TenuredTenure-Track",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 2,
+    "fit_reason": "The job body describes a non-tenure-track Academic Professional Track faculty role in the Department of Construction Science (Construction Engineering/Management), an explicitly non-matching subfield outside transportation engineering.",
+    "date_filtered": "2026-11-19"
+  },
+  {
+    "id": "afe9385a679c7964",
+    "title": "Assistant Clinical Professor, Clinical Psychologist",
+    "institution": "Auburn University",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179622288&Title=Assistant%20Clinical%20Professor%2C%20Clinical%20Psychologist",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "This non-tenure-track Assistant Clinical Professor role in Psychological Sciences focuses on clinical psychology and rural healthcare access, which is completely unrelated to transportation engineering and urban planning.",
+    "date_filtered": "2026-11-19"
+  },
+  {
+    "id": "ae39c678423ee38e",
+    "title": "Assistant Clinical Professor, Psychological Sciences",
+    "institution": "Auburn University",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179622287&Title=Assistant%20Clinical%20Professor%2C%20Psychological%20Sciences",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "This non-tenure-track Assistant Clinical Professor position in Psychological Sciences centers on rural clinical health education and community engagement, having no overlap with transportation engineering or urban planning.",
+    "date_filtered": "2026-11-19"
+  },
+  {
+    "id": "32e746e203f82931",
+    "title": "Assistant Professor - Advanced Representation and Digital Methods",
+    "institution": "Cornell University",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179621635&Title=Assistant%20Professor%20%2D%20Advanced%20Representation%20and%20Digital%20Methods",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 2,
+    "fit_reason": "This tenure-track Assistant Professor role in Landscape Architecture emphasizes design studio pedagogy, digital fabrication, and computational design rather than transportation engineering or urban mobility planning.",
+    "date_filtered": "2026-11-19"
+  },
+  {
+    "id": "36f089d5480cba30",
+    "title": "Assistant Professor of AI, Automation, Robotics, and Emerging Technologies in Structures and Construction",
+    "institution": "University of Missouri",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179619852&Title=Assistant%20Professor%20of%20AI%2C%20Automation%2C%20Robotics%2C%20and%20Emerging%20Technologies%20in%20Structures%20and%20Construction",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 2,
+    "fit_reason": "Although it involves AI and emerging technologies, the position explicitly targets Structures, Construction, and Robotics, which are non-matching subfields outside the candidate's transportation engineering expertise.",
+    "date_filtered": "2026-11-19"
+  },
+  {
+    "id": "10ee736b35294479",
+    "title": "Assistant/Associate/Full Teaching Professor of Spanish",
+    "institution": "Northeastern University",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179619341&Title=Assistant%2FAssociate%2FFull%20Teaching%20Professor%20of%20Spanish",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: The position is for teaching Spanish language and literature, which is entirely outside the candidate's core field of transportation engineering and urban planning.",
+    "date_filtered": "2026-11-19"
+  },
+  {
+    "id": "744a6026b2dd2b86",
+    "title": "Assistant or Associate Professor of Special Education",
+    "institution": "Georgia Southern University",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179618990&Title=Assistant%20or%20Associate%20Professor%20Special%20Education%20%28Moderate%20to%20Excessive%20Support%20Needs%29",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: The position is in Special Education, which is unrelated to transportation engineering, civil engineering, or urban planning.",
+    "date_filtered": "2026-11-19"
+  },
+  {
+    "id": "a4b5790fcc078fbb",
+    "title": "Hourly Pooled - Transportation Services Assistant Supervisor, Demand Response",
+    "institution": "University of Wyoming",
+    "link": "https://jobs.chronicle.com/job/38058111/hourly-pooled-transportation-services-assistant-supervisor-demand-response/",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is an administrative and supervisory staff position in transit operations, not an academic faculty appointment.",
+    "date_filtered": "2026-11-19"
+  },
+  {
+    "id": "904d2ea9e6e41c05",
+    "title": "Assistant Director-Parking & Transportation",
+    "institution": "University of Maryland, Baltimore",
+    "link": "https://jobs.chronicle.com/job/38064721/assistant-director-parking-and-transportation/",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is an administrative leadership and management staff position in parking and transportation services, not a faculty role.",
+    "date_filtered": "2026-11-19"
+  },
+  {
+    "id": "6e01585ecf0d9c70",
+    "title": "Assistant/Associate Professor of Finance",
+    "institution": "Kean University",
+    "link": "https://jobs.chronicle.com/job/38067312/assistant-associate-professor-10-months-finance-department-of-accounting-and-finance-fall-2027/",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: The position is in Finance and Accounting, which is completely outside transportation engineering and urban planning.",
+    "date_filtered": "2026-11-19"
+  },
+  {
+    "id": "4c9705e6c66cfdbe",
+    "title": "Assistant Professor - Aerospace Engineering (Aeronautics)",
+    "institution": "University of Toronto",
+    "link": "https://ca.linkedin.com/jobs/view/assistant-professor-aerospace-engineering-aeronautics-at-university-of-toronto-4491404974",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 2,
+    "fit_reason": "Screened out: The position is in Aerospace Engineering and aeronautics, which is outside the candidate's core expertise in surface transportation and urban planning.",
+    "date_filtered": "2026-11-19"
+  },
+  {
+    "id": "eba9f1470115ad19",
+    "title": "Assistant Professor in the Violence and Violence Prevention Group",
+    "institution": "Leiden University",
+    "link": "https://nl.linkedin.com/jobs/view/assistant-professor-in-the-violence-and-violence-prevention-group-nl-at-leiden-university-4492214892",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 2,
+    "fit_reason": "Screened out: The position focuses on interpersonal violence, violence prevention, and policing, which is irrelevant to transportation engineering and urban planning.",
+    "date_filtered": "2026-11-19"
+  },
+  {
     "id": "a2eb339df5ff6d4b",
     "title": "Assistant Manager, Transportation Planning",
     "institution": "City of Nanaimo",
     "link": "https://ca.linkedin.com/jobs/view/assistant-manager-transportation-planning-at-city-of-nanaimo-4488441980",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is a municipal administrative and engineering staff position rather than an academic faculty role.",
-    "date_filtered": "2026-11-18"
+    "fit_reason": "Screened out: Non-faculty administrative staff role (Assistant Manager, Transportation Planning).",
+    "date_filtered": "2026-11-19"
   },
   {
     "id": "5f94ca78c1b8c308",
@@ -1666,8 +1766,8 @@
     "link": "https://uk.linkedin.com/jobs/view/transport-modeller-assistant-transport-modeller-at-wsp-in-the-uk-ireland-4468651711",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is a private industry consultancy role in transport modeling rather than an academic faculty position.",
-    "date_filtered": "2026-11-18"
+    "fit_reason": "Screened out: Industry consulting position rather than a university faculty appointment.",
+    "date_filtered": "2026-11-19"
   },
   {
     "id": "699310b717b5d28c",
@@ -1676,8 +1776,8 @@
     "link": "https://kr.linkedin.com/jobs/view/warsim-jcats-instructor-controller-at-valiant-integrated-services-4430736441",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Military simulation instructor role completely unrelated to academic transportation engineering faculty positions.",
-    "date_filtered": "2026-11-18"
+    "fit_reason": "Screened out: This is a military training simulation operator role, not an academic faculty position.",
+    "date_filtered": "2026-11-19"
   },
   {
     "id": "951e0a12877591f6",
@@ -1686,8 +1786,8 @@
     "link": "https://jp.linkedin.com/jobs/view/logistics-operations-planning-assistant-manager-test-course-operations-at-woven-by-toyota-4441816215",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Corporate logistics operations planning role in private industry rather than an academic faculty appointment.",
-    "date_filtered": "2026-11-18"
+    "fit_reason": "Screened out: This is an industry logistics management role rather than an academic faculty position.",
+    "date_filtered": "2026-11-19"
   },
   {
     "id": "ca48dce1dc7235ab",
@@ -1696,8 +1796,18 @@
     "link": "https://sg.linkedin.com/jobs/view/assistant-director-civil-resource-navy-at-ministry-of-defence-of-singapore-4472120167",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Government defense agency resource management role rather than an academic faculty position.",
-    "date_filtered": "2026-11-18"
+    "fit_reason": "Screened out: This is a government/administrative position in the Ministry of Defence, not an academic faculty role.",
+    "date_filtered": "2026-11-19"
+  },
+  {
+    "id": "f4cc03558680f4d1",
+    "title": "Senior/Assistant Director, Supply Chain and Economic Resilience Division",
+    "institution": "Ministry of Energy, Trade and Industry, Singapore",
+    "link": "https://sg.linkedin.com/jobs/view/senior-assistant-director-supply-chain-and-economic-resilience-division-at-ministry-of-energy-trade-and-industry-singapore-4421104096",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a government civil service/administrative position, not an academic faculty role.",
+    "date_filtered": "2026-11-19"
   },
   {
     "id": "6a90ea79f8ebde97",
@@ -1706,8 +1816,8 @@
     "link": "https://www.jobs.ac.uk/job/DTO413/research-assistant",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Biomedical research assistant position in cell biology and medical science, entirely outside transportation engineering.",
-    "date_filtered": "2026-11-18"
+    "fit_reason": "Screened out: This is a laboratory research assistant (staff/technical) role, not a tenure-track faculty position.",
+    "date_filtered": "2026-11-19"
   },
   {
     "id": "c3a79ba5c0324e19",
@@ -1716,7 +1826,7 @@
     "link": "https://www.jobs.ac.uk/job/DTN710/research-assistant-research-associate-fixed-term",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Post-doctoral research associate position in mitochondrial biology and genetics, completely irrelevant to transportation engineering.",
-    "date_filtered": "2026-11-18"
+    "fit_reason": "Screened out: This is a postdoctoral research associate role, not a tenure-track faculty appointment.",
+    "date_filtered": "2026-11-19"
   }
 ]

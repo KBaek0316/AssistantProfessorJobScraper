@@ -1282,5 +1282,17 @@
   "rutgers university, piscataway, nj": [
     40.5204169,
     -74.4645303
+  ],
+  "virginia tech, blacksburg, va": [
+    37.2284,
+    -80.4234
+  ],
+  "howard university, washington, dc": [
+    38.9221121,
+    -77.0196303
+  ],
+  "new brunswick, nj": [
+    40.4936119,
+    -74.4436416
   ]
 }
