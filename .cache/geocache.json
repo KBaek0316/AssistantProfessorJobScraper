@@ -1294,5 +1294,25 @@
   "new brunswick, nj": [
     40.4936119,
     -74.4436416
+  ],
+  "louisiana state university, baton rouge, la": [
+    30.4062005,
+    -91.1854129
+  ],
+  "colorado state university, fort collins, co": [
+    40.5706567,
+    -105.0853995
+  ],
+  "new york university, brooklyn, ny": [
+    40.653704,
+    -73.9455292
+  ],
+  "florida institute of technology, melbourne, fl": [
+    28.064271,
+    -80.623004
+  ],
+  "cornell university, ithaca, ny": [
+    42.4534,
+    -76.4735
   ]
 }
