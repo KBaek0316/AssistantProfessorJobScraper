@@ -1314,5 +1314,17 @@
   "cornell university, ithaca, ny": [
     42.4534,
     -76.4735
+  ],
+  "northeastern university, boston, ma": [
+    42.3351065,
+    -71.0892575
+  ],
+  "paris": [
+    48.8534951,
+    2.3483915
+  ],
+  "university of niagara falls canada, niagara falls, ontario": [
+    43.106478,
+    -79.0645327
   ]
 }
