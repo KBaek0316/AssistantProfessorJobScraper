@@ -1790,16 +1790,6 @@
     "date_filtered": "2026-11-21"
   },
   {
-    "id": "dcc3d647bde21a3a",
-    "title": "Administrative Access Assistant",
-    "institution": "Northeastern University",
-    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179624401&Title=Administrative%20Access%20Assistant",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Position is an administrative staff role rather than a faculty appointment.",
-    "date_filtered": "2026-11-21"
-  },
-  {
     "id": "7a4e050d05dedb91",
     "title": "Assistant or Associate Clinical Professor",
     "institution": "Northeastern University",
@@ -1820,116 +1810,6 @@
     "date_filtered": "2026-11-21"
   },
   {
-    "id": "a4b5790fcc078fbb",
-    "title": "Hourly Pooled - Transportation Services Assistant Supervisor, Demand Response",
-    "institution": "University of Wyoming",
-    "link": "https://jobs.chronicle.com/job/38058111/hourly-pooled-transportation-services-assistant-supervisor-demand-response/",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: This is an administrative hourly support position (Assistant Supervisor, Demand Response) rather than a faculty appointment.",
-    "date_filtered": "2026-11-21"
-  },
-  {
-    "id": "904d2ea9e6e41c05",
-    "title": "Assistant Director-Parking & Transportation",
-    "institution": "University of Maryland, Baltimore",
-    "link": "https://jobs.chronicle.com/job/38064721/assistant-director-parking-and-transportation/",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: This is an administrative staff position (Assistant Director - Parking & Transportation) rather than an academic faculty role.",
-    "date_filtered": "2026-11-21"
-  },
-  {
-    "id": "261b5917fdc8a7a3",
-    "title": "Assistant Professor - SOM Peds Critical Care",
-    "institution": "University of Maryland, Baltimore",
-    "link": "https://jobs.chronicle.com/job/38069065/assistant-professor-som-peds-critical-care/",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Medical faculty position in Pediatric Critical Care which is completely irrelevant to transportation engineering and urban planning.",
-    "date_filtered": "2026-11-21"
-  },
-  {
-    "id": "6eaba38b6bbbb1a2",
-    "title": "[LTA-P&P] DEPUTY/ASSISTANT MANAGER, POLICY (PRIVATE TRANSPORT)",
-    "institution": "Land Transport Authority (LTA) Singapore",
-    "link": "https://sg.linkedin.com/jobs/view/lta-p-p-deputy-assistant-manager-policy-private-transport-at-land-transport-authority-lta-singapore-4470432609",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Industry/government policy analyst role rather than an academic faculty appointment.",
-    "date_filtered": "2026-11-21"
-  },
-  {
-    "id": "3d84f987432d3e93",
-    "title": "Lecturer/Senior Lecturer (Physical AI) \u2013 Sch of Engineering",
-    "institution": "Nanyang Polytechnic",
-    "link": "https://sg.linkedin.com/jobs/view/lecturer-senior-lecturer-physical-ai-%E2%80%93-sch-of-engineering-at-nanyang-polytechnic-4492903624",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Robotics and physical AI teaching post outside the candidate's core transportation planning and systems engineering expertise.",
-    "date_filtered": "2026-11-21"
-  },
-  {
-    "id": "a2eb339df5ff6d4b",
-    "title": "Assistant Manager, Transportation Planning",
-    "institution": "City of Nanaimo",
-    "link": "https://ca.linkedin.com/jobs/view/assistant-manager-transportation-planning-at-city-of-nanaimo-4488441980",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Municipal administrative/engineering management position rather than a university faculty appointment.",
-    "date_filtered": "2026-11-21"
-  },
-  {
-    "id": "5f94ca78c1b8c308",
-    "title": "Transport Modeller / Assistant Transport Modeller",
-    "institution": "WSP in the UK & Ireland",
-    "link": "https://uk.linkedin.com/jobs/view/transport-modeller-assistant-transport-modeller-at-wsp-in-the-uk-ireland-4468651711",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Private sector industry consultant/modeller role rather than an academic faculty appointment.",
-    "date_filtered": "2026-11-21"
-  },
-  {
-    "id": "699310b717b5d28c",
-    "title": "WARSIM/JCATS Instructor Controller",
-    "institution": "Valiant Integrated Services",
-    "link": "https://kr.linkedin.com/jobs/view/warsim-jcats-instructor-controller-at-valiant-integrated-services-4430736441",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Military simulation instructor role rather than an academic faculty appointment.",
-    "date_filtered": "2026-11-21"
-  },
-  {
-    "id": "951e0a12877591f6",
-    "title": "Logistics Operations Planning Assistant Manager, Test Course Operations",
-    "institution": "Woven by Toyota",
-    "link": "https://jp.linkedin.com/jobs/view/logistics-operations-planning-assistant-manager-test-course-operations-at-woven-by-toyota-4441816215",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Corporate industry logistics operations role rather than an academic faculty appointment.",
-    "date_filtered": "2026-11-21"
-  },
-  {
-    "id": "ca48dce1dc7235ab",
-    "title": "Assistant Director (Civil Resource) - Navy",
-    "institution": "Ministry of Defence of Singapore",
-    "link": "https://sg.linkedin.com/jobs/view/assistant-director-civil-resource-navy-at-ministry-of-defence-of-singapore-4472120167",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Government defense administration role rather than an academic faculty appointment.",
-    "date_filtered": "2026-11-21"
-  },
-  {
-    "id": "f4cc03558680f4d1",
-    "title": "Senior/Assistant Director, Supply Chain and Economic Resilience Division",
-    "institution": "Ministry of Energy, Trade and Industry, Singapore",
-    "link": "https://sg.linkedin.com/jobs/view/senior-assistant-director-supply-chain-and-economic-resilience-division-at-ministry-of-energy-trade-and-industry-singapore-4421104096",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Non-faculty government administrative and policy role.",
-    "date_filtered": "2026-11-21"
-  },
-  {
     "id": "998bec81673ffb36",
     "title": "Associate/Assistant Professor in Electronic and Communication Engineering",
     "institution": "University of Macau",
@@ -1940,14 +1820,174 @@
     "date_filtered": "2026-11-21"
   },
   {
+    "id": "092ad2b05a0e45fb",
+    "title": "Assistant/Associate/Full Research Professor - Electrical Engineering",
+    "institution": "Prince Mohammad Bin Fahd University",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179624612&Title=Assistant%2FAssociate%2FFull%20Research%20Professor%20%2D%20Electrical%20Engineering",
+    "status": "Filtered (Location Outside Scope)",
+    "fit_score": null,
+    "fit_reason": "",
+    "date_filtered": "2026-11-22"
+  },
+  {
+    "id": "e67c1dbe14a3daa3",
+    "title": "Assistant Professor (Non-Tenure Track) in Mechanical and Aerospace Engineering Case Western Reserve University Mechanical & Aerospace Engineering Posted Oct. 30, 2026",
+    "institution": "Academic Institution",
+    "link": "http://engineering.academickeys.com/job/1hmgl6r0/Assistant-Professor-NonTenure-Track-in-Mechanical-and-Aerospace-Engineering",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a non-tenure track construction management faculty role, which falls under the 'Irrelevant/Non-Matching' category for a transportation engineering specialist.",
+    "date_filtered": "2026-11-22"
+  },
+  {
+    "id": "dcc3d647bde21a3a",
+    "title": "Administrative Access Assistant",
+    "institution": "Northeastern University",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179624401&Title=Administrative%20Access%20Assistant",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is an administrative staff position, not a faculty appointment.",
+    "date_filtered": "2026-11-22"
+  },
+  {
+    "id": "0703fbd1a607ae99",
+    "title": "Open Rank Clinical Professor, Department of Physical Therapy, Movement, and Rehabilitation Sciences",
+    "institution": "Northeastern University",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179623966&Title=Open%20Rank%20Clinical%20Professor%2C%20Department%20of%20Physical%20Therapy%2C%20Movement%2C%20and%20Rehabilitation%20Sciences",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This position is in Physical Therapy and Rehabilitation Sciences, which is outside the candidate's core research profile.",
+    "date_filtered": "2026-11-22"
+  },
+  {
+    "id": "d422907f6d4d12a5",
+    "title": "Assistant Clinical Professor, Audiology (Telepractice)",
+    "institution": "Auburn University",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179622311&Title=Assistant%20Clinical%20Professor%2C%20Audiology%20%28Telepractice%29",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This position is in Audiology, which is unrelated to the candidate's core expertise.",
+    "date_filtered": "2026-11-22"
+  },
+  {
+    "id": "a4b5790fcc078fbb",
+    "title": "Hourly Pooled - Transportation Services Assistant Supervisor, Demand Response",
+    "institution": "University of Wyoming",
+    "link": "https://jobs.chronicle.com/job/38058111/hourly-pooled-transportation-services-assistant-supervisor-demand-response/",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a staff supervisory role in campus transit operations, not a faculty appointment.",
+    "date_filtered": "2026-11-22"
+  },
+  {
+    "id": "904d2ea9e6e41c05",
+    "title": "Assistant Director-Parking & Transportation",
+    "institution": "University of Maryland, Baltimore",
+    "link": "https://jobs.chronicle.com/job/38064721/assistant-director-parking-and-transportation/",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is an administrative staff management position, not a faculty appointment.",
+    "date_filtered": "2026-11-22"
+  },
+  {
+    "id": "261b5917fdc8a7a3",
+    "title": "Assistant Professor - SOM Peds Critical Care",
+    "institution": "University of Maryland, Baltimore",
+    "link": "https://jobs.chronicle.com/job/38069065/assistant-professor-som-peds-critical-care/",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a medical/clinical faculty position in Pediatric Critical Care, which is unrelated to the candidate's core research profile.",
+    "date_filtered": "2026-11-22"
+  },
+  {
+    "id": "e49ad79cbbd034c6",
+    "title": "[LTA-PSGO] DEPUTY/ASSISTANT ROAD SYSTEM SAFETY MANAGER",
+    "institution": "Land Transport Authority (LTA) Singapore",
+    "link": "https://sg.linkedin.com/jobs/view/lta-psgo-deputy-assistant-road-system-safety-manager-at-land-transport-authority-lta-singapore-4444235885",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a government agency staff/management role, not an academic faculty position.",
+    "date_filtered": "2026-11-22"
+  },
+  {
+    "id": "5d2f5592a1cecd86",
+    "title": "Assistant/Associate Professor of Kinesiology - Motor Behavior",
+    "institution": "Miami University",
+    "link": "https://www.linkedin.com/jobs/view/assistant-associate-professor-of-kinesiology-motor-behavior-kinesiology-nutrition-and-health-at-miami-university-4487187434",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: The position is for Kinesiology/Motor Behavior, which is completely irrelevant to transportation engineering and systems.",
+    "date_filtered": "2026-11-22"
+  },
+  {
+    "id": "a2eb339df5ff6d4b",
+    "title": "Assistant Manager, Transportation Planning",
+    "institution": "City of Nanaimo",
+    "link": "https://ca.linkedin.com/jobs/view/assistant-manager-transportation-planning-at-city-of-nanaimo-4488441980",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a municipal government administrative management position, not an academic faculty position.",
+    "date_filtered": "2026-11-22"
+  },
+  {
+    "id": "5f94ca78c1b8c308",
+    "title": "Transport Modeller / Assistant Transport Modeller",
+    "institution": "WSP in the UK & Ireland",
+    "link": "https://uk.linkedin.com/jobs/view/transport-modeller-assistant-transport-modeller-at-wsp-in-the-uk-ireland-4468651711",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is an industry consulting role at WSP, not an academic faculty position.",
+    "date_filtered": "2026-11-22"
+  },
+  {
+    "id": "699310b717b5d28c",
+    "title": "WARSIM/JCATS Instructor Controller",
+    "institution": "Valiant Integrated Services",
+    "link": "https://kr.linkedin.com/jobs/view/warsim-jcats-instructor-controller-at-valiant-integrated-services-4430736441",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a military simulation training/support role, not an academic faculty position.",
+    "date_filtered": "2026-11-22"
+  },
+  {
+    "id": "951e0a12877591f6",
+    "title": "Logistics Operations Planning Assistant Manager, Test Course Operations",
+    "institution": "Woven by Toyota",
+    "link": "https://jp.linkedin.com/jobs/view/logistics-operations-planning-assistant-manager-test-course-operations-at-woven-by-toyota-4441816215",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is an industrial logistics management role, not an academic faculty position.",
+    "date_filtered": "2026-11-22"
+  },
+  {
+    "id": "ca48dce1dc7235ab",
+    "title": "Assistant Director (Civil Resource) - Navy",
+    "institution": "Ministry of Defence of Singapore",
+    "link": "https://sg.linkedin.com/jobs/view/assistant-director-civil-resource-navy-at-ministry-of-defence-of-singapore-4472120167",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a government maritime resource management role, not a university faculty appointment.",
+    "date_filtered": "2026-11-22"
+  },
+  {
+    "id": "f4cc03558680f4d1",
+    "title": "Senior/Assistant Director, Supply Chain and Economic Resilience Division",
+    "institution": "Ministry of Energy, Trade and Industry, Singapore",
+    "link": "https://sg.linkedin.com/jobs/view/senior-assistant-director-supply-chain-and-economic-resilience-division-at-ministry-of-energy-trade-and-industry-singapore-4421104096",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a government policy and supply chain management role, not a university faculty appointment.",
+    "date_filtered": "2026-11-22"
+  },
+  {
     "id": "6a90ea79f8ebde97",
     "title": "Research Assistant",
     "institution": "University of Warwick",
     "link": "https://www.jobs.ac.uk/job/DTO413/research-assistant",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Research assistant position in biomedical sciences and cell biology.",
-    "date_filtered": "2026-11-21"
+    "fit_reason": "Screened out: This is a laboratory technical research assistant position in biomedical sciences.",
+    "date_filtered": "2026-11-22"
   },
   {
     "id": "c3a79ba5c0324e19",
@@ -1956,7 +1996,7 @@
     "link": "https://www.jobs.ac.uk/job/DTN710/research-assistant-research-associate-fixed-term",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Post-doctoral research associate position in mitochondrial biology and molecular genetics.",
-    "date_filtered": "2026-11-21"
+    "fit_reason": "Screened out: This is a post-doctoral research associate position in mitochondrial biology.",
+    "date_filtered": "2026-11-22"
   }
 ]
