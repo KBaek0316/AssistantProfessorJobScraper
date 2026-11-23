@@ -1830,86 +1830,6 @@
     "date_filtered": "2026-11-22"
   },
   {
-    "id": "e67c1dbe14a3daa3",
-    "title": "Assistant Professor (Non-Tenure Track) in Mechanical and Aerospace Engineering Case Western Reserve University Mechanical & Aerospace Engineering Posted Oct. 30, 2026",
-    "institution": "Academic Institution",
-    "link": "http://engineering.academickeys.com/job/1hmgl6r0/Assistant-Professor-NonTenure-Track-in-Mechanical-and-Aerospace-Engineering",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: This is a non-tenure track construction management faculty role, which falls under the 'Irrelevant/Non-Matching' category for a transportation engineering specialist.",
-    "date_filtered": "2026-11-22"
-  },
-  {
-    "id": "dcc3d647bde21a3a",
-    "title": "Administrative Access Assistant",
-    "institution": "Northeastern University",
-    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179624401&Title=Administrative%20Access%20Assistant",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: This is an administrative staff position, not a faculty appointment.",
-    "date_filtered": "2026-11-22"
-  },
-  {
-    "id": "0703fbd1a607ae99",
-    "title": "Open Rank Clinical Professor, Department of Physical Therapy, Movement, and Rehabilitation Sciences",
-    "institution": "Northeastern University",
-    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179623966&Title=Open%20Rank%20Clinical%20Professor%2C%20Department%20of%20Physical%20Therapy%2C%20Movement%2C%20and%20Rehabilitation%20Sciences",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: This position is in Physical Therapy and Rehabilitation Sciences, which is outside the candidate's core research profile.",
-    "date_filtered": "2026-11-22"
-  },
-  {
-    "id": "d422907f6d4d12a5",
-    "title": "Assistant Clinical Professor, Audiology (Telepractice)",
-    "institution": "Auburn University",
-    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179622311&Title=Assistant%20Clinical%20Professor%2C%20Audiology%20%28Telepractice%29",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: This position is in Audiology, which is unrelated to the candidate's core expertise.",
-    "date_filtered": "2026-11-22"
-  },
-  {
-    "id": "a4b5790fcc078fbb",
-    "title": "Hourly Pooled - Transportation Services Assistant Supervisor, Demand Response",
-    "institution": "University of Wyoming",
-    "link": "https://jobs.chronicle.com/job/38058111/hourly-pooled-transportation-services-assistant-supervisor-demand-response/",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: This is a staff supervisory role in campus transit operations, not a faculty appointment.",
-    "date_filtered": "2026-11-22"
-  },
-  {
-    "id": "904d2ea9e6e41c05",
-    "title": "Assistant Director-Parking & Transportation",
-    "institution": "University of Maryland, Baltimore",
-    "link": "https://jobs.chronicle.com/job/38064721/assistant-director-parking-and-transportation/",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: This is an administrative staff management position, not a faculty appointment.",
-    "date_filtered": "2026-11-22"
-  },
-  {
-    "id": "261b5917fdc8a7a3",
-    "title": "Assistant Professor - SOM Peds Critical Care",
-    "institution": "University of Maryland, Baltimore",
-    "link": "https://jobs.chronicle.com/job/38069065/assistant-professor-som-peds-critical-care/",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: This is a medical/clinical faculty position in Pediatric Critical Care, which is unrelated to the candidate's core research profile.",
-    "date_filtered": "2026-11-22"
-  },
-  {
-    "id": "e49ad79cbbd034c6",
-    "title": "[LTA-PSGO] DEPUTY/ASSISTANT ROAD SYSTEM SAFETY MANAGER",
-    "institution": "Land Transport Authority (LTA) Singapore",
-    "link": "https://sg.linkedin.com/jobs/view/lta-psgo-deputy-assistant-road-system-safety-manager-at-land-transport-authority-lta-singapore-4444235885",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: This is a government agency staff/management role, not an academic faculty position.",
-    "date_filtered": "2026-11-22"
-  },
-  {
     "id": "5d2f5592a1cecd86",
     "title": "Assistant/Associate Professor of Kinesiology - Motor Behavior",
     "institution": "Miami University",
@@ -1920,14 +1840,104 @@
     "date_filtered": "2026-11-22"
   },
   {
+    "id": "37c037aa54cfc307",
+    "title": "Assistant Professor of Cyber Engineering Technology & Computer Science",
+    "institution": "Texas A&M University-San Antonio",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179624760&Title=Assistant%20Professor%20of%20Cyber%20Engineering%20Technology%20%26amp%3B%20Computer%20Science",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 2,
+    "fit_reason": "The position focuses strictly on hardware cybersecurity, embedded systems, and IoT security within a Cyber Engineering Technology program, which does not align with the candidate's core expertise in transportation engineering and travel behavior modeling.",
+    "date_filtered": "2026-11-23"
+  },
+  {
+    "id": "dcc3d647bde21a3a",
+    "title": "Administrative Access Assistant",
+    "institution": "Northeastern University",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179624401&Title=Administrative%20Access%20Assistant",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Non-faculty administrative staff position.",
+    "date_filtered": "2026-11-23"
+  },
+  {
+    "id": "0703fbd1a607ae99",
+    "title": "Open Rank Clinical Professor, Department of Physical Therapy, Movement, and Rehabilitation Sciences",
+    "institution": "Northeastern University",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179623966&Title=Open%20Rank%20Clinical%20Professor%2C%20Department%20of%20Physical%20Therapy%2C%20Movement%2C%20and%20Rehabilitation%20Sciences",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: The position is in Physical Therapy, Movement, and Rehabilitation Sciences, which is completely unrelated to the candidate's core expertise in Transportation Engineering.",
+    "date_filtered": "2026-11-23"
+  },
+  {
+    "id": "a4b5790fcc078fbb",
+    "title": "Hourly Pooled - Transportation Services Assistant Supervisor, Demand Response",
+    "institution": "University of Wyoming",
+    "link": "https://jobs.chronicle.com/job/38058111/hourly-pooled-transportation-services-assistant-supervisor-demand-response/",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: This is a non-faculty, hourly staff position assisting with campus transit operations requiring a high school diploma or GED.",
+    "date_filtered": "2026-11-23"
+  },
+  {
+    "id": "904d2ea9e6e41c05",
+    "title": "Assistant Director-Parking & Transportation",
+    "institution": "University of Maryland, Baltimore",
+    "link": "https://jobs.chronicle.com/job/38064721/assistant-director-parking-and-transportation/",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Non-faculty administrative staff position focused on campus parking operations and departmental administration.",
+    "date_filtered": "2026-11-23"
+  },
+  {
+    "id": "261b5917fdc8a7a3",
+    "title": "Assistant Professor - SOM Peds Critical Care",
+    "institution": "University of Maryland, Baltimore",
+    "link": "https://jobs.chronicle.com/job/38069065/assistant-professor-som-peds-critical-care/",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Position is a medical faculty appointment in pediatric critical care, completely outside the candidate's engineering and planning discipline.",
+    "date_filtered": "2026-11-23"
+  },
+  {
+    "id": "ce0d1a909290e788",
+    "title": "Assistant Professor in closed-loop control of bionic limbs",
+    "institution": "Aalborg University",
+    "link": "https://dk.linkedin.com/jobs/view/assistant-professor-in-closed-loop-control-of-bionic-limbs-at-aalborg-university-4493640310",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Position focuses on biomedical engineering and closed-loop control of prosthetic limbs, which is unrelated to transportation engineering.",
+    "date_filtered": "2026-11-23"
+  },
+  {
+    "id": "880943500bb3695c",
+    "title": "Assistant Professor in Embodied Interaction Design",
+    "institution": "University of Warwick",
+    "link": "https://uk.linkedin.com/jobs/view/assistant-professor-in-embodied-interaction-design-at-university-of-warwick-4492629070",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 2,
+    "fit_reason": "Position focuses on human-computer interaction, performing arts technology, and embodied interaction, lacking alignment with transportation planning.",
+    "date_filtered": "2026-11-23"
+  },
+  {
+    "id": "ed3cfb442eee8e75",
+    "title": "Assistant Professor in Physical Computing",
+    "institution": "University of Warwick",
+    "link": "https://uk.linkedin.com/jobs/view/assistant-professor-in-physical-computing-at-university-of-warwick-4492622594",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 2,
+    "fit_reason": "Position focuses on physical computing and interactive hardware prototyping, which falls outside the candidate's core transportation engineering focus.",
+    "date_filtered": "2026-11-23"
+  },
+  {
     "id": "a2eb339df5ff6d4b",
     "title": "Assistant Manager, Transportation Planning",
     "institution": "City of Nanaimo",
     "link": "https://ca.linkedin.com/jobs/view/assistant-manager-transportation-planning-at-city-of-nanaimo-4488441980",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is a municipal government administrative management position, not an academic faculty position.",
-    "date_filtered": "2026-11-22"
+    "fit_reason": "Screened out: Position is a municipal government staff position rather than an academic university faculty appointment.",
+    "date_filtered": "2026-11-23"
   },
   {
     "id": "5f94ca78c1b8c308",
@@ -1936,8 +1946,8 @@
     "link": "https://uk.linkedin.com/jobs/view/transport-modeller-assistant-transport-modeller-at-wsp-in-the-uk-ireland-4468651711",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is an industry consulting role at WSP, not an academic faculty position.",
-    "date_filtered": "2026-11-22"
+    "fit_reason": "Screened out: Position is a private engineering consultancy role rather than an academic university faculty appointment.",
+    "date_filtered": "2026-11-23"
   },
   {
     "id": "699310b717b5d28c",
@@ -1946,8 +1956,8 @@
     "link": "https://kr.linkedin.com/jobs/view/warsim-jcats-instructor-controller-at-valiant-integrated-services-4430736441",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is a military simulation training/support role, not an academic faculty position.",
-    "date_filtered": "2026-11-22"
+    "fit_reason": "Screened out: Non-faculty military simulation instructor position at a private defense contractor.",
+    "date_filtered": "2026-11-23"
   },
   {
     "id": "951e0a12877591f6",
@@ -1956,8 +1966,8 @@
     "link": "https://jp.linkedin.com/jobs/view/logistics-operations-planning-assistant-manager-test-course-operations-at-woven-by-toyota-4441816215",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is an industrial logistics management role, not an academic faculty position.",
-    "date_filtered": "2026-11-22"
+    "fit_reason": "Screened out: Non-faculty corporate industry role in logistics planning and supply chain management.",
+    "date_filtered": "2026-11-23"
   },
   {
     "id": "ca48dce1dc7235ab",
@@ -1966,8 +1976,8 @@
     "link": "https://sg.linkedin.com/jobs/view/assistant-director-civil-resource-navy-at-ministry-of-defence-of-singapore-4472120167",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is a government maritime resource management role, not a university faculty appointment.",
-    "date_filtered": "2026-11-22"
+    "fit_reason": "Screened out: Non-faculty government administrative position in naval maritime resource planning.",
+    "date_filtered": "2026-11-23"
   },
   {
     "id": "f4cc03558680f4d1",
@@ -1976,27 +1986,7 @@
     "link": "https://sg.linkedin.com/jobs/view/senior-assistant-director-supply-chain-and-economic-resilience-division-at-ministry-of-energy-trade-and-industry-singapore-4421104096",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: This is a government policy and supply chain management role, not a university faculty appointment.",
-    "date_filtered": "2026-11-22"
-  },
-  {
-    "id": "6a90ea79f8ebde97",
-    "title": "Research Assistant",
-    "institution": "University of Warwick",
-    "link": "https://www.jobs.ac.uk/job/DTO413/research-assistant",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: This is a laboratory technical research assistant position in biomedical sciences.",
-    "date_filtered": "2026-11-22"
-  },
-  {
-    "id": "c3a79ba5c0324e19",
-    "title": "Research Assistant/Research Associate (Fixed Term)",
-    "institution": "University of Cambridge",
-    "link": "https://www.jobs.ac.uk/job/DTN710/research-assistant-research-associate-fixed-term",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: This is a post-doctoral research associate position in mitochondrial biology.",
-    "date_filtered": "2026-11-22"
+    "fit_reason": "Screened out: Non-faculty government civil service role focusing on supply chain policy and economic resilience.",
+    "date_filtered": "2026-11-23"
   }
 ]
