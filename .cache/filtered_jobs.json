@@ -1910,13 +1910,83 @@
     "date_filtered": "2026-11-24"
   },
   {
-    "id": "699310b717b5d28c",
-    "title": "WARSIM/JCATS Instructor Controller",
-    "institution": "Valiant Integrated Services",
-    "link": "https://kr.linkedin.com/jobs/view/warsim-jcats-instructor-controller-at-valiant-integrated-services-4430736441",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: This is a military simulation instructor and controller role, not an academic faculty position.",
+    "id": "a2eb339df5ff6d4b",
+    "title": "Assistant Manager, Transportation Planning",
+    "institution": "City of Nanaimo",
+    "link": "https://ca.linkedin.com/jobs/view/assistant-manager-transportation-planning-at-city-of-nanaimo-4488441980",
+    "status": "Filtered (Non-Faculty)",
+    "fit_score": null,
+    "fit_reason": "",
+    "date_filtered": "2026-11-24"
+  },
+  {
+    "id": "ca48dce1dc7235ab",
+    "title": "Assistant Director (Civil Resource) - Navy",
+    "institution": "Ministry of Defence of Singapore",
+    "link": "https://sg.linkedin.com/jobs/view/assistant-director-civil-resource-navy-at-ministry-of-defence-of-singapore-4472120167",
+    "status": "Filtered (Non-Faculty)",
+    "fit_score": null,
+    "fit_reason": "",
+    "date_filtered": "2026-11-24"
+  },
+  {
+    "id": "f4cc03558680f4d1",
+    "title": "Senior/Assistant Director, Supply Chain and Economic Resilience Division",
+    "institution": "Ministry of Energy, Trade and Industry, Singapore",
+    "link": "https://sg.linkedin.com/jobs/view/senior-assistant-director-supply-chain-and-economic-resilience-division-at-ministry-of-energy-trade-and-industry-singapore-4421104096",
+    "status": "Filtered (Non-Faculty)",
+    "fit_score": null,
+    "fit_reason": "",
+    "date_filtered": "2026-11-24"
+  },
+  {
+    "id": "951e0a12877591f6",
+    "title": "Logistics Operations Planning Assistant Manager, Test Course Operations",
+    "institution": "Woven by Toyota",
+    "link": "https://jp.linkedin.com/jobs/view/logistics-operations-planning-assistant-manager-test-course-operations-at-woven-by-toyota-4441816215",
+    "status": "Filtered (Non-Faculty)",
+    "fit_score": null,
+    "fit_reason": "",
+    "date_filtered": "2026-11-24"
+  },
+  {
+    "id": "5f94ca78c1b8c308",
+    "title": "Transport Modeller / Assistant Transport Modeller",
+    "institution": "WSP in the UK & Ireland",
+    "link": "https://uk.linkedin.com/jobs/view/transport-modeller-assistant-transport-modeller-at-wsp-in-the-uk-ireland-4468651711",
+    "status": "Filtered (Non-Faculty)",
+    "fit_score": null,
+    "fit_reason": "",
+    "date_filtered": "2026-11-24"
+  },
+  {
+    "id": "0dd709c1760c338b",
+    "title": "Operations and Supply Chain Management: Assistant, Associate or Full Professors",
+    "institution": "I\u00c9SEG School of Management",
+    "link": "https://fr.linkedin.com/jobs/view/operations-and-supply-chain-management-2-assistant-associate-or-full-professors-at-i%C3%A9seg-school-of-management-4489828367",
+    "status": "Filtered (Non-Faculty)",
+    "fit_score": 4,
+    "fit_reason": "Faculty positions in Operations and Supply Chain Management within a business school, representing a peripheral fit focused on commercial logistics rather than passenger transportation.",
+    "date_filtered": "2026-11-24"
+  },
+  {
+    "id": "e7af3fd1ae7e9738",
+    "title": "Assistant / Associate / Full Professors in Economics",
+    "institution": "Imperial College London",
+    "link": "https://uk.linkedin.com/jobs/view/assistant-associate-full-professors-in-economics-at-imperial-college-london-4477187759",
+    "status": "Filtered (Non-Faculty)",
+    "fit_score": 3,
+    "fit_reason": "While in a business school with potential data science overlap, the search is for general economics and public policy rather than transportation systems or engineering.",
+    "date_filtered": "2026-11-24"
+  },
+  {
+    "id": "e274767183b1b68d",
+    "title": "Assistant Professors in Business Administration",
+    "institution": "J\u00f6nk\u00f6ping University",
+    "link": "https://se.linkedin.com/jobs/view/assistant-professors-in-business-administration-at-j%C3%B6nk%C3%B6ping-university-4473966498",
+    "status": "Filtered (Non-Faculty)",
+    "fit_score": 2,
+    "fit_reason": "This is a business administration role focused on entrepreneurship and digital business models, lacking any connection to transportation engineering or mobility systems.",
     "date_filtered": "2026-11-24"
   }
 ]

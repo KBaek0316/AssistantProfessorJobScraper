@@ -330,6 +330,7 @@ class JobPosting:
             r"\bk-12\b", r"\blab manager\b", r"\bundergraduate student\b", r"\bgraduate student\b",
             r"\badjunct\b", r"\bcontinuing education\b", r"\badult education\b",
             r"\bcommunity education\b", r"\bextension agent\b", r"\bvisiting scholar\b",
+            r"\bassistant\s+(?:manager|director|supervisor|engineer|planner|modeller|modeler|analyst|coordinator|specialist|officer)\b",
         ]
         for pat in title_excluded_patterns:
             if re.search(pat, t_lower):
@@ -370,7 +371,7 @@ class JobPosting:
 
         # 3. Must indicate an academic faculty appointment in either title or snippet
         faculty_indicators = [
-            r"\bassistant\b", r"\bprofessor\b", r"\bfaculty\b", r"\blecturer\b",
+            r"\bprofessor\b", r"\bfaculty\b", r"\blecturer\b",
             r"\binstructor\b", r"\bopen rank\b", r"\bopen-rank\b", r"\btenure-track\b", r"\btenure track\b"
         ]
         if not any(re.search(ind, combined) for ind in faculty_indicators):

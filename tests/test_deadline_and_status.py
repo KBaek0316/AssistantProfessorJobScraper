@@ -260,6 +260,11 @@ class TestDeadlineAndStatus(unittest.TestCase):
         self.assertFalse(JobPosting.is_valid_faculty_posting("Lecturer - Continuing Education"))
         self.assertFalse(JobPosting.is_valid_faculty_posting("Instructor of Adult Education"))
 
+        # Corporate/government "Assistant Manager / Director / Modeller" roles must be rejected
+        self.assertFalse(JobPosting.is_valid_faculty_posting("Assistant Manager, Transportation Planning"))
+        self.assertFalse(JobPosting.is_valid_faculty_posting("Assistant Director (Civil Resource) - Navy"))
+        self.assertFalse(JobPosting.is_valid_faculty_posting("Transport Modeller / Assistant Transport Modeller"))
+
         # Valid Assistant Professor and Open Rank roles must be accepted
         self.assertTrue(JobPosting.is_valid_faculty_posting("Assistant Professor of Civil Engineering"))
         self.assertTrue(JobPosting.is_valid_faculty_posting("Assistant/Associate Professor of Civil Engineering"))
