@@ -1850,46 +1850,6 @@
     "date_filtered": "2026-11-23"
   },
   {
-    "id": "dcc3d647bde21a3a",
-    "title": "Administrative Access Assistant",
-    "institution": "Northeastern University",
-    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179624401&Title=Administrative%20Access%20Assistant",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Non-faculty administrative staff position.",
-    "date_filtered": "2026-11-23"
-  },
-  {
-    "id": "0703fbd1a607ae99",
-    "title": "Open Rank Clinical Professor, Department of Physical Therapy, Movement, and Rehabilitation Sciences",
-    "institution": "Northeastern University",
-    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179623966&Title=Open%20Rank%20Clinical%20Professor%2C%20Department%20of%20Physical%20Therapy%2C%20Movement%2C%20and%20Rehabilitation%20Sciences",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: The position is in Physical Therapy, Movement, and Rehabilitation Sciences, which is completely unrelated to the candidate's core expertise in Transportation Engineering.",
-    "date_filtered": "2026-11-23"
-  },
-  {
-    "id": "a4b5790fcc078fbb",
-    "title": "Hourly Pooled - Transportation Services Assistant Supervisor, Demand Response",
-    "institution": "University of Wyoming",
-    "link": "https://jobs.chronicle.com/job/38058111/hourly-pooled-transportation-services-assistant-supervisor-demand-response/",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: This is a non-faculty, hourly staff position assisting with campus transit operations requiring a high school diploma or GED.",
-    "date_filtered": "2026-11-23"
-  },
-  {
-    "id": "904d2ea9e6e41c05",
-    "title": "Assistant Director-Parking & Transportation",
-    "institution": "University of Maryland, Baltimore",
-    "link": "https://jobs.chronicle.com/job/38064721/assistant-director-parking-and-transportation/",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Non-faculty administrative staff position focused on campus parking operations and departmental administration.",
-    "date_filtered": "2026-11-23"
-  },
-  {
     "id": "261b5917fdc8a7a3",
     "title": "Assistant Professor - SOM Peds Critical Care",
     "institution": "University of Maryland, Baltimore",
@@ -1930,24 +1890,24 @@
     "date_filtered": "2026-11-23"
   },
   {
-    "id": "a2eb339df5ff6d4b",
-    "title": "Assistant Manager, Transportation Planning",
-    "institution": "City of Nanaimo",
-    "link": "https://ca.linkedin.com/jobs/view/assistant-manager-transportation-planning-at-city-of-nanaimo-4488441980",
+    "id": "a4b5790fcc078fbb",
+    "title": "Hourly Pooled - Transportation Services Assistant Supervisor, Demand Response",
+    "institution": "University of Wyoming",
+    "link": "https://jobs.chronicle.com/job/38058111/hourly-pooled-transportation-services-assistant-supervisor-demand-response/",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Position is a municipal government staff position rather than an academic university faculty appointment.",
-    "date_filtered": "2026-11-23"
+    "fit_reason": "Screened out: This is an hourly administrative/staff supervisory role rather than a faculty research or teaching appointment.",
+    "date_filtered": "2026-11-24"
   },
   {
-    "id": "5f94ca78c1b8c308",
-    "title": "Transport Modeller / Assistant Transport Modeller",
-    "institution": "WSP in the UK & Ireland",
-    "link": "https://uk.linkedin.com/jobs/view/transport-modeller-assistant-transport-modeller-at-wsp-in-the-uk-ireland-4468651711",
+    "id": "904d2ea9e6e41c05",
+    "title": "Assistant Director-Parking & Transportation",
+    "institution": "University of Maryland, Baltimore",
+    "link": "https://jobs.chronicle.com/job/38064721/assistant-director-parking-and-transportation/",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Position is a private engineering consultancy role rather than an academic university faculty appointment.",
-    "date_filtered": "2026-11-23"
+    "fit_reason": "Screened out: This is a senior administrative staff position focused on parking operations and departmental management rather than academic faculty work.",
+    "date_filtered": "2026-11-24"
   },
   {
     "id": "699310b717b5d28c",
@@ -1956,37 +1916,7 @@
     "link": "https://kr.linkedin.com/jobs/view/warsim-jcats-instructor-controller-at-valiant-integrated-services-4430736441",
     "status": "Filtered (Non-Faculty / Seniority)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Non-faculty military simulation instructor position at a private defense contractor.",
-    "date_filtered": "2026-11-23"
-  },
-  {
-    "id": "951e0a12877591f6",
-    "title": "Logistics Operations Planning Assistant Manager, Test Course Operations",
-    "institution": "Woven by Toyota",
-    "link": "https://jp.linkedin.com/jobs/view/logistics-operations-planning-assistant-manager-test-course-operations-at-woven-by-toyota-4441816215",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Non-faculty corporate industry role in logistics planning and supply chain management.",
-    "date_filtered": "2026-11-23"
-  },
-  {
-    "id": "ca48dce1dc7235ab",
-    "title": "Assistant Director (Civil Resource) - Navy",
-    "institution": "Ministry of Defence of Singapore",
-    "link": "https://sg.linkedin.com/jobs/view/assistant-director-civil-resource-navy-at-ministry-of-defence-of-singapore-4472120167",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Non-faculty government administrative position in naval maritime resource planning.",
-    "date_filtered": "2026-11-23"
-  },
-  {
-    "id": "f4cc03558680f4d1",
-    "title": "Senior/Assistant Director, Supply Chain and Economic Resilience Division",
-    "institution": "Ministry of Energy, Trade and Industry, Singapore",
-    "link": "https://sg.linkedin.com/jobs/view/senior-assistant-director-supply-chain-and-economic-resilience-division-at-ministry-of-energy-trade-and-industry-singapore-4421104096",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Non-faculty government civil service role focusing on supply chain policy and economic resilience.",
-    "date_filtered": "2026-11-23"
+    "fit_reason": "Screened out: This is a military simulation instructor and controller role, not an academic faculty position.",
+    "date_filtered": "2026-11-24"
   }
 ]
