@@ -160,7 +160,7 @@ To allow the daily GitHub Action to run automatically in the cloud:
    - `GEMINI_API_KEY`: Your Gemini API key.
    - `GOOGLE_SHEET_ID` *(optional)*: Your Google Sheet ID.
    - `GOOGLE_CREDENTIALS` *(optional)*: The entire contents of your `credentials.json` file pasted as raw text.
-4. The workflow will automatically run every day at `06:00 UTC`, or you can trigger it manually anytime via the **Actions** tab by clicking **Run workflow**.
+4. The workflow will automatically run every day at `05:23 UTC` (off-minute schedule so results are ready by ~9:00 AM CST), or you can trigger it manually anytime via the **Actions** tab by clicking **Run workflow**.
 
 ---
 
@@ -229,7 +229,7 @@ If you forked this repository to your personal GitHub account:
    - Click the **Run workflow** dropdown on the right &rarr; click the green **Run workflow** button.
 4. **Automated Completion**:
    - GitHub's cloud runner will execute the pipeline, scrape the 5 job boards, score all positions against your CV, and commit the updated `jobs.xlsx`, `jobs.csv`, and `map.html` directly back to your repository within 2–3 minutes.
-   - It will also continue running automatically every day at `06:00 UTC`.
+   - It will also continue running automatically every day at `05:23 UTC` (off-minute schedule so daily results are ready by ~9:00 AM CST).
 
 ---
 

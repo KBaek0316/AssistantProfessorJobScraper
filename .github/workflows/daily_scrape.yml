@@ -2,8 +2,9 @@ name: Daily Academic Job Scraper
 
 on:
   schedule:
-    # Runs daily at 10:00 UTC (4:00 AM Central Standard Time / 5:00 AM Eastern Standard Time)
-    - cron: '0 10 * * *'
+    # Off-minute schedule at 05:23 UTC (11:23 PM CST / 12:23 AM CDT) to avoid top-of-the-hour
+    # GitHub Actions cron congestion and ensure daily results are ready by ~9:00 AM CST even under queue delays
+    - cron: '23 5 * * *'
   workflow_dispatch: # Allows manual trigger from GitHub Actions tab
 
 jobs:
