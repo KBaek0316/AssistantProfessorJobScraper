@@ -7,9 +7,14 @@ on:
     - cron: '23 5 * * *'
   workflow_dispatch: # Allows manual trigger from GitHub Actions tab
 
+concurrency:
+  group: daily-academic-job-scraper
+  cancel-in-progress: false
+
 jobs:
   scrape-and-update:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     permissions:
       contents: write # Needed to commit updated jobs.csv, jobs.xlsx, map.html

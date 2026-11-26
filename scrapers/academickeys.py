@@ -15,8 +15,11 @@ class AcademicKeysScraper(BaseScraper):
 
     def _fetch_detail(self, url: str):
         """Fetch AcademicKeys job display page for full description, department, deadline, and salary."""
+        if self.is_rate_limited:
+            return "", "", ""
         try:
-            resp = self.session.get(url, timeout=12)
+            resp = self.session.get(url, timeout=self.DEFAULT_TIMEOUT)
+            self.record_http_status(resp.status_code, f"detail {url}")
             if resp.status_code == 200:
                 soup = BeautifulSoup(resp.text, "html.parser")
                 full_text = soup.get_text(" ", strip=True)
@@ -58,10 +61,13 @@ class AcademicKeysScraper(BaseScraper):
     def scrape(self, query: str = "Assistant Professor Transportation", max_results: int = 25) -> List[JobPosting]:
         self.logger.info(f"Querying AcademicKeys with: '{query}'")
         postings: List[JobPosting] = []
+        if self.is_rate_limited:
+            return postings
 
         try:
             params = {"q": query}
-            response = self.session.get(self.SEARCH_URL, params=params, timeout=15)
+            response = self.session.get(self.SEARCH_URL, params=params, timeout=self.DEFAULT_TIMEOUT)
+            self.record_http_status(response.status_code, f"search '{query}'")
             if response.status_code != 200:
                 self.logger.warning(f"Failed to fetch AcademicKeys: HTTP {response.status_code}")
                 return postings
@@ -80,9 +86,10 @@ class AcademicKeysScraper(BaseScraper):
                 full_url = urljoin("https://engineering.academickeys.com", href)
                 # Strip query parameter for clean unique URL
                 clean_url = full_url.split("?")[0]
-                if clean_url in seen_urls:
+                norm_url = self.normalize_url(clean_url)
+                if norm_url in seen_urls:
                     continue
-                seen_urls.add(clean_url)
+                seen_urls.add(norm_url)
 
                 title = a.get_text(" ", strip=True)
                 if not title:
@@ -116,8 +123,12 @@ class AcademicKeysScraper(BaseScraper):
                         if "Deadline" in line and i + 1 < len(text_lines):
                             deadline = text_lines[i + 1]
 
-                # Fetch full detail page for rich description and department
-                detail_desc, detail_dept, detail_dl = self._fetch_detail(clean_url)
+                # Fetch full detail page only for brand-new URLs not already tracked/filtered or seen in this run
+                detail_desc, detail_dept, detail_dl = "", "", ""
+                if self.should_fetch_detail(clean_url):
+                    detail_desc, detail_dept, detail_dl = self._fetch_detail(clean_url)
+                    self.polite_sleep(0.3, 0.7)
+                self._seen_urls_session.add(norm_url)
                 if detail_dept:
                     field_name = detail_dept
                 if detail_dl:

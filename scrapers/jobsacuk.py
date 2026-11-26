@@ -15,8 +15,11 @@ class JobsAcUkScraper(BaseScraper):
 
     def _fetch_job_description(self, full_url: str) -> str:
         """Fetch detailed job description from jobs.ac.uk detail page."""
+        if self.is_rate_limited:
+            return ""
         try:
-            resp = self.session.get(full_url, timeout=12)
+            resp = self.session.get(full_url, timeout=self.DEFAULT_TIMEOUT)
+            self.record_http_status(resp.status_code, f"detail {full_url}")
             if resp.status_code == 200:
                 soup = BeautifulSoup(resp.text, "html.parser")
                 for s in soup.find_all("script", type="application/ld+json"):
@@ -45,6 +48,8 @@ class JobsAcUkScraper(BaseScraper):
     def scrape(self, query: str = "Assistant Professor Transportation", max_results: int = 25) -> List[JobPosting]:
         self.logger.info(f"Querying jobs.ac.uk with: '{query}'")
         postings: List[JobPosting] = []
+        if self.is_rate_limited:
+            return postings
         seen_links = set()
 
         try:
@@ -52,7 +57,8 @@ class JobsAcUkScraper(BaseScraper):
                 "keywords": query,
                 "sortType": 1,
             }
-            response = self.session.get(self.SEARCH_URL, params=params, timeout=15)
+            response = self.session.get(self.SEARCH_URL, params=params, timeout=self.DEFAULT_TIMEOUT)
+            self.record_http_status(response.status_code, f"search '{query}'")
             if response.status_code != 200:
                 self.logger.warning(f"Failed to fetch jobs.ac.uk: HTTP {response.status_code}")
                 return postings
@@ -113,8 +119,13 @@ class JobsAcUkScraper(BaseScraper):
                     if text_dl:
                         deadline = text_dl
 
-                # Fetch full description if possible
-                detailed_desc = self._fetch_job_description(full_url)
+                # Fetch full description only for brand-new URLs not already tracked/filtered or seen in this run
+                norm_url = self.normalize_url(full_url)
+                detailed_desc = ""
+                if self.should_fetch_detail(full_url):
+                    detailed_desc = self._fetch_job_description(full_url)
+                    self.polite_sleep(0.5, 1.0)
+                self._seen_urls_session.add(norm_url)
                 raw_description = detailed_desc if detailed_desc else card_text
 
                 # Check if full description has a more precise deadline

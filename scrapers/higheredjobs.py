@@ -16,13 +16,16 @@ class HigherEdJobsScraper(BaseScraper):
     def scrape(self, query: str = "Assistant Professor Transportation", max_results: int = 25) -> List[JobPosting]:
         self.logger.info(f"Querying HigherEdJobs with: '{query}'")
         postings: List[JobPosting] = []
+        if self.is_rate_limited:
+            return postings
 
         try:
             params = {
                 "PosType": 1,  # Faculty
                 "Keyword": query,
             }
-            response = self.session.get(self.SEARCH_URL, params=params, timeout=15)
+            response = self.session.get(self.SEARCH_URL, params=params, timeout=self.DEFAULT_TIMEOUT)
+            self.record_http_status(response.status_code, f"search '{query}'")
             if response.status_code != 200:
                 self.logger.warning(f"Failed to fetch HigherEdJobs: HTTP {response.status_code}")
                 return postings
@@ -69,24 +72,28 @@ class HigherEdJobsScraper(BaseScraper):
                     if len(lines) > 2:
                         location = lines[2]
 
-                # Fetch full job page for complete description and deadline
-                try:
-                    detail_resp = self.session.get(full_url, timeout=10)
-                    if detail_resp.status_code == 200:
-                        detail_soup = BeautifulSoup(detail_resp.text, "html.parser")
-                        desc_div = (
-                            detail_soup.find("div", id="mainContent")
-                            or detail_soup.find("div", class_="main")
-                            or detail_soup.find("div", id="job-description")
-                            or detail_soup.find("div", class_="job-description")
-                            or detail_soup.find("div", class_="col-sm-12")
-                        )
-                        if desc_div:
-                            full_desc = desc_div.get_text(" ", strip=True)
-                            if len(full_desc) > len(raw_text):
-                                raw_text = full_desc
-                except Exception as detail_err:
-                    self.logger.debug(f"Could not fetch detail page for {full_url}: {detail_err}")
+                # Fetch full job page only for brand-new URLs not already tracked/filtered or seen in this run
+                norm_url = self.normalize_url(full_url)
+                if self.should_fetch_detail(full_url):
+                    try:
+                        detail_resp = self.session.get(full_url, timeout=self.DEFAULT_TIMEOUT)
+                        self.record_http_status(detail_resp.status_code, f"detail {job_code}")
+                        if detail_resp.status_code == 200:
+                            detail_soup = BeautifulSoup(detail_resp.text, "html.parser")
+                            desc_div = (
+                                detail_soup.find("div", id="mainContent")
+                                or detail_soup.find("div", class_="main")
+                                or detail_soup.find("div", id="job-description")
+                                or detail_soup.find("div", class_="job-description")
+                                or detail_soup.find("div", class_="col-sm-12")
+                            )
+                            if desc_div:
+                                full_desc = desc_div.get_text(" ", strip=True)
+                                if len(full_desc) > len(raw_text):
+                                    raw_text = full_desc
+                    except Exception as detail_err:
+                        self.logger.debug(f"Could not fetch detail page for {full_url}: {detail_err}")
+                self._seen_urls_session.add(norm_url)
 
                 job_id = JobPosting.generate_id("higheredjobs", job_code)
                 postings.append(

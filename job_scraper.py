@@ -244,11 +244,18 @@ def main():
         print(f"  Re-evaluate Mode:   '{args.re_evaluate_mode.upper()}' (CV: '{args.cv_path}')")
     print("=" * 70)
 
-    # 1. Initialize Scrapers
+    # 1. Initialize Deduplicator & Scrapers (pre-load known URLs to skip redundant detail-page fetches)
+    input_csv = args.csv_in or args.csv_out
+    deduplicator = JobDeduplicator(csv_filepath=input_csv)
+
     active_sources = [s.strip().lower() for s in args.sources.split(",") if s.strip()]
     scrapers = []
 
     if not args.skip_scrape:
+        existing_known = deduplicator.load_existing_jobs()
+        filtered_known = deduplicator.load_filtered_ids()
+        known_urls = {j.link.strip().rstrip("/") for j in existing_known.values() if j.link} | filtered_known
+
         if "academickeys" in active_sources:
             scrapers.append(AcademicKeysScraper())
         if "higheredjobs" in active_sources:
@@ -260,14 +267,27 @@ def main():
         if "jobsacuk" in active_sources:
             scrapers.append(JobsAcUkScraper())
 
-    # 2. Scrape Job Postings
+        for scraper in scrapers:
+            scraper.set_known_urls(known_urls)
+
+    # 2. Scrape Job Postings (with per-board time budget and rate-limit circuit breaker)
+    import time as _time
+    MAX_SCRAPER_SECONDS = 300  # 5-minute ceiling per job board so one slow/blocked site never hangs the run
     scraped_postings = []
     seen_urls_overall = set()
 
     if not args.skip_scrape:
         for scraper in scrapers:
+            scraper_start = _time.monotonic()
             print(f"\n[SCRAPING] Fetching listings from {scraper.name} across {len(queries)} search terms...")
             for q in queries:
+                if scraper.is_rate_limited:
+                    print(f"  -> [{scraper.name}] Rate-limit/block circuit breaker active; skipping remaining queries.")
+                    break
+                if (_time.monotonic() - scraper_start) > MAX_SCRAPER_SECONDS:
+                    logger.warning(f"[{scraper.name}] Exceeded {MAX_SCRAPER_SECONDS}s board time budget; moving to next source.")
+                    print(f"  -> [{scraper.name}] Board time budget ({MAX_SCRAPER_SECONDS}s) reached; moving to next source.")
+                    break
                 try:
                     results = scraper.scrape(query=q, max_results=args.max_per_source)
                     new_results = []
@@ -286,8 +306,6 @@ def main():
         print("\n[SCRAPING] Web scraping skipped via --skip-scrape flag. Operating on existing database.")
 
     # 3. Deduplicate and Track Historical Records
-    input_csv = args.csv_in or args.csv_out
-    deduplicator = JobDeduplicator(csv_filepath=input_csv)
     new_jobs, all_jobs = deduplicator.process_incoming(scraped_postings)
     print(f"[DEDUPLICATION] Brand new postings discovered today: {len(new_jobs)}")
     print(f"[DEDUPLICATION] Total active and tracked postings:   {len(all_jobs)}")

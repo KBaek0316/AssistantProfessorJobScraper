@@ -40,13 +40,15 @@ class LinkedInScraper(BaseScraper):
     def scrape(self, query: str = "Assistant Professor Transportation", max_results: int = 20) -> List[JobPosting]:
         self.logger.info(f"Querying LinkedIn Guest API for: '{query}' across target locations: {', '.join(self.TARGET_LOCATIONS)}")
         postings: List[JobPosting] = []
+        if self.is_rate_limited:
+            return postings
         seen_ids = set()
 
         # Ensure balanced, deep pagination across regions without choking the primary market (US)
         max_total = max(max_results * 2, 35)
 
         for loc in self.TARGET_LOCATIONS:
-            if len(postings) >= max_total:
+            if len(postings) >= max_total or self.is_rate_limited:
                 break
 
             # The US is the candidate's primary market: allow full max_results quota.
@@ -66,7 +68,8 @@ class LinkedInScraper(BaseScraper):
                         "location": loc,
                         "start": start,
                     }
-                    resp = self.session.get(self.GUEST_URL, params=params, timeout=15)
+                    resp = self.session.get(self.GUEST_URL, params=params, timeout=self.DEFAULT_TIMEOUT)
+                    self.record_http_status(resp.status_code, f"search '{query}' ({loc})")
                     if resp.status_code != 200:
                         self.logger.warning(f"LinkedIn Guest API returned status {resp.status_code} for {loc} at start={start}")
                         break

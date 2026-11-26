@@ -1988,5 +1988,105 @@
     "fit_score": 2,
     "fit_reason": "This is a business administration role focused on entrepreneurship and digital business models, lacking any connection to transportation engineering or mobility systems.",
     "date_filtered": "2026-11-24"
+  },
+  {
+    "id": "e7ad80de366b3709",
+    "title": "Assistant Professor in Robotics",
+    "institution": "University of North Carolina at Charlotte",
+    "link": "https://engineering.academickeys.com/job/1h2q94z0/Assistant-Professor-in-Robotics",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 2,
+    "fit_reason": "This tenure-track Assistant Professor position in Mechanical Engineering focuses on physical robotics, embodied AI, and autonomous hardware systems, which fall outside the candidate's core expertise in transportation planning and travel behavior.",
+    "date_filtered": "2026-11-26"
+  },
+  {
+    "id": "bee02adb4cd8c585",
+    "title": "Assistant Professor",
+    "institution": "Texas A&M University - College Station",
+    "link": "http://engineering.academickeys.com/job/ygmcrt4a/TenureTrack-Assistant-Professor-Rank-College-Station-Campus",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 2,
+    "fit_reason": "This Assistant Professor search in Construction Science focuses on industrialized construction automation and project delivery management, which is a non-transportation construction subfield with poor fit to the candidate's profile.",
+    "date_filtered": "2026-11-26"
+  },
+  {
+    "id": "310a16732d6f2ad8",
+    "title": "Teaching Assistant Professor of Mechanical Engineering Technology",
+    "institution": "Old Dominion University",
+    "link": "https://engineering.academickeys.com/job/ivfhu0x6/Teaching-Assistant-Professor-of-Mechanical-Engineering-Technology-NonTenure-Track-F0379A",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "This non-tenure-track teaching position is strictly focused on undergraduate Mechanical Engineering Technology instruction and capstone advising, which is unrelated to Transportation Engineering.",
+    "date_filtered": "2026-11-26"
+  },
+  {
+    "id": "a7fae79e28eec8b1",
+    "title": "Open Rank - Assistant/Associate/Professor",
+    "institution": "North Carolina State University",
+    "link": "https://engineering.academickeys.com/job/kl8rod91/Open-Rank--AssistantAssociateProfessor",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "This open-rank faculty search in Chemical and Biomolecular Engineering targets energy and soft materials with autonomous laboratories, which has no alignment with transportation engineering or mobility systems.",
+    "date_filtered": "2026-11-26"
+  },
+  {
+    "id": "9b45d01e7b790d1a",
+    "title": "Assistant Professor of Engineering (Mechanical Engineering)",
+    "institution": "California State University, Bakersfield",
+    "link": "https://engineering.academickeys.com/job/qgyz7wvm/Assistant-Professor-of-Engineering",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 2,
+    "fit_reason": "This tenure-track Assistant Professor search is specifically for Mechanical Engineering and Engineering Mechanics within Physics and Engineering, outside the candidate's Civil and Transportation Engineering domain.",
+    "date_filtered": "2026-11-26"
+  },
+  {
+    "id": "0eed23f5f311271e",
+    "title": "Open Rank Tenure Track Faculty Position - Nuclear Engineering",
+    "institution": "University of Massachusetts Lowell",
+    "link": "https://engineering.academickeys.com/job/8fcsoujp/Open-Rank-Tenure-Track-Faculty-Position--Nuclear-Engineering",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "This open-rank position focuses entirely on Nuclear Engineering, reactor physics, and thermal-hydraulics, which is completely unrelated to the candidate's transportation engineering expertise.",
+    "date_filtered": "2026-11-26"
+  },
+  {
+    "id": "ad4570e6716d7f39",
+    "title": "Assistant Professor in Mechanics",
+    "institution": "University of North Carolina at Charlotte",
+    "link": "https://engineering.academickeys.com/job/9povzu3g/Assistant-Professor-in-Mechanics",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 2,
+    "fit_reason": "This position in Mechanical Engineering and Engineering Science targets Mechanics, and detailed specialization requirements are unavailable in the scraped text snippet.",
+    "date_filtered": "2026-11-26"
+  },
+  {
+    "id": "752b02f3f768ea0e",
+    "title": "Assistant Professor",
+    "institution": "Rutgers University, New Brunswick",
+    "link": "https://jobs.chronicle.com/job/38069887/assistant-professor-tenure-track-ay-electrical-and-computer-engineering/?LinkSource=PromotedJob",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 2,
+    "fit_reason": "Electrical and Computer Engineering search focused on RF systems, robotics, and cybersecurity with no transportation engineering focus.",
+    "date_filtered": "2026-11-26"
+  },
+  {
+    "id": "95f019ce07ee5fb6",
+    "title": "Assistant Professor",
+    "institution": "University of Maryland, Baltimore",
+    "link": "https://jobs.chronicle.com/job/38069064/assistant-professor-som-peds-critical-care/",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Position is in pediatric critical care medicine and completely unrelated to transportation engineering.",
+    "date_filtered": "2026-11-26"
+  },
+  {
+    "id": "0cef364e84a0ecaf",
+    "title": "Assistant Professor of Law (Corporate)",
+    "institution": "Georgia State University",
+    "link": "https://jobs.chronicle.com/job/38071170/assistant-professor-of-law-corporate-/",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Position is in corporate law and completely unrelated to transportation engineering.",
+    "date_filtered": "2026-11-26"
   }
 ]

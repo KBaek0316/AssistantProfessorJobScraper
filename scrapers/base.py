@@ -5,7 +5,7 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
 from datetime import date, datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -498,18 +498,74 @@ class JobPosting:
 class BaseScraper(ABC):
     """Abstract Base Class for all website scrapers."""
 
+    DEFAULT_TIMEOUT: Tuple[int, int] = (8, 12)  # (connect_timeout, read_timeout) in seconds
+
     def __init__(self, name: str):
         self.name = name
         self.logger = logging.getLogger(f"scraper.{name}")
         self.session = self._create_session()
+        self._known_urls: Set[str] = set()
+        self._seen_urls_session: Set[str] = set()
+        self.is_rate_limited: bool = False
+        self._consecutive_blocks: int = 0
+
+    @staticmethod
+    def normalize_url(url: str) -> str:
+        return (url or "").strip().rstrip("/")
+
+    def set_known_urls(self, urls: Set[str]) -> None:
+        """Register previously tracked or filtered URLs to avoid redundant detail-page fetches."""
+        self._known_urls = {self.normalize_url(u) for u in urls if u}
+
+    def should_fetch_detail(self, url: str) -> bool:
+        """Return True only if the detail page has not been fetched yet and is not already tracked/filtered."""
+        if self.is_rate_limited:
+            return False
+        norm = self.normalize_url(url)
+        if not norm:
+            return False
+        return norm not in self._known_urls and norm not in self._seen_urls_session
+
+    def record_http_status(self, status_code: int, context: str = "") -> None:
+        """Track HTTP rate-limit/challenge responses and trip a per-scraper circuit breaker to prevent stalls."""
+        if status_code == 200:
+            self._consecutive_blocks = 0
+            return
+        if status_code == 429:
+            self._consecutive_blocks += 1
+            if self._consecutive_blocks >= 2:
+                self.is_rate_limited = True
+                self.logger.warning(
+                    f"[{self.name}] Consecutive HTTP 429 rate limits{f' ({context})' if context else ''}. "
+                    "Tripping circuit breaker to avoid stalling the pipeline."
+                )
+            else:
+                self.logger.warning(
+                    f"[{self.name}] HTTP 429 rate-limited{f' ({context})' if context else ''}. "
+                    "Cooling down briefly (3s) before retrying next query."
+                )
+                time.sleep(3.0)
+        elif status_code == 403:
+            self._consecutive_blocks += 1
+            if self._consecutive_blocks >= 2:
+                self.is_rate_limited = True
+                self.logger.warning(
+                    f"[{self.name}] Consecutive HTTP 403 blocks{f' ({context})' if context else ''}. "
+                    "Tripping circuit breaker for this run."
+                )
 
     def _create_session(self) -> requests.Session:
         session = requests.Session()
+        # CRITICAL: respect_retry_after_header=False and excluding 429 from status_forcelist
+        # prevent urllib3 from silently sleeping 10+ minutes or hours on Retry-After headers.
         retries = Retry(
-            total=3,
-            backoff_factor=1,
-            status_forcelist=[429, 500, 502, 503, 504],
+            total=2,
+            connect=2,
+            read=1,
+            backoff_factor=0.5,
+            status_forcelist=[500, 502, 503, 504],
             allowed_methods=["HEAD", "GET", "POST", "OPTIONS"],
+            respect_retry_after_header=False,
         )
         adapter = HTTPAdapter(max_retries=retries)
         session.mount("http://", adapter)

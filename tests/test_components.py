@@ -998,6 +998,32 @@ class TestComponents(unittest.TestCase):
         self.assertTrue(GeminiExtractor._is_expired_or_unavailable_text("This job is no longer available."))
         self.assertFalse(GeminiExtractor._is_expired_or_unavailable_text("The Department of Civil Engineering invites applications for a tenure-track Assistant Professor position."))
 
+    def test_scraper_retry_safety_and_circuit_breaker(self):
+        """Ensure BaseScraper disables Retry-After sleeping, skips 429 retries, caches known URLs, and trips circuit breaker."""
+        from scrapers.academickeys import AcademicKeysScraper
+
+        scraper = AcademicKeysScraper()
+        adapter = scraper.session.get_adapter("https://")
+        retries = adapter.max_retries
+        self.assertFalse(retries.respect_retry_after_header)
+        self.assertNotIn(429, retries.status_forcelist)
+
+        # Known URLs must skip redundant detail-page fetches
+        url = "https://engineering.academickeys.com/job/abc123/Test-Job/"
+        self.assertTrue(scraper.should_fetch_detail(url))
+        scraper.set_known_urls({url.rstrip("/")})
+        self.assertFalse(scraper.should_fetch_detail(url))
+
+        # Circuit breaker trips after 2 consecutive HTTP 429s (without hanging on Retry-After)
+        from unittest.mock import patch
+        self.assertFalse(scraper.is_rate_limited)
+        with patch("scrapers.base.time.sleep"):
+            scraper.record_http_status(429, "test-1")
+            self.assertFalse(scraper.is_rate_limited)
+            scraper.record_http_status(429, "test-2")
+        self.assertTrue(scraper.is_rate_limited)
+        self.assertFalse(scraper.should_fetch_detail("https://engineering.academickeys.com/job/new999/New-Job"))
+
 
 if __name__ == "__main__":
     unittest.main()

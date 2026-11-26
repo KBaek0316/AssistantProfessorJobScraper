@@ -25,7 +25,10 @@ class ChronicleScraper(BaseScraper):
         location = None
 
         try:
-            resp = self.session.get(url, timeout=12)
+            if self.is_rate_limited:
+                return raw_text, deadline, salary, institution, location
+            resp = self.session.get(url, timeout=self.DEFAULT_TIMEOUT)
+            self.record_http_status(resp.status_code, f"detail {url}")
             if resp.status_code == 200:
                 soup = BeautifulSoup(resp.text, "html.parser")
 
@@ -80,11 +83,14 @@ class ChronicleScraper(BaseScraper):
     def scrape(self, query: str = "Assistant Professor Transportation", max_results: int = 25) -> List[JobPosting]:
         self.logger.info(f"Querying Chronicle of Higher Ed with: '{query}'")
         postings: List[JobPosting] = []
+        if self.is_rate_limited:
+            return postings
 
         # Attempt 1: RSS Feed (fast, clean, and reliable)
         try:
             params = {"Keywords": query}
-            rss_resp = self.session.get(self.RSS_URL, params=params, timeout=15)
+            rss_resp = self.session.get(self.RSS_URL, params=params, timeout=self.DEFAULT_TIMEOUT)
+            self.record_http_status(rss_resp.status_code, f"RSS '{query}'")
             if rss_resp.status_code == 200 and "<rss" in rss_resp.text:
                 root = ET.fromstring(rss_resp.content)
                 items = root.findall(".//item")
@@ -108,8 +114,13 @@ class ChronicleScraper(BaseScraper):
                     job_id_key = id_match.group(1) if id_match else link
                     job_id = JobPosting.generate_id("chronicle", job_id_key)
 
-                    # Fetch full detail page for complete description and deadline
-                    raw_text, deadline, salary, inst_detail, loc_detail = self._fetch_detail_page(link, fallback_text=desc or title)
+                    # Fetch full detail page only for brand-new URLs not already tracked/filtered or seen in this run
+                    norm_link = self.normalize_url(link)
+                    if self.should_fetch_detail(link):
+                        raw_text, deadline, salary, inst_detail, loc_detail = self._fetch_detail_page(link, fallback_text=desc or title)
+                    else:
+                        raw_text, deadline, salary, inst_detail, loc_detail = (desc or title), "Open until filled", "Not specified", None, None
+                    self._seen_urls_session.add(norm_link)
 
                     institution = inst_detail or "Chronicle Listed University"
                     location = loc_detail or "United States"
@@ -139,9 +150,12 @@ class ChronicleScraper(BaseScraper):
             self.logger.warning(f"Chronicle RSS fetch encountered: {e}, falling back to HTML")
 
         # Attempt 2: HTML Search scraping
+        if self.is_rate_limited:
+            return postings
         try:
             params = {"Keywords": query}
-            resp = self.session.get(self.SEARCH_URL, params=params, timeout=15)
+            resp = self.session.get(self.SEARCH_URL, params=params, timeout=self.DEFAULT_TIMEOUT)
+            self.record_http_status(resp.status_code, f"HTML '{query}'")
             if resp.status_code == 200:
                 soup = BeautifulSoup(resp.text, "html.parser")
                 job_links = soup.find_all("a", href=re.compile(r"/job/\d+"))
@@ -174,8 +188,13 @@ class ChronicleScraper(BaseScraper):
                     loc_elem = parent.find(class_=lambda c: c and "location" in c) if parent else None
                     location = loc_elem.get_text(strip=True) if loc_elem else "United States"
 
-                    # Fetch full job posting page to obtain complete description, salary, and deadlines
-                    raw_text, deadline, salary, inst_detail, loc_detail = self._fetch_detail_page(full_url, fallback_text=raw_text)
+                    # Fetch full job posting page only for brand-new URLs
+                    norm_url = self.normalize_url(full_url)
+                    if self.should_fetch_detail(full_url):
+                        raw_text, deadline, salary, inst_detail, loc_detail = self._fetch_detail_page(full_url, fallback_text=raw_text)
+                    else:
+                        deadline, salary, inst_detail, loc_detail = "Open until filled", "Not specified", None, None
+                    self._seen_urls_session.add(norm_url)
                     if inst_detail:
                         institution = inst_detail
                     if loc_detail:
