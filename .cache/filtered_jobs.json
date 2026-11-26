@@ -2088,5 +2088,25 @@
     "fit_score": 1,
     "fit_reason": "Screened out: Position is in corporate law and completely unrelated to transportation engineering.",
     "date_filtered": "2026-11-26"
+  },
+  {
+    "id": "9b6fb928277c1942",
+    "title": "Airbus Synthetic Flight Instructor (SFI)",
+    "institution": "Airbus",
+    "link": "https://kr.linkedin.com/jobs/view/airbus-synthetic-flight-instructor-sfi-at-airbus-4192389555",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Role is a non-faculty pilot training and simulator instruction position rather than an academic faculty appointment.",
+    "date_filtered": "2026-11-26"
+  },
+  {
+    "id": "3ec4840688af2db3",
+    "title": "Flight Simulator Instructor A320 / B737-EN",
+    "institution": "CAE",
+    "link": "https://kr.linkedin.com/jobs/view/flight-simulator-instructor-a320-b737-en-at-cae-4411538607",
+    "status": "Filtered (Non-Faculty / Seniority)",
+    "fit_score": 1,
+    "fit_reason": "Screened out: Role is a temporary flight simulator instructor position rather than an academic faculty appointment.",
+    "date_filtered": "2026-11-26"
   }
 ]
