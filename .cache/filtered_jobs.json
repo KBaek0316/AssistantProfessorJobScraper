@@ -2090,23 +2090,63 @@
     "date_filtered": "2026-11-26"
   },
   {
-    "id": "9b6fb928277c1942",
-    "title": "Airbus Synthetic Flight Instructor (SFI)",
-    "institution": "Airbus",
-    "link": "https://kr.linkedin.com/jobs/view/airbus-synthetic-flight-instructor-sfi-at-airbus-4192389555",
-    "status": "Filtered (Non-Faculty / Seniority)",
-    "fit_score": 1,
-    "fit_reason": "Screened out: Role is a non-faculty pilot training and simulator instruction position rather than an academic faculty appointment.",
-    "date_filtered": "2026-11-26"
+    "id": "5aaba50319726bd4",
+    "title": "Assistant Professor or Associate Professor in Oncology Nursing",
+    "institution": "Arabian Gulf University",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179625735&Title=Assistant%20Professor%20or%20Associate%20Professor%20in%20Oncology%20Nursing",
+    "status": "Filtered (Location Outside Scope)",
+    "fit_score": null,
+    "fit_reason": "",
+    "date_filtered": "2026-11-27"
   },
   {
-    "id": "3ec4840688af2db3",
-    "title": "Flight Simulator Instructor A320 / B737-EN",
-    "institution": "CAE",
-    "link": "https://kr.linkedin.com/jobs/view/flight-simulator-instructor-a320-b737-en-at-cae-4411538607",
-    "status": "Filtered (Non-Faculty / Seniority)",
+    "id": "c5c90dd0a7c92a32",
+    "title": "Assistant Professor or Associate Professor in Geriatric Nursing",
+    "institution": "Arabian Gulf University",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179625734&Title=Assistant%20Professor%20or%20Associate%20Professor%20in%20Geriatric%20Nursing",
+    "status": "Filtered (Location Outside Scope)",
+    "fit_score": null,
+    "fit_reason": "",
+    "date_filtered": "2026-11-27"
+  },
+  {
+    "id": "182a0ff966232501",
+    "title": "Assistant Professor/Associate Professor in Pediatric Nursing",
+    "institution": "Arabian Gulf University",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179625733&Title=Assistant%20Professor%2FAssociate%20Professor%20in%20Pediatric%20Nursing",
+    "status": "Filtered (Location Outside Scope)",
+    "fit_score": null,
+    "fit_reason": "",
+    "date_filtered": "2026-11-27"
+  },
+  {
+    "id": "7348c6844346d5b4",
+    "title": "Open Rank Faculty Positions in Materials Science and Engineering",
+    "institution": "Florida A&M University - Florida State University College of Engineering",
+    "link": "http://engineering.academickeys.com/job/h1wf6n9t/Assistant-Professor",
+    "status": "Filtered (Low Relevance)",
     "fit_score": 1,
-    "fit_reason": "Screened out: Role is a temporary flight simulator instructor position rather than an academic faculty appointment.",
-    "date_filtered": "2026-11-26"
+    "fit_reason": "Irrelevant field: seeks Open Rank faculty in experimental, computational, or theoretical Materials Science and Engineering, which does not match Transportation Engineering or Urban Planning.",
+    "date_filtered": "2026-11-27"
+  },
+  {
+    "id": "e8a885bdbec744b9",
+    "title": "Assistant Teaching Professor Biology Science",
+    "institution": "University of Arkansas - Pulaski Technical College",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179626206&Title=Assistant%20Teaching%20Professor%20Biology%20Science",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "Irrelevant field: non-tenure-track teaching position in Biology and Human Anatomy and Physiology at a two-year technical college, unrelated to Transportation Engineering or Urban Planning.",
+    "date_filtered": "2026-11-27"
+  },
+  {
+    "id": "0703fbd1a607ae99",
+    "title": "Open Rank Clinical Professor, Department of Physical Therapy, Movement, and Rehabilitation Sciences",
+    "institution": "Northeastern University",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179623966&Title=Open%20Rank%20Clinical%20Professor%2C%20Department%20of%20Physical%20Therapy%2C%20Movement%2C%20and%20Rehabilitation%20Sciences",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "Irrelevant field: clinical faculty search in Physical Therapy, Movement, and Rehabilitation Sciences with no alignment to Transportation Engineering or Urban Planning.",
+    "date_filtered": "2026-11-27"
   }
 ]
