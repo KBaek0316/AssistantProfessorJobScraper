@@ -25,6 +25,7 @@ from scrapers import (
     HigherEdJobsScraper,
     JobsAcUkScraper,
     LinkedInScraper,
+    load_manual_jobs,
 )
 from processor import (
     CVProfileManager,
@@ -108,6 +109,12 @@ def parse_args():
         type=str,
         default="search_queries.txt",
         help="Path to user-editable search queries file (default: search_queries.txt)",
+    )
+    parser.add_argument(
+        "--manual-jobs",
+        type=str,
+        default="manual_jobs.json",
+        help="Path to user-editable manual job postings JSON file (default: manual_jobs.json)",
     )
     parser.add_argument(
         "--max-per-source",
@@ -304,6 +311,20 @@ def main():
         print(f"\n[SUMMARY] Total unique raw listings fetched across all sources: {len(scraped_postings)}")
     else:
         print("\n[SCRAPING] Web scraping skipped via --skip-scrape flag. Operating on existing database.")
+
+    # 2b. Load Manual Job Entries (always ingested when manual_jobs.json is present, even with --skip-scrape)
+    manual_postings = load_manual_jobs(args.manual_jobs)
+    if manual_postings:
+        added_manual = 0
+        for m_job in manual_postings:
+            clean_link = m_job.link.strip().rstrip("/")
+            if clean_link and clean_link in seen_urls_overall:
+                continue
+            if clean_link:
+                seen_urls_overall.add(clean_link)
+            scraped_postings.append(m_job)
+            added_manual += 1
+        print(f"[MANUAL] Loaded {added_manual} manual job posting(s) from '{args.manual_jobs}'")
 
     # 3. Deduplicate and Track Historical Records
     new_jobs, all_jobs = deduplicator.process_incoming(scraped_postings)

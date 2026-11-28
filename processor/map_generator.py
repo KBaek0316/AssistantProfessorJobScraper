@@ -315,9 +315,7 @@ class MapGenerator:
                         <b>Summary:</b><br>{safe_summary}
                     </div>
 
-                    <a href="{safe_link}" target="_blank" style="display: block; text-align: center; background: #2563eb; color: white; text-decoration: none; padding: 7px 10px; border-radius: 6px; font-size: 13px; font-weight: bold;">
-                        View Full Job Posting →
-                    </a>
+                    {f'<a href="{safe_link}" target="_blank" style="display: block; text-align: center; background: #2563eb; color: white; text-decoration: none; padding: 7px 10px; border-radius: 6px; font-size: 13px; font-weight: bold;">View Full Job Posting →</a>' if (p.link and p.link.strip().startswith("http")) else '<div style="text-align: center; background: #e2e8f0; color: #475569; padding: 7px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">Manual Entry (See Summary / Contact)</div>'}
                 </div>
                 """
 

@@ -177,6 +177,8 @@ Description: {raw_description}
             return ""
 
         src = (posting.source or "").lower()
+        if src == "manual":
+            return ""
         fetched_text = ""
         try:
             if "academickeys" in src or "academickeys.com" in clean_link:
@@ -353,9 +355,11 @@ Description: {raw_description}
         if not isinstance(data, dict):
             return
 
+        is_manual = (posting.source or "").strip().lower() == "manual"
+
         # 1. Faculty eligibility check
         if data.get("is_faculty") is False:
-            if not is_update_mode:
+            if not is_update_mode and not is_manual:
                 posting.status = "Filtered (Non-Faculty / Seniority)"
             posting.fit_score = 1
             if data.get("fit_reason"):
@@ -441,8 +445,8 @@ Description: {raw_description}
                 elif any(kw in title_low for kw in ("housing", "historic preservation", "real estate", "urban design", "climate change and planning law")):
                     posting.fit_score = min(posting.fit_score, 5)
 
-        # 6. Geographic scope & weak filter checks
-        if not is_update_mode:
+        # 6. Geographic scope & weak filter checks (never auto-filter explicit Manual entries)
+        if not is_update_mode and not is_manual:
             country = str(data.get("country", "")).strip()
             if not JobPosting.is_allowed_location(posting.location, country, institution=posting.institution):
                 posting.status = "Filtered (Location Outside Scope)"
@@ -497,12 +501,13 @@ Description: {raw_description}
             to_call_llm.extend(unscored_candidates)
         else:
             for p in postings:
-                if not JobPosting.is_valid_faculty_posting(p.title, p.raw_description or p.summary):
+                is_manual = (p.source or "").strip().lower() == "manual"
+                if not is_manual and not JobPosting.is_valid_faculty_posting(p.title, p.raw_description or p.summary):
                     p.status = "Filtered (Non-Faculty / Seniority / Adjunct)"
                     p.fit_score = 1
                     p.fit_reason = f"Screened out: Position title '{p.title}' is senior-only, adjunct, continuing education, or non-faculty."
                     continue
-                if p.location and not JobPosting.is_allowed_location(p.location, institution=p.institution):
+                if not is_manual and p.location and not JobPosting.is_allowed_location(p.location, institution=p.institution):
                     p.status = "Filtered (Location Outside Scope)"
                     p.fit_score = 1
                     p.fit_reason = f"Screened out: Location '{p.location}' is outside target geographic scope."

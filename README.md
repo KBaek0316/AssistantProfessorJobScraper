@@ -20,6 +20,8 @@ It collects postings from **5 major academic job platforms** ([AcademicKeys](htt
   - Highly portable: simply replace `CV.pdf` with your own CV to evaluate positions in any field (e.g. Computer Science, Economics, Mechanical Engineering).
 - **User-Editable Search Queries (`search_queries.txt`)**:
   - Customize search keywords across all 5 job boards simply by editing [search_queries.txt](search_queries.txt) (one query per line). No Python coding or CLI flags required.
+- **Manual Job Entries (`manual_jobs.json`)**:
+  - Track off-board openings shared via mailing lists, PDFs, or direct university portals by adding them to [manual_jobs.json](manual_jobs.json). Manual entries are labeled `Source: Manual`, evaluated by Gemini for 1–10 fit scoring and summaries, geocoded onto the map, preserved from weak auto-filtering, and synced to Excel, CSV, and Google Sheets alongside scraped jobs.
 - **Weak Relevance Screening Filter**:
   - Automatically screens out non-faculty positions (senior-only, adjuncts, postdocs) and irrelevant subfields.
   - Screened-out postings are excluded from active outputs and cached in `.cache/filtered_jobs.json` to avoid redundant LLM calls.
@@ -255,6 +257,10 @@ python job_scraper.py
 # Specify a custom search queries file (default: search_queries.txt)
 python job_scraper.py --queries-file search_queries.txt
 
+# Specify a custom manual job postings JSON file (default: manual_jobs.json)
+# Tip: combine with --skip-scrape to immediately evaluate and export newly added manual entries
+python job_scraper.py --manual-jobs manual_jobs.json --skip-scrape
+
 # Override search queries directly via command line (comma-separated)
 python job_scraper.py --query "Assistant Professor Computer Science, Assistant Professor Machine Learning"
 
@@ -327,6 +333,32 @@ This aggregator is architected with defensive fallbacks to ensure automated runs
 
 ---
 
+## Adding Manual Job Entries (`manual_jobs.json`)
+
+To track faculty openings shared via PDFs, emails, listservs, or university portals that are not listed on the 5 scraped job boards, add an entry to [`manual_jobs.json`](manual_jobs.json):
+
+```json
+[
+  {
+    "title": "Tenure-Track Assistant Professor, Civil and Environmental Engineering",
+    "institution": "The Catholic University of America",
+    "field": "Department of Civil and Environmental Engineering",
+    "location": "Washington, DC",
+    "deadline": "Review begins 2027-01-15",
+    "salary": "Not specified",
+    "tenure_track": "Tenure-Track",
+    "link": "https://example.edu/apply",
+    "source": "Manual",
+    "raw_description": "Paste the full job announcement text here for Gemini 1-10 fit evaluation and summarization."
+  }
+]
+```
+
+- **Instant Ingestion**: Run `python job_scraper.py --skip-scrape` to evaluate newly added manual entries with Gemini, geocode them, update `jobs.csv`, `jobs.xlsx`, `map.html`, and `index.html`, and sync Google Sheets without re-scraping all 5 boards.
+- **Preservation**: Manual entries (`Source: Manual`) support both direct URLs and linkless (`""`) email-only postings, are automatically included in daily GitHub Actions runs, and are never auto-dropped by the weak relevance filter.
+
+---
+
 ## Output Files
 
 Once the script completes, the following files are updated in the project directory:
@@ -356,7 +388,8 @@ AssistantProfessorJobScraper/
 │   ├── higheredjobs.py             # HigherEdJobs Faculty scraper
 │   ├── chronicle.py                # The Chronicle of Higher Education scraper
 │   ├── linkedin.py                 # LinkedIn Public Guest search scraper
-│   └── jobsacuk.py                 # Jobs.ac.uk international faculty scraper
+│   ├── jobsacuk.py                 # Jobs.ac.uk international faculty scraper
+│   └── manual.py                   # Manual job postings loader (manual_jobs.json)
 ├── processor/
 │   ├── __init__.py
 │   ├── cv_matcher.py               # CV PDF parsing & candidate profile extraction
@@ -374,6 +407,7 @@ AssistantProfessorJobScraper/
 ├── .gitignore                      # Protects secrets (.env, credentials.json, .cache/)
 ├── requirements.txt                # Python package dependencies
 ├── search_queries.txt              # User-editable search queries (one per line)
+├── manual_jobs.json                # User-editable manual job postings (off-board PDFs/emails/portals)
 ├── eval_prompt.txt                 # User-editable Gemini evaluation prompt template
 ├── CV.pdf                          # Candidate CV for automated profile matching
 ├── job_scraper.py                  # Main CLI entrypoint

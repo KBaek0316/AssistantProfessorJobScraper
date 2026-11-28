@@ -205,14 +205,16 @@ class JobDeduplicator:
                         longitude=lon,
                     )
 
+                    is_manual = job_source.strip().lower() == "manual"
+
                     # If this posting is non-faculty or previously filtered, keep in filtered cache instead of active jobs
-                    if not JobPosting.is_valid_faculty_posting(title) or status.startswith("Filtered"):
+                    if not is_manual and (not JobPosting.is_valid_faculty_posting(title) or status.startswith("Filtered")):
                         posting.status = "Filtered (Non-Faculty)" if not JobPosting.is_valid_faculty_posting(title) else status
                         filtered_to_cache.append(posting)
                         continue
 
                     # If this posting is outside allowed geographic scope, move to filtered cache
-                    if not JobPosting.is_allowed_location(posting.location, institution=posting.institution):
+                    if not is_manual and not JobPosting.is_allowed_location(posting.location, institution=posting.institution):
                         posting.status = "Filtered (Location Outside Scope)"
                         posting.fit_score = 1
                         posting.fit_reason = f"Screened out: Location outside target geographic scope ({posting.location})."
@@ -660,29 +662,32 @@ class JobDeduplicator:
         link_to_id = {j.link.strip().rstrip("/"): j.id for j in existing_jobs.values() if j.link}
 
         for job in scraped_jobs:
-            normalized_link = job.link.strip().rstrip("/")
+            normalized_link = (job.link or "").strip().rstrip("/")
+            is_manual = (job.source or "").strip().lower() == "manual"
 
-            # Check if previously screened out by weak filter or non-faculty rule
-            if job.id in filtered_identifiers or normalized_link in filtered_identifiers:
+            # Check if previously screened out by weak filter or non-faculty rule (never block explicit Manual entries)
+            if not is_manual and (job.id in filtered_identifiers or (normalized_link and normalized_link in filtered_identifiers)):
                 continue
 
-            # Instant title-based non-faculty check
-            if not JobPosting.is_valid_faculty_posting(job.title, job.raw_description):
+            # Instant title-based non-faculty check (skip for explicit Manual entries)
+            if not is_manual and not JobPosting.is_valid_faculty_posting(job.title, job.raw_description):
                 job.status = "Filtered (Non-Faculty)"
                 self.save_filtered_jobs([job])
                 filtered_identifiers.add(job.id)
-                filtered_identifiers.add(normalized_link)
+                if normalized_link:
+                    filtered_identifiers.add(normalized_link)
                 continue
 
-            # Location pre-check if location or institution is present in scraped card
-            if (job.location or job.institution) and not JobPosting.is_allowed_location(job.location, institution=job.institution):
+            # Location pre-check if location or institution is present in scraped card (skip for explicit Manual entries)
+            if not is_manual and (job.location or job.institution) and not JobPosting.is_allowed_location(job.location, institution=job.institution):
                 job.status = "Filtered (Location Outside Scope)"
                 self.save_filtered_jobs([job])
                 filtered_identifiers.add(job.id)
-                filtered_identifiers.add(normalized_link)
+                if normalized_link:
+                    filtered_identifiers.add(normalized_link)
                 continue
 
-            matched_id = job.id if job.id in existing_jobs else link_to_id.get(normalized_link)
+            matched_id = job.id if job.id in existing_jobs else (link_to_id.get(normalized_link) if normalized_link else None)
 
             if matched_id:
                 # Existing active job: update verification date
@@ -699,12 +704,14 @@ class JobDeduplicator:
                     existing.deadline_date = job.deadline_date
             else:
                 # Brand new job
-                job.date_first_seen = today
+                if not job.date_first_seen:
+                    job.date_first_seen = today
                 job.date_last_verified = today
                 job.status = "Active"
                 self.refresh_deadline_status(job)
                 existing_jobs[job.id] = job
-                link_to_id[normalized_link] = job.id
+                if normalized_link:
+                    link_to_id[normalized_link] = job.id
                 new_jobs.append(job)
 
         # Apply institution & department deduplication across all active jobs

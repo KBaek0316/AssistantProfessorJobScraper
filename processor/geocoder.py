@@ -44,6 +44,8 @@ class UniversityGeocoder:
         "university of notre dame": (41.7046, -86.2382),
         "notre dame": (41.7046, -86.2382),
         "columbia university": (40.8078, -73.9625),
+        "the catholic university of america": (38.9339, -76.9980),
+        "catholic university of america": (38.9339, -76.9980),
         # Canadian universities
         "university of toronto": (43.6629, -79.3957),
         "uoft": (43.6629, -79.3957),

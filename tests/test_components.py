@@ -1024,6 +1024,66 @@ class TestComponents(unittest.TestCase):
         self.assertTrue(scraper.is_rate_limited)
         self.assertFalse(scraper.should_fetch_detail("https://engineering.academickeys.com/job/new999/New-Job"))
 
+    def test_manual_jobs_loader_and_pipeline_preservation(self):
+        """Ensure manual_jobs.json entries load cleanly, support linkless entries, and are never auto-filtered."""
+        import json
+        import tempfile
+        from scrapers.manual import load_manual_jobs
+        from processor.gemini_extractor import GeminiExtractor
+
+        sample_manual = [
+            {
+                "title": "Tenure-Track Assistant Professor, Civil and Environmental Engineering",
+                "institution": "The Catholic University of America",
+                "field": "Department of Civil and Environmental Engineering",
+                "location": "Washington, DC",
+                "deadline": "Review begins 2027-01-15",
+                "tenure_track": "Tenure-Track",
+                "link": "https://docs.google.com/forms/d/e/example/viewform",
+                "raw_description": "Smart Transportation and AI in Civil Infrastructure faculty search.",
+            },
+            {
+                "title": "Assistant Professor of Mobility Systems",
+                "institution": "Example Institute",
+                "location": "Boston, MA",
+                "link": "",
+                "raw_description": "Email application materials directly to the search committee.",
+            },
+        ]
+
+        with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json", encoding="utf-8") as tf:
+            json.dump(sample_manual, tf)
+            manual_path = tf.name
+
+        test_csv = "test_manual_jobs.csv"
+        try:
+            loaded = load_manual_jobs(manual_path)
+            self.assertEqual(len(loaded), 2)
+            self.assertEqual(loaded[0].source, "Manual")
+            self.assertEqual(loaded[0].deadline_date, "2027-01-15")
+            self.assertEqual(loaded[1].link, "")
+            self.assertNotEqual(loaded[0].id, loaded[1].id)
+
+            # Deduplicator handles both linked and linkless manual entries cleanly
+            dedup = JobDeduplicator(csv_filepath=test_csv)
+            new_jobs, all_jobs = dedup.process_incoming(loaded)
+            self.assertEqual(len(new_jobs), 2)
+            self.assertEqual(len(all_jobs), 2)
+
+            # Manual entries are never auto-filtered even if Gemini assigns a low score
+            extractor = GeminiExtractor(api_key="")
+            extractor._apply_evaluation_result(
+                loaded[1],
+                {"is_faculty": True, "fit_score": 2, "fit_reason": "Stretch fit.", "concise_summary": "Mobility role."},
+                is_update_mode=False,
+            )
+            self.assertEqual(loaded[1].fit_score, 2)
+            self.assertEqual(loaded[1].status, "Active")
+        finally:
+            for path in (manual_path, test_csv):
+                if os.path.exists(path):
+                    os.remove(path)
+
 
 if __name__ == "__main__":
     unittest.main()
