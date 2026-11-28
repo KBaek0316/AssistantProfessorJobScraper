@@ -2148,5 +2148,45 @@
     "fit_score": 1,
     "fit_reason": "Irrelevant field: clinical faculty search in Physical Therapy, Movement, and Rehabilitation Sciences with no alignment to Transportation Engineering or Urban Planning.",
     "date_filtered": "2026-11-27"
+  },
+  {
+    "id": "81c6820868961fc0",
+    "title": "Open Rank Faculty Positions in Materials Science and Engineering",
+    "institution": "Florida A&M University - Florida State University College of Engineering",
+    "link": "http://engineering.academickeys.com/job/5uvxdyij/Assistant-Professor-of-Practice--Construction-Management-and-Construction-Engineering",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "Completely unrelated discipline seeking faculty in Materials Science and Engineering (with a mismatched construction management title), neither of which aligns with transportation engineering.",
+    "date_filtered": "2026-11-28"
+  },
+  {
+    "id": "5334e51b43767fde",
+    "title": "Assistant Teaching Professor - HVAC",
+    "institution": "University of Arkansas - Pulaski Technical College",
+    "link": "https://www.higheredjobs.com/search/details.cfm?JobCode=179626219&Title=Assistant%20Teaching%20Professor%20%2D%20HVAC",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "Completely unrelated non-tenure teaching position focused on HVACR building trades at a two-year technical college rather than transportation engineering or urban planning.",
+    "date_filtered": "2026-11-28"
+  },
+  {
+    "id": "bc1d57a785dc5044",
+    "title": "Assistant Professor of AI, Automation, Robotics, and Emerging Technologies in Structures and Construction",
+    "institution": "University of Missouri - Columbia",
+    "link": "https://jobs.chronicle.com/job/38068005/assistant-professor-of-ai-automation-robotics-and-emerging-technologies-in-structures-and/",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 2,
+    "fit_reason": "Although housed in Civil and Environmental Engineering, this search strictly targets structural engineering and construction engineering and management, which are non-matching subfields.",
+    "date_filtered": "2026-11-28"
+  },
+  {
+    "id": "0b8c2c491b393b10",
+    "title": "Assistant/Associate Professor in Clinical Exercise Physiology",
+    "institution": "Dublin City University",
+    "link": "https://ie.linkedin.com/jobs/view/assistant-associate-professor-in-clinical-exercise-physiology-at-dublin-city-university-4495871991",
+    "status": "Filtered (Low Relevance)",
+    "fit_score": 1,
+    "fit_reason": "Irrelevant academic field focused on Clinical Exercise Physiology with no overlap with transportation engineering or urban planning.",
+    "date_filtered": "2026-11-28"
   }
 ]
